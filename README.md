@@ -1,151 +1,84 @@
-# ⚡ Custom Developer Terminal Setup (Bash / WSL2)
+# GCP DevOps WSL2 Debian Terminal
 
-A highly optimized, modular, and context-aware Bash environment designed for Cloud & DevOps engineers. 
+A high-performance, fully modular Bash environment engineered specifically for Senior Cloud, Platform, and DevOps Engineers working within Windows Subsystem for Linux (WSL2) Debian. 
 
-Built specifically for WSL2 and Debian/Ubuntu systems, this setup provides a zero-lag dynamic prompt with clickable hyperlinks, instant state visualization for Git and Google Cloud (GCP), and a rich suite of automation aliases.
+This configuration adheres to DRY principles, relies on native Bash parsing for zero-latency prompt rendering, and aggregates modern CLI tools for Google Cloud Platform, Kubernetes, Terraform, and Python development.
 
-## ✨ Key Features
+## 🚀 Key Features
 
-* **Modular Architecture:** No more monolithic `.bashrc`. Configurations are logically split into `~/.bash.d/` files (Environment, Aliases, GCP, DevOps, Git) and loaded automatically.
-* **Zero-Lag Dynamic Prompt:** Reads local configuration files instead of running blocking CLI commands, ensuring your prompt renders instantly even in massive repositories or complex cloud setups.
-* **Modern CLI Replacements:** Integrates Rust-based alternatives for speed and usability, including `eza` (replaces `ls`), `batcat` (replaces `cat`), and `ripgrep` / `rg` (replaces `grep`).
-* **Supercharged History:** Retains up to 100,000 history entries (`HISTSIZE=100000`), ignores duplicates, and logs command execution times using `HISTTIMEFORMAT="%F %T "`.
-* **Fuzzy Finding & Smart Navigation:** Features built-in `zoxide` support for instantaneous directory jumping, and interactive `fzf` prompt switching for GCP projects (`gc-switch`).
-* **Built-in Self-Discovery:** Forget memorizing aliases. Type `mt` (mytools) in the terminal to instantly print a categorized list of all available custom functions and aliases.
-
----
-
-## 🚀 Installation
-
-### 1. Install Dependencies
-To get the most out of this terminal, ensure you have the required modern CLI tools installed on your Debian/Ubuntu system:
-```bash
-sudo apt update
-sudo apt install -y bat ripgrep fzf jq yq
-
-```
-
-*Note: You will also need to install [eza](https://github.com/eza-community/eza), [zoxide](https://github.com/ajeetdsouza/zoxide), and [kubectx/kubens](https://github.com/ahmetb/kubectx) to fully utilize the included aliases.*
-
-### 2. Clone the repository
-
-Clone this repository to a local directory (e.g., `~/dotfiles`):
-
-```bash
-git clone <your-repo-url> ~/dotfiles
-
-```
-
-### 3. Backup your existing configuration
-
-Before importing, back up your current `.bashrc`:
-
-```bash
-cp ~/.bashrc ~/.bashrc.backup
-
-```
-
-### 4. Link or Copy the files
-
-We recommend symlinking the files so you can easily pull future updates from this repo.
-
-```bash
-# Symlink the main .bashrc
-ln -sf ~/dotfiles/.bashrc ~/.bashrc
-
-# Symlink the modular directory
-ln -sfn ~/dotfiles/.bash.d ~/.bash.d
-
-```
-
-### 5. Reload your shell
-
-```bash
-source ~/.bashrc
-
-```
+*   **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking utilizing zero-subshell file reads for maximum performance. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
+*   **Automated Bootstrapping:** Built-in `bootstrap-deps` function automatically resolves and installs required APT packages, Python linters (`ruff`, `checkov`), formatters (`shfmt`), and binaries (`yq`).
+*   **Git Workflow Enforcement:** Wraps the native `git clone` command to enforce cloning all repositories directly into `~/vcs/`.
+*   **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` to concurrently validate and run Checkov security scans across all Terraform modules.
+*   **LLM Export Utilities:** Integrated, regex-filtered export commands (`tf-export`, `gcf-export`) designed to safely compile text representations of local codebases for AI prompting without leaking secrets.
+*   **Dynamic Documentation:** The `mt` (mytools) command utilizes a dedicated AWK parser to read inline script headers and automatically generate a beautifully formatted, categorized help manual.
 
 ---
 
-## 🎨 Prompt Color Guide
+## 📂 Directory Structure
 
-The prompt uses a lightning-fast local check to color-code your current environment state without lagging your terminal.
+The configuration abandons a monolithic `~/.bashrc` in favor of a logical `.bash.d/` directory structure. 
 
-### ☁️ Google Cloud (GCP) Status
-
-* 🟢 **Green:** Fully authenticated (User logged in AND Application Default Credentials exist).
-
-
-* 🟡 **Amber:** Partially authenticated (User logged in, but Application Default Credentials file is missing).
-
-
-* 🔴 **Red:** Not authenticated (No active account found).
-
-
-
-### 🌿 Git Branch Status
-
-* 🟢 **Green:** Local branch is clean and fully synchronized with the remote.
-
-
-* 🟡 **Amber:** You have uncommitted changes, OR unpushed commits (ahead of remote).
-
-
-* 🔴 **Red:** You are behind the remote (need to pull).
-
-
-* 🔵 **Blue:** Local branch exists, but there is no upstream tracking/remote branch.
-
-
+| Module | Description |
+| :--- | :--- |
+| `10-prompt.sh` | Custom PS1 generation with Git, GCP, and K8s integrations. |
+| `20-aliases.sh` | Navigation, WSL interop, formatting tools, and modern CLI overrides (`eza`, `batcat`, `rg`). |
+| `30-gcp.sh` | Extends `gcloud` with fuzzy project switching (`gc-switch`), native config parsing, and unified `gc-` shortcuts. |
+| `40-terraform-k8s.sh` | Core Terraform/Kubernetes overrides, concurrent validation utilities, and shell completion injections. |
+| `41-terraform-aliases.sh` | Exhaustive shorthand shortcuts for Terraform operations. |
+| `42-kubectl-aliases.sh` | Exhaustive shorthand shortcuts for Kubectl operations across all resource types. |
+| `50-git.sh` | Git wrappers, commit automation (`git-acp`), feature branching (`git-feat`), and repo cloning rules. |
+| `99-utils.sh` | System bootstrappers, codebase exporters, self-syncing commands, and help function wrappers. |
+| `mytools.awk` | Standalone parsing engine that dynamically builds the terminal help menu. |
 
 ---
 
-## 🧰 Discovering Tools & Commands
+## 🛠️ Setup & Bootstrapping
 
-This setup includes dozens of wrappers and aliases for Terraform (`tf`), `gcloud`, `kubectl` (`k`), and Git (e.g., `git-acp`, `gc-ssh`, `tf-validate-all`). It also includes hundreds of shorthand commands for Kubernetes (e.g., `kgpo` for `kubectl get pods`) and Terraform.
-
-Instead of reading the source code, you can view them instantly in your terminal. Just type:
-
-```bash
-mt
-
-```
-
-(Alias for `mytools`). This parses the `~/.bash.d/` directory and outputs a cleanly formatted, colorized list of every custom alias and function along with its description.
-
-### Featured Commands
-
-* `kx` / `kn`: Interactively switch Kubernetes contexts and namespaces (requires `kubectx`/`kubens`).
-
-
-* `gc-switch`: Interactively search and switch your active GCP project (requires `fzf`).
-
-
-* `gitc <url>`: Safely clone a git repository directly into your `~/vcs/` directory.
-
-
-* `ll`: Detailed directory listing utilizing `eza` with Git status indicators.
-
-
+1.  **Clone the repository** to your local WSL2 machine.
+2.  **Sync the configuration** to your home directory:
+    ```bash
+    rsync -a .bashrc ~/
+    rsync -a --delete .bash.d/ ~/.bash.d/
+    source ~/.bashrc
+    ```
+3.  **Bootstrap system dependencies:**
+    Run the included utility to automatically install required packages (`jq`, `fzf`, `ripgrep`, `bat`, `rsync`, `ruff`, `checkov`, `shfmt`, `yq`) and detect missing infrastructure binaries:
+    ```bash
+    bootstrap-deps
+    ```
 
 ---
 
-## 🛠️ Adding Your Own Custom Configs
+## 💡 Highlighted Commands
 
-Because this setup is modular, you don't need to edit the main `.bashrc` to add your personal tools.
+### System & Help
+*   `mt` / `mytools`: Dynamically parses all loaded `.sh` modules and prints a formatted, color-coded manual of all available custom functions and aliases.
+*   `bash-sync "<msg>"`: Syncs `~/.bashrc` and `~/.bash.d/` back to this git repository, commits the changes, and pushes to remote in one command.
+*   `sys-install-reload`: Updates apt packages, bootstraps missing dependencies, and reloads the bash profile in one go.
 
-Simply create a new `.sh` file inside `~/.bash.d/`. The main `.bashrc` automatically sources any file in that directory ending in `.sh`.
+### Formatting (`-fmt`)
+*   `sh-fmt`: Recursively formats all shell scripts in the current directory using `shfmt`.
+*   `ruff-fmt`: Recursively fixes and formats Python files using `ruff`.
+*   `json-fmt` / `yaml-fmt`: Pretty-prints JSON and YAML data streams.
 
-**Example:**
+### Version Control (Git)
+*   `git clone <url>`: Intercepted by a wrapper function. Automatically creates the `~/vcs` directory, clones the target into it, and provides a quick-access `cd` hint.
+*   `git-acp "<message>"`: Adds all files, commits, and pushes to remote.
+*   `git-feat <JIRA-ID>`: Automates the creation and checkout of `feature/<JIRA-ID>` branches.
 
-```bash
-touch ~/.bash.d/90-personal-aliases.sh
+### Google Cloud Platform
+*   `gc-switch`: Interactive, fuzzy-finder (fzf) project switcher.
+*   `gc-export-vars`: Resolves and exports both `PROJECT_ID` and `PROJECT_NUMBER` as system environment variables.
+*   `gce-ls` / `gce-ssh`: List Compute Engine instances and SSH directly into them.
+*   `gc-sec-read <secret>`: Instantly prints the latest payload of a Secret Manager secret.
 
-```
+### Infrastructure as Code
+*   `tf-val-all`: Recursively initializes and validates all Terraform modules in the repository.
+*   `tf-scan`: Executes a Checkov security scan against the local Terraform directory.
 
-**Pro Tip:** If you write a custom function or alias and want it to show up in the `mt` command output, add a comment starting with `# =>` on the same line:
-
-```bash
-alias update-sys='sudo apt update && sudo apt upgrade' # => Updates Debian/Ubuntu packages
-
-```
+### LLM Export Utilities
+Safely compile codebases into a single `txt` file for LLM context, utilizing regex allow-lists for extensions and block-lists for sensitive data (secrets, tokens, keys).
+*   `tf-export`: Compiles `.tf`, `.sh`, `.yaml`, `.json`, and `.md` files.
+*   `gcf-export`: Compiles Python Cloud Run Function repos (strips `__pycache__`, `.egg-info`, `.pyc`).
+*   `bash-export`: Compiles local shell script repositories.
