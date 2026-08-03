@@ -10,6 +10,11 @@ alias cdvp='cd ~/vcs/personal' # => Change directory to ~/vcs/personal
 alias reload='source ~/.bashrc' # => Open current WSL dir in 
 
 # ------------------------------------------
+# Shell Formatting
+# ------------------------------------------
+alias sh-fmt='shfmt -l -w .'                       # => shfmt: Format all shell scripts in current directory (recursive)
+
+# ------------------------------------------
 # Windows
 # ------------------------------------------
 alias win='explorer.exe .'                         # => Open current WSL dir in 

@@ -7,12 +7,13 @@ bootstrap-deps() { # => System: Bootstrap missing dependencies for bash aliases 
     local pip_deps=()
     local missing_complex_deps=()
 
-    # 1. Standard APT Packages
+# 1. Standard APT Packages
     command -v jq >/dev/null 2>&1 || apt_deps+=("jq")
     command -v fzf >/dev/null 2>&1 || apt_deps+=("fzf")
     command -v rg >/dev/null 2>&1 || apt_deps+=("ripgrep")
     command -v batcat >/dev/null 2>&1 || apt_deps+=("bat")
     command -v rsync >/dev/null 2>&1 || apt_deps+=("rsync")
+    command -v shfmt >/dev/null 2>&1 || apt_deps+=("shfmt")
     
     # 2. Python Packages (Linters & Security)
     command -v ruff >/dev/null 2>&1 || pip_deps+=("ruff")
