@@ -1,0 +1,67 @@
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# IDE & Editor folders
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# VSCode Extension Pack Generator Outputs
+vscode-extension-pack/*.vsix
+vscode-extension-pack/ext_list.json
+vscode-extension-pack/package.tmp.json
+
+# Bitbucket Template Generator Outputs
+bitbucket-templates/cloud-function-template/
+__pycache__/
+
+# Python Virtual Environments
+venv/
+.venv/
+env/
+.env
+
+# ---------------------------------------------------
+# NEW ADDITIONS BELOW
+# ---------------------------------------------------
+
+# Private / Local Dotfile Overrides
+# Add sensitive exports/aliases to a file named '99-private.sh' and it won't be committed
+*private*.sh
+*.local.sh
+*.local
+
+# Terminal & Shell History
+.bash_history
+.lesshst
+.wget-hsts
+.zsh_history
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+crash.log
+
+# Node & NPM
+node_modules/
+npm-debug.log
+yarn-error.log
+yarn.lock
+package-lock.json
+
+# Kubernetes & Cloud (Failsafe in case of accidental copying)
+.kube/
+.minikube/
