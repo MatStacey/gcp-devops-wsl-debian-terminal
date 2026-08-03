@@ -4,10 +4,6 @@
 alias cdv='cd ~/vcs' # => Change directory to ~/vcs
 alias cdvp='cd ~/vcs/personal' # => Change directory to ~/vcs/personal
 
-# ------------------------------------------
-# Bash Profile
-# ------------------------------------------
-alias reload='source ~/.bashrc' # => Open current WSL dir in 
 
 # ------------------------------------------
 # Shell Formatting
@@ -46,6 +42,12 @@ alias boot-run='./mvnw spring-boot:run'            # => Spring Boot: Run applica
 # Update & Upgrade
 # ------------------------------------------
 alias sys-update='sudo apt update && sudo apt upgrade' # => Updates Debian/Ubuntu packages
+
+# ------------------------------------------
+# Bash Profile
+# ------------------------------------------
+alias reload='source ~/.bashrc' # => Open current WSL dir in 
+alias sys-install-reload='sys-update;bootstrap-deps;reload' # => Update, Upgrade, Boostrap, Reload
 
 # ------------------------------------------
 # Modern CLI Replacements
