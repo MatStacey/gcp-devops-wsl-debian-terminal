@@ -22,7 +22,7 @@ alias yaml-format='yq -P'                          # => Pretty-print YAML stream
 # Java
 # ------------------------------------------
 alias mci='./mvnw clean install'                   # => Maven: Clean and Install
-alias boot-run='./mvnw spring-boot:run'            # => Spring Boot: Run application                              # => MyTools: List Aliases and Functions available in Terminal
+alias boot-run='./mvnw spring-boot:run'            # => Spring Boot: Run application
 
 # ------------------------------------------
 # Update & Upgrade
