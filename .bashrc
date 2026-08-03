@@ -105,3 +105,6 @@ if [ -d "$HOME/.bash.d" ]; then
     done
     unset f
 fi
+
+# Notify successful load (Green text, resets color afterwards)
+echo -e "\033[0;32m✅ Custom Bash Environment Loaded\033[0m"

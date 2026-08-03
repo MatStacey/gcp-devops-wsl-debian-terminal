@@ -117,25 +117,54 @@ gc-json() { # => Run gcloud command and output as formatted JSON
 }
 
 # ------------------------------------------
+# Native Config Parsing (Zero-Subshell)
+# ------------------------------------------
+__get_gcp_config_val() { # => Internal helper to read gcloud config files directly
+    local target_key="$1"
+    local gcp_active="default"
+    
+    # Determine the active configuration name
+    if [ -f "$HOME/.config/gcloud/active_config" ]; then
+        read -r gcp_active < "$HOME/.config/gcloud/active_config"
+    fi
+    
+    local gcp_config_file="$HOME/.config/gcloud/configurations/config_${gcp_active}"
+    
+    # Parse the config file line-by-line natively in Bash
+    if [ -f "$gcp_config_file" ]; then
+        while read -r key equal val; do
+            if [ "$key" = "$target_key" ]; then
+                echo "$val"
+                return 0
+            fi
+        done < "$gcp_config_file"
+    fi
+    return 1
+}
+
+# ------------------------------------------
 # Get Config Details
 # ------------------------------------------
 gc-get-user() { # => GCP: Print active user account
-    gcloud config get-value account
-}
-gc-get-project() { # => GCP: Print active project ID
-    gcloud config get-value project
+    __get_gcp_config_val "account"
 }
 
-gc-get-project-number() { # => GCP: Print active project Number
-    gcloud projects describe "$(gc-get-project)" --format="value(projectNumber)"
+gc-get-project() { # => GCP: Print active project ID
+    __get_gcp_config_val "project"
 }
 
 gc-get-region() { # => GCP: Print active compute region
-    gcloud config get-value compute/region
+    __get_gcp_config_val "region"
 }
 
 gc-get-zone() { # => GCP: Print active compute zone
-    gcloud config get-value compute/zone
+    __get_gcp_config_val "zone"
+}
+
+gc-get-project-number() { # => GCP: Print active project Number (API call required)
+    local project_id
+    project_id=$(gc-get-project)
+    [ -n "$project_id" ] && gcloud projects describe "$project_id" --format="value(projectNumber)"
 }
 
 gc-config() { # => GCP: List active configuration properties
@@ -143,16 +172,24 @@ gc-config() { # => GCP: List active configuration properties
 }
 
 gc-org-policies() { # => GCP: List org policies for active project
-    gcloud alpha resource-manager org-policies list --project="$(gc-get-project)"
+    local project_id
+    project_id=$(gc-get-project)
+    [ -n "$project_id" ] && gcloud alpha resource-manager org-policies list --project="$project_id"
 }
 
 # ------------------------------------------
 # ENV Variables
 # ------------------------------------------
 gc-export-vars() { # => GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell
-    export PROJECT_ID=$(gcloud config get-value core/project)
-    export PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
-    echo "Exported PROJECT_ID=${PROJECT_ID} and PROJECT_NUMBER=${PROJECT_NUMBER}"
+    export PROJECT_ID=$(gc-get-project)
+    
+    if [ -n "$PROJECT_ID" ]; then
+        # Project number still requires an API call as it is not cached locally
+        export PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
+        echo "✅ Exported PROJECT_ID=${PROJECT_ID} and PROJECT_NUMBER=${PROJECT_NUMBER}"
+    else
+        echo "🚨 Error: Could not determine active project ID from local config."
+    fi
 }
 
 # ------------------------------------------

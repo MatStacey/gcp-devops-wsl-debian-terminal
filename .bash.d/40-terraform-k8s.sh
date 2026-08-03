@@ -9,17 +9,25 @@ terraform() { # => Terraform wrapper (preserves args)
     echo "+ terraform $*"
     command terraform "$@"
 }
+
 kubectl() { # => Kubectl wrapper (preserves args)
     echo "+ kubectl $*" >&2
     command kubectl "$@"
 }
-tf-validate-all() { # => Terraform: Recursively validate all Terraform directories
-    find terraform/ -type f -name "*.tf" -exec dirname {} \; | sort -u | while read dir; do
-        echo -e "\n🔍 Validating $dir..."
-        terraform -chdir="$dir" init -backend=false > /dev/null 2>&1
-        terraform -chdir="$dir" validate
-    done
+
+tf-validate-all() { # => Terraform: Recursively validate and scan all Terraform directories
+    find terraform/ -type f -name "*.tf" -exec dirname {} \; | sort -u | xargs -I {} -P 8 bash -c '
+        echo -e "\n🔍 Validating {}..."
+        terraform -chdir="{}" init -backend=false > /dev/null 2>&1
+        if terraform -chdir="{}" validate; then
+            echo -e "🛡️ Scanning {} with Checkov..."
+            checkov -d "{}" --framework terraform --quiet
+        else
+            echo -e "🚨 Validation failed for {}"
+        fi
+    '
 }
 
-if command -v kubectl >/dev/null 2>&1; then source <(kubectl completion bash); fi
+# Bypass the custom kubectl wrapper when generating completions to prevent terminal echo
+if command -v kubectl >/dev/null 2>&1; then source <(command kubectl completion bash); fi
 if command -v terraform >/dev/null 2>&1; then complete -C "$(which terraform)" terraform; fi

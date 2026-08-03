@@ -1,7 +1,19 @@
 # ------------------------------------------
+# Navigation
+# ------------------------------------------
+alias cdv='cd ~/vcs' # => Change directory to ~/vcs
+alias cdvp='cd ~/vcs/personal' # => Change directory to ~/vcs/personal
+
+# ------------------------------------------
+# Bash Profile
+# ------------------------------------------
+alias reload='source ~/.bashrc' # => Open current WSL dir in 
+
+# ------------------------------------------
 # Windows
 # ------------------------------------------
-alias win='explorer.exe .'                         # => Open current WSL dir in Windows Explorer
+alias win='explorer.exe .'                         # => Open current WSL dir in 
+alias winv='explorer.exe "$(wslpath -w ~/vcs)"'     # => Open ~/vcs Windows Explorer
 alias clip='clip.exe'                              # => Pipe output to Windows clipboard (e.g. cat file | clip)
 
 # ------------------------------------------
@@ -11,6 +23,7 @@ alias venv-make='python3 -m venv venv && source venv/bin/activate' # => Create &
 alias venv-up='source venv/bin/activate'           # => Activate existing Python venv
 alias pip-save='pip freeze > requirements.txt'     # => Save pip requirements
 alias pip-load='pip install -r requirements.txt'   # => Install pip requirements
+alias ruff-fmt='ruff check --select I --fix . && ruff format .' # => Ruff: Format Python files and imports in current directory (recursive)
 
 # ------------------------------------------
 # Data Serializaton 
@@ -50,3 +63,4 @@ alias rg='rg --smart-case --hidden --glob "!.git/*"' # => rg: Search with smart 
 # Custom Tools
 # ------------------------------------------
 alias mt='mytools'   
+
