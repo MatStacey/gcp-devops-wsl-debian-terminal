@@ -1,17 +1,17 @@
 # ⚡ Custom Developer Terminal Setup (Bash / WSL2)
 
-A highly optimized, modular, and context-aware Bash environment designed for Cloud & DevOps engineers[cite: 2]. 
+A highly optimized, modular, and context-aware Bash environment designed for Cloud & DevOps engineers. 
 
-Built specifically for WSL2 and Debian/Ubuntu systems, this setup provides a zero-lag dynamic prompt with clickable hyperlinks, instant state visualization for Git and Google Cloud (GCP), and a rich suite of automation aliases[cite: 2].
+Built specifically for WSL2 and Debian/Ubuntu systems, this setup provides a zero-lag dynamic prompt with clickable hyperlinks, instant state visualization for Git and Google Cloud (GCP), and a rich suite of automation aliases.
 
 ## ✨ Key Features
 
-* **Modular Architecture:** No more monolithic `.bashrc`. Configurations are logically split into `~/.bash.d/` files (Environment, Aliases, GCP, DevOps, Git) and loaded automatically[cite: 2].
-* **Zero-Lag Dynamic Prompt:** Reads local configuration files instead of running blocking CLI commands, ensuring your prompt renders instantly even in massive repositories or complex cloud setups[cite: 2].
-* **Modern CLI Replacements:** Integrates Rust-based alternatives for speed and usability, including `eza` (replaces `ls`), `batcat` (replaces `cat`), and `ripgrep` / `rg` (replaces `grep`)[cite: 2].
-* **Supercharged History:** Retains up to 100,000 history entries (`HISTSIZE=100000`), ignores duplicates, and logs command execution times using `HISTTIMEFORMAT="%F %T "`[cite: 2].
-* **Fuzzy Finding & Smart Navigation:** Features built-in `zoxide` support for instantaneous directory jumping, and interactive `fzf` prompt switching for GCP projects (`gc-switch`)[cite: 2].
-* **Built-in Self-Discovery:** Forget memorizing aliases. Type `mt` (mytools) in the terminal to instantly print a categorized list of all available custom functions and aliases[cite: 2].
+* **Modular Architecture:** No more monolithic `.bashrc`. Configurations are logically split into `~/.bash.d/` files (Environment, Aliases, GCP, DevOps, Git) and loaded automatically.
+* **Zero-Lag Dynamic Prompt:** Reads local configuration files instead of running blocking CLI commands, ensuring your prompt renders instantly even in massive repositories or complex cloud setups.
+* **Modern CLI Replacements:** Integrates Rust-based alternatives for speed and usability, including `eza` (replaces `ls`), `batcat` (replaces `cat`), and `ripgrep` / `rg` (replaces `grep`).
+* **Supercharged History:** Retains up to 100,000 history entries (`HISTSIZE=100000`), ignores duplicates, and logs command execution times using `HISTTIMEFORMAT="%F %T "`.
+* **Fuzzy Finding & Smart Navigation:** Features built-in `zoxide` support for instantaneous directory jumping, and interactive `fzf` prompt switching for GCP projects (`gc-switch`).
+* **Built-in Self-Discovery:** Forget memorizing aliases. Type `mt` (mytools) in the terminal to instantly print a categorized list of all available custom functions and aliases.
 
 ---
 
