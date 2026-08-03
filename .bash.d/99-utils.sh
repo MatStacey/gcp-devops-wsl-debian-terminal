@@ -1,3 +1,6 @@
+# ------------------------------------------
+# Environment & Navigation
+# ------------------------------------------
 # ~/.bash.d/99-utils.sh
 
 bootstrap-deps() { # => System: Bootstrap missing dependencies for bash aliases (Debian/WSL)
@@ -7,7 +10,7 @@ bootstrap-deps() { # => System: Bootstrap missing dependencies for bash aliases 
     local pip_deps=()
     local missing_complex_deps=()
 
-# 1. Standard APT Packages
+    # 1. Standard APT Packages
     command -v jq >/dev/null 2>&1 || apt_deps+=("jq")
     command -v fzf >/dev/null 2>&1 || apt_deps+=("fzf")
     command -v rg >/dev/null 2>&1 || apt_deps+=("ripgrep")
@@ -70,14 +73,12 @@ mytools() { # => List all custom shell aliases and functions grouped by category
     echo "=========================================================="
     echo "   My Custom Bash Tools"
     echo "=========================================================="
-    
     awk -f "$HOME/.bash.d/mytools.awk" "$HOME/.bash.d/"*.sh
-    
     echo "=========================================================="
 }
 
 # ================================================================================#
-#                                EXPORT UTILITIES                                 #
+#                                LLM EXPORT UTILITIES                         #
 # ================================================================================#
 
 __vcs_core_export() { # Internal DRY helper for repository exports
@@ -111,21 +112,21 @@ __vcs_core_export() { # Internal DRY helper for repository exports
     explorer.exe "$(wslpath -w "$(dirname "$export_file")")"
 }
 
-vcs-tf-export() { # => Exports local TF codebase into ~/vcs/personal/exports/tf-repo-export.txt
+tf-export() { # => Exports local TF codebase into ~/vcs/personal/exports/tf-repo-export.txt
     __vcs_core_export \
         "$HOME/vcs/personal/exports/tf-repo-export.txt" \
         "\.(tf|sh|ya?ml|json|md)$" \
         "(secret|token|credential|pass|key|rsa|env|\.terraform|lock\.hcl)"
 }
 
-vcs-bash-export() { # => Exports local .sh files into ~/vcs/personal/exports/bash-export.txt
+bash-export() { # => Exports local .sh files into ~/vcs/personal/exports/bash-export.txt
     __vcs_core_export \
         "$HOME/vcs/personal/exports/bash-export.txt" \
         "\.sh$" \
         "(secret|token|credential|pass|key|rsa|env)"
 }
 
-vcs-gcf-export() { # => Exports Python GCF codebase into ~/vcs/personal/exports/gcf-repo-export.txt
+gcf-export() { # => Exports Python GCF codebase into ~/vcs/personal/exports/gcf-repo-export.txt
     __vcs_core_export \
         "$HOME/vcs/personal/exports/gcf-repo-export.txt" \
         "\.(py|tf|sh|ya?ml|json|toml|md|properties|txt)$" \

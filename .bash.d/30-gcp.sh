@@ -5,23 +5,23 @@
 # ================================================================================#
 
 # ------------------------------------------
-# Project
+# GCP: Config & Auth
 # ------------------------------------------
 alias gccp="gc-set-project"                            # => GCP: Legacy shortcut to set project
 
 # ------------------------------------------
-# GCE
+# GCP: Resources & Services
 # ------------------------------------------
-alias gc-vms='gcloud compute instances list'           # => Compute: List all VM instances
-alias gc-ssh='gcloud compute ssh'                      # => Compute: SSH into an instance [Usage: gc-ssh <vm-name>]
+alias gce-ls='gcloud compute instances list'           # => Compute: List all VM instances
+alias gce-ssh='gcloud compute ssh'                      # => Compute: SSH into an instance [Usage: gce-ssh <vm-name>]
 
 # ------------------------------------------
-# GCS
+# GCP: Resources & Services
 # ------------------------------------------
 alias gcs-ls='gcloud storage ls'                       # => GCS: List buckets or contents [Usage: gcs-ls gs://bucket]
 
 # ------------------------------------------
-# List Resources
+# GCP: Resources & Services
 # ------------------------------------------
 alias gc-iam-ls='gcloud iam service-accounts list'     # => IAM: List service accounts in active project
 alias gcf-ls='gcloud functions list'                   # => Functions: List Cloud Run Functions
@@ -37,7 +37,7 @@ alias gc-ar-ls='gcloud artifacts repositories list'    # => Artifacts: List Arti
 # ================================================================================#
 
 # ------------------------------------------
-# GCloud Update
+# GCP: Config & Auth
 # ------------------------------------------
 gc-update() { # => GCP: Update Google Cloud CLI tools
     echo "Checking for Google Cloud CLI updates..."
@@ -49,7 +49,7 @@ gc-update() { # => GCP: Update Google Cloud CLI tools
 }
 
 # ------------------------------------------
-# Auth
+# GCP: Config & Auth
 # ------------------------------------------
 gc-login() { # => GCP: Login to user & application default
     gcloud auth login && gcloud auth application-default login
@@ -59,7 +59,7 @@ gc-login-adc() { # => GCP: Login to application default only
 }
 
 # ------------------------------------------
-# Project Switching
+# GCP: Config & Auth
 # ------------------------------------------
 gc-set-project() { # => GCP: Switch active project [Usage: gc-set-project <project_id>]
     gcloud config set project "$1"
@@ -72,35 +72,35 @@ gc-switch() { # => GCP: Interactive fuzzy project switcher using fzf
 }
 
 # ------------------------------------------
-# IAM
+# GCP: Resources & Services
 # ------------------------------------------
-gc-iam-policy() { # => IAM: View IAM policy for active project
+gc-iam-show() { # => IAM: View IAM policy for active project
     gcloud projects get-iam-policy "$(gc-get-project)" --format="table(bindings.role, bindings.members)"
 }
 
 # ------------------------------------------
-# Secret Manager
+# GCP: Resources & Services
 # ------------------------------------------
-gc-secret-read() { # => Secrets: Read latest payload of a secret [Usage: gc-secret-read <secret-name>]
+gc-sec-read() { # => Secrets: Read latest payload of a secret [Usage: gc-sec-read <secret-name>]
     gcloud secrets versions access latest --secret="$1"
 }
 
 # ------------------------------------------
-# Logging
+# GCP: Resources & Services
 # ------------------------------------------
 gcf-logs() { # => Functions: Tail last 50 logs of a function [Usage: gcf-logs <func-name>]
     gcloud functions logs read "$1" --limit=50
 }
 
 # ------------------------------------------
-# BigQuery
+# GCP: Resources & Services
 # ------------------------------------------
 bq-query() { # => BigQuery: Run standard SQL query [Usage: bq-query "SELECT..."]
     bq query --use_legacy_sql=false "$1"
 }
 
 # ------------------------------------------
-# Artifact Registry
+# GCP: Resources & Services
 # ------------------------------------------
 gc-ar-docker() { # => Artifacts: Configure Docker auth [Usage: gc-ar-docker <region>]
     gcloud auth configure-docker "$1-docker.pkg.dev"
@@ -110,7 +110,7 @@ gc-ps-pull() { # => PubSub: Pull and auto-ack one message [Usage: gc-ps-pull <su
 }
 
 # ------------------------------------------
-# Output Format
+# GCP: Resources & Services
 # ------------------------------------------
 gc-json() { # => Run gcloud command and output as formatted JSON
     gcloud "$@" --format="json" | jq '.'
@@ -119,7 +119,7 @@ gc-json() { # => Run gcloud command and output as formatted JSON
 # ------------------------------------------
 # Native Config Parsing (Zero-Subshell)
 # ------------------------------------------
-__get_gcp_config_val() { # => Internal helper to read gcloud config files directly
+__get_gcp_config_val() { # Internal helper to read gcloud config files directly
     local target_key="$1"
     local gcp_active="default"
     
@@ -143,7 +143,7 @@ __get_gcp_config_val() { # => Internal helper to read gcloud config files direct
 }
 
 # ------------------------------------------
-# Get Config Details
+# GCP: Config & Auth
 # ------------------------------------------
 gc-get-user() { # => GCP: Print active user account
     __get_gcp_config_val "account"
@@ -178,7 +178,7 @@ gc-org-policies() { # => GCP: List org policies for active project
 }
 
 # ------------------------------------------
-# ENV Variables
+# GCP: Config & Auth
 # ------------------------------------------
 gc-export-vars() { # => GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell
     export PROJECT_ID=$(gc-get-project)
@@ -198,11 +198,11 @@ gc-export-vars() { # => GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to sh
 _gc_set_project_completions() { COMPREPLY=( $(compgen -W "$(gcloud projects list --format="value(projectId)" 2>/dev/null)" -- "${COMP_WORDS[COMP_CWORD]}") ); }
 complete -F _gc_set_project_completions gc-set-project gccp
 
-_gc_secret_read_completions() { COMPREPLY=( $(compgen -W "$(gcloud secrets list --format="value(name)" 2>/dev/null)" -- "${COMP_WORDS[COMP_CWORD]}") ); }
-complete -F _gc_secret_read_completions gc-secret-read
+_gc_sec_read_completions() { COMPREPLY=( $(compgen -W "$(gcloud secrets list --format="value(name)" 2>/dev/null)" -- "${COMP_WORDS[COMP_CWORD]}") ); }
+complete -F _gc_sec_read_completions gc-sec-read
 
-_gc_ssh_completions() { COMPREPLY=( $(compgen -W "$(gcloud compute instances list --format="value(name)" 2>/dev/null)" -- "${COMP_WORDS[COMP_CWORD]}") ); }
-complete -F _gc_ssh_completions gc-ssh
+_gce_ssh_completions() { COMPREPLY=( $(compgen -W "$(gcloud compute instances list --format="value(name)" 2>/dev/null)" -- "${COMP_WORDS[COMP_CWORD]}") ); }
+complete -F _gce_ssh_completions gce-ssh
 
 _gcf_logs_completions() { COMPREPLY=( $(compgen -W "$(gcloud functions list --format="value(name)" 2>/dev/null)" -- "${COMP_WORDS[COMP_CWORD]}") ); }
 complete -F _gcf_logs_completions gcf-logs

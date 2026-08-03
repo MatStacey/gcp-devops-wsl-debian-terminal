@@ -1,3 +1,6 @@
+# ------------------------------------------
+# Version Control (Git)
+# ------------------------------------------
 git-acp() { # => Git: Add all files, commit with message, and push [Usage: git-acp "commit message"]
     if [ -z "$1" ]; then
         echo "🚨 Error: Commit message cannot be empty."
@@ -9,7 +12,7 @@ git-acp() { # => Git: Add all files, commit with message, and push [Usage: git-a
     git push
 }
 
-git-chk-feat() { # => Git: Create and checkout a new feature branch [Usage: git-chk-feat CCON-123]
+git-feat() { # => Git: Create and checkout a new feature branch [Usage: git-feat CCON-123]
     if [ -z "$1" ]; then
         echo "🚨 Error: Jira ID / branch suffix cannot be empty."
         echo "Usage: git-chk-feat CCON-123"
@@ -41,7 +44,7 @@ gitc() { # => Git: Clone a repository into ~/vcs/ and cd into it [Usage: gitc <u
     fi
 }
 
-vcs-sync-bash() { # => Git: Sync local bash configs to terminal repo and push [Usage: vcs-sync-bash "optional msg"]
+bash-sync() { # => Git: Sync local bash configs to terminal repo and push [Usage: bash-sync "optional msg"]
     local repo_dir="$HOME/vcs/personal/gcp-devops-wsl-debian-terminal"
     
     # Use the first argument as the commit message, default to "script updates" if empty
