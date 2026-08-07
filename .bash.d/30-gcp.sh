@@ -7,7 +7,7 @@
 # ------------------------------------------
 # GCP: Config & Auth
 # ------------------------------------------
-alias gccp="gc-set-project" # => GCP: Legacy shortcut to set project
+alias gcpp="gcp-set-project" # => GCP: Legacy shortcut to set project
 
 # ------------------------------------------
 # GCP: Resources & Services
@@ -23,98 +23,18 @@ alias gcs-ls='gcloud storage ls' # => GCS: List buckets or contents [Usage: gcs-
 # ------------------------------------------
 # GCP: Resources & Services
 # ------------------------------------------
-alias gc-iam-ls='gcloud iam service-accounts list'  # => IAM: List service accounts in active project
-alias gcf-ls='gcloud functions list'                # => Functions: List Cloud Run Functions
-alias gc-ps-topics='gcloud pubsub topics list'      # => PubSub: List topics
-alias gc-ps-subs='gcloud pubsub subscriptions list' # => PubSub: List subscriptions
+alias gcl-iam-ls='gcloud iam service-accounts list'  # => IAM: List service accounts in active project
+alias gcp-crf-ls='gcloud functions list'                # => Functions: List Cloud Run Functions
+alias gcl-ps-topics='gcloud pubsub topics list'      # => PubSub: List topics
+alias gcl-ps-subs='gcloud pubsub subscriptions list' # => PubSub: List subscriptions
 alias bq-ls='bq ls'                                 # => BigQuery: List datasets in project
-alias gc-ar-ls='gcloud artifacts repositories list' # => Artifacts: List Artifact Registry repos
+alias gcl-gar-ls='gcloud artifacts repositories list' # => Artifacts: List Artifact Registry repos
 
 # ================================================================================#
 #                                                                                 #
 #                                   FUNCTIONS                                     #
 #                                                                                 #
 # ================================================================================#
-
-# ------------------------------------------
-# GCP: Config & Auth
-# ------------------------------------------
-gc-update() { # => GCP: Update Google Cloud CLI tools
-	echo "Checking for Google Cloud CLI updates..."
-	if command -v apt-get >/dev/null && dpkg -l | grep -q "google-cloud-cli"; then
-		sudo apt-get update && sudo apt-get install --only-upgrade google-cloud-cli
-	else
-		gcloud components update
-	fi
-}
-
-# ------------------------------------------
-# GCP: Config & Auth
-# ------------------------------------------
-gc-login() { # => GCP: Login to user & application default
-	gcloud auth login && gcloud auth application-default login
-}
-gc-login-adc() { # => GCP: Login to application default only
-	gcloud auth application-default login
-}
-
-# ------------------------------------------
-# GCP: Config & Auth
-# ------------------------------------------
-gc-set-project() { # => GCP: Switch active project [Usage: gc-set-project <project_id>]
-	gcloud config set project "$1"
-}
-
-gc-switch() { # => GCP: Interactive fuzzy project switcher using fzf
-	local project
-	project=$(gcloud projects list --format="value(projectId)" | fzf --prompt="Select GCP Project > ")
-	[ -n "$project" ] && gc-set-project "$project"
-}
-
-# ------------------------------------------
-# GCP: Resources & Services
-# ------------------------------------------
-gc-iam-show() { # => IAM: View IAM policy for active project
-	gcloud projects get-iam-policy "$(gc-get-project)" --format="table(bindings.role, bindings.members)"
-}
-
-# ------------------------------------------
-# GCP: Resources & Services
-# ------------------------------------------
-gc-sec-read() { # => Secrets: Read latest payload of a secret [Usage: gc-sec-read <secret-name>]
-	gcloud secrets versions access latest --secret="$1"
-}
-
-# ------------------------------------------
-# GCP: Resources & Services
-# ------------------------------------------
-gcf-logs() { # => Functions: Tail last 50 logs of a function [Usage: gcf-logs <func-name>]
-	gcloud functions logs read "$1" --limit=50
-}
-
-# ------------------------------------------
-# GCP: Resources & Services
-# ------------------------------------------
-bq-query() { # => BigQuery: Run standard SQL query [Usage: bq-query "SELECT..."]
-	bq query --use_legacy_sql=false "$1"
-}
-
-# ------------------------------------------
-# GCP: Resources & Services
-# ------------------------------------------
-gc-ar-docker() { # => Artifacts: Configure Docker auth [Usage: gc-ar-docker <region>]
-	gcloud auth configure-docker "$1-docker.pkg.dev"
-}
-gc-ps-pull() { # => PubSub: Pull and auto-ack one message [Usage: gc-ps-pull <sub-name>]
-	gcloud pubsub subscriptions pull "$1" --auto-ack --limit=1
-}
-
-# ------------------------------------------
-# GCP: Resources & Services
-# ------------------------------------------
-gc-json() { # => Run gcloud command and output as formatted JSON
-	gcloud "$@" --format="json" | jq '.'
-}
 
 # ------------------------------------------
 # Native Config Parsing (Zero-Subshell)
@@ -145,33 +65,42 @@ __get_gcp_config_val() { # Internal helper to read gcloud config files directly
 # ------------------------------------------
 # GCP: Config & Auth
 # ------------------------------------------
-gc-get-user() { # => GCP: Print active user account
+gcl-update() { # => GCP: Update Google Cloud CLI tools
+	echo "Checking for Google Cloud CLI updates..."
+	if command -v apt-get >/dev/null && dpkg -l | grep -q "google-cloud-cli"; then
+		sudo apt-get update && sudo apt-get install --only-upgrade google-cloud-cli
+	else
+		gcloud components update
+	fi
+}
+
+gcl-get-user() { # => GCP: Print active user account
 	__get_gcp_config_val "account"
 }
 
-gc-get-project() { # => GCP: Print active project ID
+gcl-get-project() { # => GCP: Print active project ID
 	__get_gcp_config_val "project"
 }
 
-gc-get-region() { # => GCP: Print active compute region
+gcl-get-region() { # => GCP: Print active compute region
 	__get_gcp_config_val "region"
 }
 
-gc-get-zone() { # => GCP: Print active compute zone
+gcl-get-zone() { # => GCP: Print active compute zone
 	__get_gcp_config_val "zone"
 }
 
-gc-get-project-number() { # => GCP: Print active project Number (API call required)
+gcl-get-project-number() { # => GCP: Print active project Number (API call required)
 	local project_id
 	project_id=$(gc-get-project)
 	[ -n "$project_id" ] && gcloud projects describe "$project_id" --format="value(projectNumber)"
 }
 
-gc-config() { # => GCP: List active configuration properties
+gcl-config() { # => GCP: List active configuration properties
 	gcloud config list "$@"
 }
 
-gc-org-policies() { # => GCP: List org policies for active project
+gcl-org-policies() { # => GCP: List org policies for active project
 	local project_id
 	project_id=$(gc-get-project)
 	[ -n "$project_id" ] && gcloud alpha resource-manager org-policies list --project="$project_id"
@@ -180,7 +109,71 @@ gc-org-policies() { # => GCP: List org policies for active project
 # ------------------------------------------
 # GCP: Config & Auth
 # ------------------------------------------
-gc-export-vars() { # => GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell
+gcp-login() { # => GCP: Login to user & application default
+	gcloud auth login && gcloud auth application-default login
+}
+gcp-login-adc() { # => GCP: Login to application default only
+	gcloud auth application-default login
+}
+gcp-set-project() { # => GCP: Switch active project [Usage: gcp-set-project <project_id>]
+	gcloud config set project "$1"
+}
+
+gcp-switch() { # => GCP: Interactive fuzzy project switcher using fzf
+	local project
+	project=$(gcloud projects list --format="value(projectId)" | fzf --prompt="Select GCP Project > ")
+	[ -n "$project" ] && gc-set-project "$project"
+}
+
+# ------------------------------------------
+# GCP: Resources & Services
+# ------------------------------------------
+gcp-iam-show() { # => IAM: View IAM policy for active project
+	gcloud projects get-iam-policy "$(gc-get-project)" --format="table(bindings.role, bindings.members)"
+}
+
+# ------------------------------------------
+# GCP: Resources & Services
+# ------------------------------------------
+gcp-get-secret() { # => Secrets: Read latest payload of a secret [Usage: gcp-get-secret <secret-name>]
+	gcloud secrets versions access latest --secret="$1"
+}
+
+# ------------------------------------------
+# GCP: Resources & Services
+# ------------------------------------------
+gcp-crf-logs() { # => Functions: Tail last 50 logs of a function [Usage: gcp-crf-logs <func-name>]
+	gcloud functions logs read "$1" --limit=50
+}
+
+# ------------------------------------------
+# GCP: Resources & Services
+# ------------------------------------------
+bq-query() { # => BigQuery: Run standard SQL query [Usage: bq-query "SELECT..."]
+	bq query --use_legacy_sql=false "$1"
+}
+
+# ------------------------------------------
+# GCP: Resources & Services
+# ------------------------------------------
+gcp-gar-docker() { # => Artifacts: Configure Docker auth [Usage: gcp-gar-docker <region>]
+	gcloud auth configure-docker "$1-docker.pkg.dev"
+}
+gcp-ps-pull() { # => PubSub: Pull and auto-ack one message [Usage: gcp-ps-pull <sub-name>]
+	gcloud pubsub subscriptions pull "$1" --auto-ack --limit=1
+}
+
+# ------------------------------------------
+# GCP: Resources & Services
+# ------------------------------------------
+gcl-as-json() { # => Run gcloud command and output as formatted JSON
+	gcloud "$@" --format="json" | jq '.'
+}
+
+# ------------------------------------------
+# GCP: Config & Auth
+# ------------------------------------------
+gcl-export-vars() { # => GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell
 	export PROJECT_ID=$(gc-get-project)
 
 	if [ -n "$PROJECT_ID" ]; then

@@ -12,7 +12,7 @@ git-acp() { # => Git: Add all files, commit with message, and push [Usage: git-a
 	git push
 }
 
-git-feat() { # => Git: Create and checkout a new feature branch [Usage: git-feat CCON-123]
+git-feature() { # => Git: Create and checkout a new feature branch [Usage: git-feature CCON-123]
 	if [ -z "$1" ]; then
 		echo "🚨 Error: Jira ID / branch suffix cannot be empty."
 		echo "Usage: git-chk-feat CCON-123"
@@ -21,30 +21,34 @@ git-feat() { # => Git: Create and checkout a new feature branch [Usage: git-feat
 	git checkout -b "feature/$1"
 }
 
-gitc() { # => Git: Clone a repository into ~/vcs/ and cd into it [Usage: gitc <url>]
-	if [ -z "$1" ]; then
-		echo "🚨 Error: Repository URL cannot be empty."
-		echo "Usage: gitc <repo-url>"
-		return 1
-	fi
+git-vscode() { # => Git: Clone a repository into ~/vcs/, cd into it, and open in VSCode [Usage: git-vscode <url>]
+  if [ -z "$1" ]; then
+    echo "🚨 Error: Repository URL cannot be empty."
+    echo "Usage: gitc <repo-url>"
+    return 1
+  fi
 
-	mkdir -p "$HOME/vcs"
+  mkdir -p "$HOME/vcs"
 
-	# Extract the repository name from the URL (e.g. "ri-ccon-lreach-rproxy")
-	local repo_name
-	repo_name=$(basename "$1" .git)
+  # Extract the repository name from the URL (e.g. "ri-ccon-lreach-rproxy")
+  local repo_name
+  repo_name=$(basename "$1" .git)
 
-	echo "📥 Cloning $repo_name to $HOME/vcs/..."
+  echo "📥 Cloning $repo_name to $HOME/vcs/..."
 
-	if git clone "$1" "$HOME/vcs/$repo_name"; then
-		cd "$HOME/vcs/$repo_name" || return
-		echo "✅ Moved to $(pwd)"
-	else
-		echo "🚨 Error: Clone failed."
-	fi
+  if git clone "$1" "$HOME/vcs/$repo_name"; then
+    cd "$HOME/vcs/$repo_name" || return
+    echo "✅ Moved to $(pwd)"
+    
+    # Open the current directory in a new VSCode window
+    echo "🚀 Opening in VSCode..."
+    code -n .
+  else
+    echo "🚨 Error: Clone failed."
+  fi
 }
 
-bash-sync() { # => Git: Sync local bash configs to terminal repo and push [Usage: bash-sync "optional msg"]
+git-bashd-sync() { # => Git: Sync local bash configs to terminal repo and push [Usage: git-bashd-sync "optional msg"]
 	local repo_dir="$HOME/vcs/personal/gcp-devops-wsl-debian-terminal"
 
 	# Use the first argument as the commit message, default to "script updates" if empty

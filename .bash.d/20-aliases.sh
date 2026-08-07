@@ -1,8 +1,8 @@
 # ------------------------------------------
 # Environment & Navigation
 # ------------------------------------------
-alias cdv='cd ~/vcs'           # => Change directory to ~/vcs
-alias cdvp='cd ~/vcs/personal' # => Change directory to ~/vcs/personal
+alias cdvcs='cd ~/vcs'           # => Change directory to ~/vcs
+alias cdvcsp='cd ~/vcs/personal' # => Change directory to ~/vcs/personal
 
 # ------------------------------------------
 # Development & Build Tools
@@ -13,8 +13,8 @@ alias sh-fmt='shfmt -l -w .' # => shfmt: Format all shell scripts in current dir
 # Environment & Navigation
 # ------------------------------------------
 alias win='explorer.exe .'                                        # => Open current WSL dir in
-alias winv='explorer.exe "$(wslpath -w ~/vcs)"'                   # => Open ~/vcs Windows Explorer
-alias winex='explorer.exe "$(wslpath -w ~/vcs/personal/exports)"' # => Open ~/vcs Windows Explorer
+alias win-vcs='explorer.exe "$(wslpath -w ~/vcs)"'                   # => Open ~/vcs Windows Explorer
+alias win-export='explorer.exe "$(wslpath -w ~/vcs/personal/exports)"' # => Open ~/vcs Windows Explorer
 alias clip='clip.exe'                                             # => Pipe output to Windows clipboard (e.g. cat file | clip)
 
 # ------------------------------------------
