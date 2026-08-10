@@ -9,7 +9,7 @@ export C_RESET=$'\e[0m'
 THEME_FILE="$HOME/.bash.d/config/themes/${BASH_THEME:-default}.sh"
 
 if [ -f "$THEME_FILE" ]; then
-	source "$THEME_FILE"
+  source "$THEME_FILE"
 else
-	source "$HOME/.bash.d/config/themes/default.sh"
+  source "$HOME/.bash.d/config/themes/default.sh"
 fi

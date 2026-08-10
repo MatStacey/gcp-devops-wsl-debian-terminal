@@ -3,10 +3,10 @@
 # ------------------------------------------
 
 __win_explorer_focus() {
-	local target_path
-	target_path=$(wslpath -m "$1")
+  local target_path
+  target_path=$(wslpath -m "$1")
 
-	local ps_script="
+  local ps_script="
 	\$path = '${target_path}'.TrimEnd([char]47);
 	\$shell = New-Object -ComObject Shell.Application;
 	\$win = @(\$shell.Windows() | Where-Object { 
@@ -22,90 +22,90 @@ __win_explorer_focus() {
 		Invoke-Item -LiteralPath \$winPath; 
 	}"
 
-	powershell.exe -NoProfile -Command "$ps_script" >/dev/null 2>&1
+  powershell.exe -NoProfile -Command "$ps_script" > /dev/null 2>&1
 }
 
 __vcs_core_export() {
-	local export_prefix="$1"
-	local allow_regex="$2"
-	local block_regex="$3"
-	local root_dir
-	root_dir=$(basename "$PWD")
+  local export_prefix="$1"
+  local allow_regex="$2"
+  local block_regex="$3"
+  local root_dir
+  root_dir=$(basename "$PWD")
 
-	local timestamp
-	timestamp=$(date +"%d-%m-%Y_%H-%M-%S")
-	local target_dir="${AI_WORKSPACE_DIR}/context-exports/${root_dir}-exports"
-	mkdir -p "$target_dir"
+  local timestamp
+  timestamp=$(date +"%d-%m-%Y_%H-%M-%S")
+  local target_dir="${AI_WORKSPACE_DIR}/context-exports/${root_dir}-exports"
+  mkdir -p "$target_dir"
 
-	local patch=0
-	while [[ -f "${target_dir}/${export_prefix}-${timestamp}-v1.0.${patch}.txt" ]]; do
-		patch=$((patch + 1))
-	done
+  local patch=0
+  while [[ -f "${target_dir}/${export_prefix}-${timestamp}-v1.0.${patch}.txt" ]]; do
+    patch=$((patch + 1))
+  done
 
-	local export_file="${target_dir}/${export_prefix}-${timestamp}-v1.0.${patch}.txt"
-	echo "Compiling codebase into ${export_file}..."
-	>"$export_file"
+  local export_file="${target_dir}/${export_prefix}-${timestamp}-v1.0.${patch}.txt"
+  echo "Compiling codebase into ${export_file}..."
+  > "$export_file"
 
-	find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" -print0 | while IFS= read -r -d '' file; do
-		local clean_file="${file#./}"
-		local lower_file="${clean_file,,}"
+  find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" -print0 | while IFS= read -r -d '' file; do
+    local clean_file="${file#./}"
+    local lower_file="${clean_file,,}"
 
-		if [[ "$lower_file" =~ \.(png|jpe?g|gif|ico|pdf|zip|tar|gz|mp4|mp3|wav|exe|dll|so|class|jar|bin|o|pyc|tfstate)$ ]]; then continue; fi
-		if [ -n "$allow_regex" ] && ! [[ "$lower_file" =~ $allow_regex ]]; then continue; fi
-		if [ -n "$block_regex" ] && [[ "$lower_file" =~ $block_regex ]]; then continue; fi
+    if [[ "$lower_file" =~ \.(png|jpe?g|gif|ico|pdf|zip|tar|gz|mp4|mp3|wav|exe|dll|so|class|jar|bin|o|pyc|tfstate)$ ]]; then continue; fi
+    if [ -n "$allow_regex" ] && ! [[ "$lower_file" =~ $allow_regex ]]; then continue; fi
+    if [ -n "$block_regex" ] && [[ "$lower_file" =~ $block_regex ]]; then continue; fi
 
-		echo "==> ./$clean_file <==" >>"$export_file"
-		cat "$file" >>"$export_file"
-		echo -e "\n" >>"$export_file"
-	done
+    echo "==> ./$clean_file <==" >> "$export_file"
+    cat "$file" >> "$export_file"
+    echo -e "\n" >> "$export_file"
+  done
 
-	local file_size=$(du -h "$export_file" | cut -f1)
-	echo "✅ Export saved to $export_file ($file_size)"
-	__win_explorer_focus "$target_dir"
+  local file_size=$(du -h "$export_file" | cut -f1)
+  echo "✅ Export saved to $export_file ($file_size)"
+  __win_explorer_focus "$target_dir"
 }
 
 #######################################
 # LLM: Exports all text/code files
 #######################################
 export-all() {
-	if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-		mt-help "${FUNCNAME[0]}"
-		return 0
-	fi
-	__vcs_core_export "all-repo-export" "" "${EXPORT_BLOCKLIST}"
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  __vcs_core_export "all-repo-export" "" "${EXPORT_BLOCKLIST}"
 }
 
 #######################################
 # LLM: Exports local TF codebase
 #######################################
 export-tf() {
-	if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-		mt-help "${FUNCNAME[0]}"
-		return 0
-	fi
-	__vcs_core_export "tf-repo-export" "\.(tf|sh|ya?ml|json|md)$" "${EXPORT_BLOCKLIST}"
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  __vcs_core_export "tf-repo-export" "\.(tf|sh|ya?ml|json|md)$" "${EXPORT_BLOCKLIST}"
 }
 
 #######################################
 # LLM: Exports local .sh files
 #######################################
 export-bash() {
-	if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-		mt-help "${FUNCNAME[0]}"
-		return 0
-	fi
-	__vcs_core_export "bash-export" "\.sh$" "${EXPORT_BLOCKLIST}"
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  __vcs_core_export "bash-export" "\.sh$" "${EXPORT_BLOCKLIST}"
 }
 
 #######################################
 # LLM: Exports Python GCF codebase
 #######################################
 export-crf() {
-	if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-		mt-help "${FUNCNAME[0]}"
-		return 0
-	fi
-	__vcs_core_export "gcf-repo-export" "\.(py|tf|sh|ya?ml|json|toml|md|properties|txt)$" "(secret|token|credential|pass|key|rsa|env|__pycache__|\.egg-info|test-reports|\.pyc$)"
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  __vcs_core_export "gcf-repo-export" "\.(py|tf|sh|ya?ml|json|toml|md|properties|txt)$" "(secret|token|credential|pass|key|rsa|env|__pycache__|\.egg-info|test-reports|\.pyc$)"
 }
 
 #######################################
@@ -114,73 +114,73 @@ export-crf() {
 #   cleanup-exports [-d <repo>
 #######################################
 cleanup-exports() {
-	if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-		mt-help "${FUNCNAME[0]}"
-		return 0
-	fi
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
 
-	local target_repo=""
-	local days=""
-	local base_dir="${AI_WORKSPACE_DIR}/context-exports"
+  local target_repo=""
+  local days=""
+  local base_dir="${AI_WORKSPACE_DIR}/context-exports"
 
-	local OPTIND opt
-	while getopts "d:o:" opt; do
-		case ${opt} in
-		d) target_repo="$OPTARG" ;;
-		o) days="$OPTARG" ;;
-		\?)
-			echo "Usage: cleanup-exports [-d <repo-name>] [-o <days>]" >&2
-			return 1
-			;;
-		esac
-	done
+  local OPTIND opt
+  while getopts "d:o:" opt; do
+    case ${opt} in
+      d) target_repo="$OPTARG" ;;
+      o) days="$OPTARG" ;;
+      \?)
+        echo "Usage: cleanup-exports [-d <repo-name>] [-o <days>]" >&2
+        return 1
+        ;;
+    esac
+  done
 
-	if [ ! -d "$base_dir" ]; then
-		echo "⚠️ Exports directory not found at $base_dir."
-		return 0
-	fi
+  if [ ! -d "$base_dir" ]; then
+    echo "⚠️ Exports directory not found at $base_dir."
+    return 0
+  fi
 
-	local target_dir="$base_dir"
-	if [ -n "$target_repo" ]; then
-		target_dir="${base_dir}/${target_repo}-exports"
-		if [ ! -d "$target_dir" ]; then
-			echo "⚠️ No exports found for repository '$target_repo'."
-			return 0
-		fi
-	fi
+  local target_dir="$base_dir"
+  if [ -n "$target_repo" ]; then
+    target_dir="${base_dir}/${target_repo}-exports"
+    if [ ! -d "$target_dir" ]; then
+      echo "⚠️ No exports found for repository '$target_repo'."
+      return 0
+    fi
+  fi
 
-	if [ -n "$days" ]; then
-		if ! [[ "$days" =~ ^[0-9]+$ ]]; then
-			echo "🚨 Error: The '-o' flag requires a numeric value (days)."
-			return 1
-		fi
-		echo "🧹 Pruning files older than $days days in ${target_dir}..."
-		find "$target_dir" -type f -mtime +"$days" -delete
-		find "$base_dir" -type d -empty -delete 2>/dev/null || true
-		echo "✅ Old exports pruned."
-	else
-		echo "🧹 Deleting all exports in ${target_dir}..."
-		rm -rf "${target_dir:?}"
-		[ -z "$target_repo" ] && mkdir -p "$base_dir"
-		echo "✅ Export cleanup complete."
-	fi
+  if [ -n "$days" ]; then
+    if ! [[ "$days" =~ ^[0-9]+$ ]]; then
+      echo "🚨 Error: The '-o' flag requires a numeric value (days)."
+      return 1
+    fi
+    echo "🧹 Pruning files older than $days days in ${target_dir}..."
+    find "$target_dir" -type f -mtime +"$days" -delete
+    find "$base_dir" -type d -empty -delete 2> /dev/null || true
+    echo "✅ Old exports pruned."
+  else
+    echo "🧹 Deleting all exports in ${target_dir}..."
+    rm -rf "${target_dir:?}"
+    [ -z "$target_repo" ] && mkdir -p "$base_dir"
+    echo "✅ Export cleanup complete."
+  fi
 }
 
 __async_auto_cleanup() {
-	if [[ $- != *i* ]]; then return; fi
+  if [[ $- != *i* ]]; then return; fi
 
-	if [ "$AUTO_CLEANUP_EXPORTS" = "true" ]; then
-		local days="${AUTO_CLEANUP_DAYS:-7}"
-		local base_dir="${AI_WORKSPACE_DIR}/context-exports"
+  if [ "$AUTO_CLEANUP_EXPORTS" = "true" ]; then
+    local days="${AUTO_CLEANUP_DAYS:-7}"
+    local base_dir="${AI_WORKSPACE_DIR}/context-exports"
 
-		if [ -d "$base_dir" ] && [[ "$days" =~ ^[0-9]+$ ]]; then
-			(
-				find "$base_dir" -type f -mtime +"$days" -delete 2>/dev/null
-				find "$base_dir" -type d -empty -delete 2>/dev/null
-			) &
-			disown
-		fi
-	fi
+    if [ -d "$base_dir" ] && [[ "$days" =~ ^[0-9]+$ ]]; then
+      (
+        find "$base_dir" -type f -mtime +"$days" -delete 2> /dev/null
+        find "$base_dir" -type d -empty -delete 2> /dev/null
+      ) &
+      disown
+    fi
+  fi
 }
 
 __async_auto_cleanup

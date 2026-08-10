@@ -9,25 +9,25 @@ ENV_CACHE="$HOME/.bash.d/config/.env.cache"
 YAML_TEMPLATE="$HOME/.bash.d/lib/templates/config.yaml.tpl"
 
 if [ ! -s "$CONFIG_FILE" ]; then
-	mkdir -p "$(dirname "$CONFIG_FILE")"
-	[ -f "$YAML_TEMPLATE" ] && cp "$YAML_TEMPLATE" "$CONFIG_FILE" || touch "$CONFIG_FILE"
+  mkdir -p "$(dirname "$CONFIG_FILE")"
+  [ -f "$YAML_TEMPLATE" ] && cp "$YAML_TEMPLATE" "$CONFIG_FILE" || touch "$CONFIG_FILE"
 fi
 
 if [ -f "$CONFIG_MANAGER" ]; then
-	if [ ! -f "$ENV_CACHE" ] || [ "$CONFIG_FILE" -nt "$ENV_CACHE" ]; then
-		python3 "$CONFIG_MANAGER" load-env >"$ENV_CACHE"
-	fi
-	source "$ENV_CACHE"
+  if [ ! -f "$ENV_CACHE" ] || [ "$CONFIG_FILE" -nt "$ENV_CACHE" ]; then
+    python3 "$CONFIG_MANAGER" load-env > "$ENV_CACHE"
+  fi
+  source "$ENV_CACHE"
 fi
 
 if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
-	unset GEMINI_API_KEY
-	echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-gemini-key \"your-api-key\"\e[0m"
+  unset GEMINI_API_KEY
+  echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-gemini-key \"your-api-key\"\e[0m"
 fi
 
 if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "null" ]]; then
-	unset CLAUDE_API_KEY
-	echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-claude-key \"your-api-key\"\e[0m"
+  unset CLAUDE_API_KEY
+  echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-claude-key \"your-api-key\"\e[0m"
 fi
 
 #######################################
@@ -43,12 +43,18 @@ fi
 #   0 on success, 1 if no key is provided.
 #######################################
 add-gemini-key() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	[ -z "$1" ] && { echo "Usage: add-gemini-key <key>"; return 1; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  [ -z "$1" ] && {
+    echo "Usage: add-gemini-key <key>"
+    return 1
+  }
 
-	python3 "$CONFIG_MANAGER" update "gemini" "api_key" "$1"
-	export GEMINI_API_KEY="$1"
-	echo "✅ Gemini API Key added to $CONFIG_FILE."
+  python3 "$CONFIG_MANAGER" update "gemini" "api_key" "$1"
+  export GEMINI_API_KEY="$1"
+  echo "✅ Gemini API Key added to $CONFIG_FILE."
 }
 
 #######################################
@@ -63,12 +69,18 @@ add-gemini-key() {
 #   0 on success, 1 if no version is provided.
 #######################################
 set-gemini-version() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	[ -z "$1" ] && { echo "Usage: set-gemini-version <version>"; return 1; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  [ -z "$1" ] && {
+    echo "Usage: set-gemini-version <version>"
+    return 1
+  }
 
-	python3 "$CONFIG_MANAGER" update "gemini" "version" "$1"
-	export GEMINI_VERSION="$1"
-	echo "✅ Gemini version set to $1."
+  python3 "$CONFIG_MANAGER" update "gemini" "version" "$1"
+  export GEMINI_VERSION="$1"
+  echo "✅ Gemini version set to $1."
 }
 
 #######################################
@@ -80,13 +92,16 @@ set-gemini-version() {
 #   Writes status messages to STDOUT.
 #######################################
 toggle-gemini-extended() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	local new_val="true"
-	[ "$GEMINI_EXTENDED" = "true" ] && new_val="false"
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  local new_val="true"
+  [ "$GEMINI_EXTENDED" = "true" ] && new_val="false"
 
-	python3 "$CONFIG_MANAGER" update "gemini" "extended" "$new_val"
-	export GEMINI_EXTENDED="$new_val"
-	echo "✅ Gemini extended mode set to $new_val."
+  python3 "$CONFIG_MANAGER" update "gemini" "extended" "$new_val"
+  export GEMINI_EXTENDED="$new_val"
+  echo "✅ Gemini extended mode set to $new_val."
 }
 
 #######################################
@@ -102,12 +117,18 @@ toggle-gemini-extended() {
 #   0 on success, 1 if no key is provided.
 #######################################
 add-claude-key() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	[ -z "$1" ] && { echo "Usage: add-claude-key <key>"; return 1; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  [ -z "$1" ] && {
+    echo "Usage: add-claude-key <key>"
+    return 1
+  }
 
-	python3 "$CONFIG_MANAGER" update "claude" "api_key" "$1"
-	export CLAUDE_API_KEY="$1"
-	echo "✅ Claude API Key added to $CONFIG_FILE."
+  python3 "$CONFIG_MANAGER" update "claude" "api_key" "$1"
+  export CLAUDE_API_KEY="$1"
+  echo "✅ Claude API Key added to $CONFIG_FILE."
 }
 
 #######################################
@@ -122,12 +143,18 @@ add-claude-key() {
 #   0 on success, 1 if no version is provided.
 #######################################
 set-claude-version() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	[ -z "$1" ] && { echo "Usage: set-claude-version <version>"; return 1; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  [ -z "$1" ] && {
+    echo "Usage: set-claude-version <version>"
+    return 1
+  }
 
-	python3 "$CONFIG_MANAGER" update "claude" "version" "$1"
-	export CLAUDE_VERSION="$1"
-	echo "✅ Claude version set to $1."
+  python3 "$CONFIG_MANAGER" update "claude" "version" "$1"
+  export CLAUDE_VERSION="$1"
+  echo "✅ Claude version set to $1."
 }
 
 #######################################
@@ -143,12 +170,18 @@ set-claude-version() {
 #   0 on success, 1 if no URL is provided.
 #######################################
 add-sync-url() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	[ -z "$1" ] && { echo "Usage: add-sync-url <url>"; return 1; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  [ -z "$1" ] && {
+    echo "Usage: add-sync-url <url>"
+    return 1
+  }
 
-	python3 "$CONFIG_MANAGER" update "git" "sync_repo_url" "$1"
-	export SYNC_REPO_URL="$1"
-	echo "✅ Sync URL added to $CONFIG_FILE."
+  python3 "$CONFIG_MANAGER" update "git" "sync_repo_url" "$1"
+  export SYNC_REPO_URL="$1"
+  echo "✅ Sync URL added to $CONFIG_FILE."
 }
 
 #######################################
@@ -163,12 +196,18 @@ add-sync-url() {
 #   0 on success, 1 if an invalid IDE string is provided.
 #######################################
 set-default-ide() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	[[ "$1" != "vscode" && "$1" != "intellij" ]] && { echo "Usage: set-default-ide <vscode|intellij>"; return 1; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  [[ "$1" != "vscode" && "$1" != "intellij" ]] && {
+    echo "Usage: set-default-ide <vscode|intellij>"
+    return 1
+  }
 
-	python3 "$CONFIG_MANAGER" update "system" "default_ide" "$1"
-	export DEFAULT_IDE="$1"
-	echo "✅ Default IDE set to $1."
+  python3 "$CONFIG_MANAGER" update "system" "default_ide" "$1"
+  export DEFAULT_IDE="$1"
+  echo "✅ Default IDE set to $1."
 }
 
 #######################################
@@ -183,12 +222,18 @@ set-default-ide() {
 #   0 on success, 1 if an invalid AI string is provided.
 #######################################
 set-default-ai() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	[[ "$1" != "gemini" && "$1" != "claude" ]] && { echo "Usage: set-default-ai <gemini|claude>"; return 1; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  [[ "$1" != "gemini" && "$1" != "claude" ]] && {
+    echo "Usage: set-default-ai <gemini|claude>"
+    return 1
+  }
 
-	python3 "$CONFIG_MANAGER" update "system" "default_ai" "$1"
-	export DEFAULT_AI="$1"
-	echo "✅ Default AI set to $1."
+  python3 "$CONFIG_MANAGER" update "system" "default_ai" "$1"
+  export DEFAULT_AI="$1"
+  echo "✅ Default AI set to $1."
 }
 
 #######################################
@@ -201,31 +246,40 @@ set-default-ai() {
 #   Launches the requested IDE application.
 #######################################
 open-bashd-config() {
-	local selected_ide="${DEFAULT_IDE:-vscode}"
-	local args=()
+  local selected_ide="${DEFAULT_IDE:-vscode}"
+  local args=()
 
-	while [[ $# -gt 0 ]]; do
-		case "$1" in
-		-h | --help) mt-help "${FUNCNAME[0]}"; return 0 ;;
-		-ide) selected_ide="$2"; shift 2 ;;
-		*) args+=("$1"); shift ;;
-		esac
-	done
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -h | --help)
+        mt-help "${FUNCNAME[0]}"
+        return 0
+        ;;
+      -ide)
+        selected_ide="$2"
+        shift 2
+        ;;
+      *)
+        args+=("$1")
+        shift
+        ;;
+    esac
+  done
 
-	local config_dir="$HOME/.bash.d"
-	local config_file="$config_dir/config/config.yaml"
-	local yaml_tpl="$config_dir/lib/templates/config.yaml.tpl"
+  local config_dir="$HOME/.bash.d"
+  local config_file="$config_dir/config/config.yaml"
+  local yaml_tpl="$config_dir/lib/templates/config.yaml.tpl"
 
-	if [ ! -s "$config_file" ]; then
-		mkdir -p "$(dirname "$config_file")"
-		[ -f "$yaml_tpl" ] && cp "$yaml_tpl" "$config_file"
-	fi
+  if [ ! -s "$config_file" ]; then
+    mkdir -p "$(dirname "$config_file")"
+    [ -f "$yaml_tpl" ] && cp "$yaml_tpl" "$config_file"
+  fi
 
-	echo "🚀 Opening bash config in $selected_ide..."
+  echo "🚀 Opening bash config in $selected_ide..."
 
-	[ "$selected_ide" = "intellij" ] &&
-		{ idea "$config_dir" "$config_file" &>/dev/null || idea.exe "$config_dir" "$config_file" &>/dev/null || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' or 'idea.exe' is in your PATH."; } ||
-		code "$config_dir" "$config_file"
+  [ "$selected_ide" = "intellij" ] &&
+    { idea "$config_dir" "$config_file" &> /dev/null || idea.exe "$config_dir" "$config_file" &> /dev/null || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' or 'idea.exe' is in your PATH."; } ||
+    code "$config_dir" "$config_file"
 }
 
 #######################################
@@ -241,22 +295,28 @@ open-bashd-config() {
 #   0 on success, 1 if the theme file does not exist.
 #######################################
 set-theme() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	local theme="${1:-default}"
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  local theme="${1:-default}"
 
-	[ ! -f "$THEMES_DIR/$theme.sh" ] && { echo "🚨 Invalid theme. Ensure $theme.sh exists in $THEMES_DIR"; return 1; }
+  [ ! -f "$THEMES_DIR/$theme.sh" ] && {
+    echo "🚨 Invalid theme. Ensure $theme.sh exists in $THEMES_DIR"
+    return 1
+  }
 
-	python3 "$CONFIG_MANAGER" update "system" "theme" "$theme"
-	export BASH_THEME="$theme"
-	source "$HOME/.bash.d/00-core/00-colors.sh"
-	echo -e "${CB_GREEN}✅ Terminal theme set to $theme.${C_RESET}"
+  python3 "$CONFIG_MANAGER" update "system" "theme" "$theme"
+  export BASH_THEME="$theme"
+  source "$HOME/.bash.d/00-core/00-colors.sh"
+  echo -e "${CB_GREEN}✅ Terminal theme set to $theme.${C_RESET}"
 }
 
 _set_theme_completions() {
-	if [ -d "${THEMES_DIR}" ]; then
-		local themes=$(find "${THEMES_DIR}" -name "*.sh" -exec basename {} .sh \;)
-		COMPREPLY=($(compgen -W "$themes" -- "${COMP_WORDS[COMP_CWORD]}"))
-	fi
+  if [ -d "${THEMES_DIR}" ]; then
+    local themes=$(find "${THEMES_DIR}" -name "*.sh" -exec basename {} .sh \;)
+    COMPREPLY=($(compgen -W "$themes" -- "${COMP_WORDS[COMP_CWORD]}"))
+  fi
 }
 complete -F _set_theme_completions set-theme
 
@@ -270,12 +330,18 @@ complete -F _set_theme_completions set-theme
 #   0 on success, 1 if the themes directory is missing.
 #######################################
 mt-theme() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	[ ! -d "${THEMES_DIR}" ] && { echo "🚨 Error: THEMES_DIR not found at ${THEMES_DIR}"; return 1; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  [ ! -d "${THEMES_DIR}" ] && {
+    echo "🚨 Error: THEMES_DIR not found at ${THEMES_DIR}"
+    return 1
+  }
 
-	local selected_theme=$(find "${THEMES_DIR}" -maxdepth 1 -name "*.sh" -exec basename {} .sh \; | sort | fzf --prompt="🎨 Select Theme > " --height=~10 --layout=reverse --border)
+  local selected_theme=$(find "${THEMES_DIR}" -maxdepth 1 -name "*.sh" -exec basename {} .sh \; | sort | fzf --prompt="🎨 Select Theme > " --height=~10 --layout=reverse --border)
 
-	[ -n "$selected_theme" ] && set-theme "$selected_theme" || echo "Theme selection cancelled."
+  [ -n "$selected_theme" ] && set-theme "$selected_theme" || echo "Theme selection cancelled."
 }
 
 #######################################
@@ -287,13 +353,16 @@ mt-theme() {
 #   Writes status messages to STDOUT.
 #######################################
 toggle-auto-cleanup() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	local new_val="true"
-	[ "$AUTO_CLEANUP_EXPORTS" = "true" ] && new_val="false"
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  local new_val="true"
+  [ "$AUTO_CLEANUP_EXPORTS" = "true" ] && new_val="false"
 
-	python3 "$CONFIG_MANAGER" update "system" "auto_cleanup_exports" "$new_val"
-	export AUTO_CLEANUP_EXPORTS="$new_val"
-	echo "✅ Auto-cleanup set to $new_val."
+  python3 "$CONFIG_MANAGER" update "system" "auto_cleanup_exports" "$new_val"
+  export AUTO_CLEANUP_EXPORTS="$new_val"
+  echo "✅ Auto-cleanup set to $new_val."
 }
 
 #######################################
@@ -308,10 +377,48 @@ toggle-auto-cleanup() {
 #   0 on success, 1 if a non-numeric argument is supplied.
 #######################################
 set-auto-cleanup-days() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	[[ ! "$1" =~ ^[0-9]+$ ]] && { echo "Usage: set-auto-cleanup-days <number>"; return 1; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  [[ ! "$1" =~ ^[0-9]+$ ]] && {
+    echo "Usage: set-auto-cleanup-days <number>"
+    return 1
+  }
 
-	python3 "$CONFIG_MANAGER" update "system" "auto_cleanup_days" "$1"
-	export AUTO_CLEANUP_DAYS="$1"
-	echo "✅ Auto-cleanup threshold set to $1 days."
+  python3 "$CONFIG_MANAGER" update "system" "auto_cleanup_days" "$1"
+  export AUTO_CLEANUP_DAYS="$1"
+  echo "✅ Auto-cleanup threshold set to $1 days."
+}
+
+#######################################
+# Formats Python and Shell scripts according to Google Style Guides.
+# Uses yapf for Python and shfmt for Shell scripts.
+# Outputs:
+#   Writes formatting progress and status updates to STDOUT.
+# Returns:
+#   0 on successful execution.
+#######################################
+google-fmt() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  echo "🎨 Formatting Python scripts (Google Python Style)..."
+  if command -v yapf > /dev/null 2>&1; then
+    yapf -r -i --style="{based_on_style: google, column_limit: 88, spaces_before_comment: 2}" .
+    echo "✅ Python formatting complete."
+  else
+    echo "⚠️ 'yapf' not found. Run 'bootstrap' to install it."
+  fi
+
+  echo "🎨 Formatting Shell scripts (Google Shell Style - 2-space indent)..."
+  if command -v shfmt > /dev/null 2>&1; then
+    # Google Shell Style Guide mandates 2-space indents, -ci for switch cases, and -sr for spaces after redirects
+    shfmt -i 2 -ci -sr -w .
+    echo "✅ Shell script formatting complete."
+  else
+    echo "⚠️ 'shfmt' not found."
+  fi
 }

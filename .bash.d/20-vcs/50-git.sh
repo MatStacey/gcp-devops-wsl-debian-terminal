@@ -13,21 +13,21 @@
 #   0 on success.
 #######################################
 __git_sync_init_repo() {
-	local repo_dir="$1" remote_url="$2"
+  local repo_dir="$1" remote_url="$2"
 
-	[ -d "$repo_dir/.git" ] && return 0
+  [ -d "$repo_dir/.git" ] && return 0
 
-	echo "📥 Local sync directory not found or not initialized."
-	mkdir -p "$repo_dir"
+  echo "📥 Local sync directory not found or not initialized."
+  mkdir -p "$repo_dir"
 
-	if ! git clone "$remote_url" "$repo_dir" 2>/dev/null; then
-		echo "⚠️ Clone failed (likely an empty remote). Initializing local repository..."
-		git -C "$repo_dir" init
-		git -C "$repo_dir" remote add origin "$remote_url"
-	fi
+  if ! git clone "$remote_url" "$repo_dir" 2> /dev/null; then
+    echo "⚠️ Clone failed (likely an empty remote). Initializing local repository..."
+    git -C "$repo_dir" init
+    git -C "$repo_dir" remote add origin "$remote_url"
+  fi
 
-	[ "$(git -C "$repo_dir" remote get-url origin 2>/dev/null)" != "$remote_url" ] &&
-		git -C "$repo_dir" remote set-url origin "$remote_url" 2>/dev/null || git -C "$repo_dir" remote add origin "$remote_url"
+  [ "$(git -C "$repo_dir" remote get-url origin 2> /dev/null)" != "$remote_url" ] &&
+    git -C "$repo_dir" remote set-url origin "$remote_url" 2> /dev/null || git -C "$repo_dir" remote add origin "$remote_url"
 }
 
 #######################################
@@ -39,23 +39,23 @@ __git_sync_init_repo() {
 #   $1 - The target repository directory path.
 #######################################
 __git_sync_copy_files() {
-	local repo_dir="$1"
+  local repo_dir="$1"
 
-	mkdir -p "$repo_dir/.bash.d"
-	rsync -a "$HOME/.bashrc" "$repo_dir/"
-	rsync -a --exclude 'config/config.yaml' --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+  mkdir -p "$repo_dir/.bash.d"
+  rsync -a "$HOME/.bashrc" "$repo_dir/"
+  rsync -a --exclude 'config/config.yaml' --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
-	(
-		cd "$repo_dir" || exit 1
-		[ ! -f ".gitignore" ] || ! grep -q ".bash.d/config/config.yaml" .gitignore 2>/dev/null && echo ".bash.d/config/config.yaml" >>.gitignore
-		git ls-files --error-unmatch .bash.d/config/config.yaml >/dev/null 2>&1 && git rm -q --cached .bash.d/config/config.yaml
-		rm -f .bash.d/config/config.yaml
-		git add --all
-	)
+  (
+    cd "$repo_dir" || exit 1
+    [ ! -f ".gitignore" ] || ! grep -q ".bash.d/config/config.yaml" .gitignore 2> /dev/null && echo ".bash.d/config/config.yaml" >> .gitignore
+    git ls-files --error-unmatch .bash.d/config/config.yaml > /dev/null 2>&1 && git rm -q --cached .bash.d/config/config.yaml
+    rm -f .bash.d/config/config.yaml
+    git add --all
+  )
 }
 
 #######################################
-# Analyzes git diffs and calls the Gemini API to systematically generate 
+# Analyzes git diffs and calls the Gemini API to systematically generate
 # separate commits for each logical feature/change.
 # Globals:
 #   GEMINI_API_KEY, AI_MAX_DIFF_BYTES, GEMINI_VERSION
@@ -67,60 +67,63 @@ __git_sync_copy_files() {
 #   0 on success or graceful fallback bypass.
 #######################################
 __git_sync_ai_commit() {
-	local repo_dir="$1"
+  local repo_dir="$1"
 
-	[[ -z "${GEMINI_API_KEY:-}" || "$GEMINI_API_KEY" = "YOUR_GEMINI_API_KEY" ]] &&
-		{ echo "ℹ️ AI commit skipped: GEMINI_API_KEY is not set." >&2; return 1; }
+  [[ -z "${GEMINI_API_KEY:-}" || "$GEMINI_API_KEY" = "YOUR_GEMINI_API_KEY" ]] &&
+    {
+      echo "ℹ️ AI commit skipped: GEMINI_API_KEY is not set." >&2
+      return 1
+    }
 
-	local bytes_limit="${AI_MAX_DIFF_BYTES:-4000}"
-	local diff_content=$(git -C "$repo_dir" diff --staged | head -c "$bytes_limit")
+  local bytes_limit="${AI_MAX_DIFF_BYTES:-4000}"
+  local diff_content=$(git -C "$repo_dir" diff --staged | head -c "$bytes_limit")
 
-	[ -z "$diff_content" ] && return 0
+  [ -z "$diff_content" ] && return 0
 
-	echo "🤖 Analyzing changes to generate systematic feature commits..." >&2
-	
-	local ai_prompt="Analyze this git diff and group the changes into logical features/tasks. Return ONLY a valid JSON array of objects representing separate commits. Each object must have a 'files' array (exact file paths from the diff) and a 'message' string (conventional commit format, < 60 chars).\n\nExample Output:\n[\n  { \"files\": [\"path/to/file1\"], \"message\": \"feat: added new module\" }\n]\n\nGit Diff:\n\n$diff_content"
-	
-	local prompt_json=$(jq -n --arg p "$ai_prompt" '{ contents: [{ parts: [{ text: $p }] }] }')
-	local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_VERSION:-gemini-3.6-flash}:generateContent?key=${GEMINI_API_KEY}"
+  echo "🤖 Analyzing changes to generate systematic feature commits..." >&2
 
-	local response=$(curl -s -X POST "$api_url" -H 'Content-Type: application/json' -d "$prompt_json")
-	
-	# Extract JSON Array, stripping any conversational markdown wrappers
-	local generated_json=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty' | python3 -c '
+  local ai_prompt="Analyze this git diff and group the changes into logical features/tasks. Return ONLY a valid JSON array of objects representing separate commits. Each object must have a 'files' array (exact file paths from the diff) and a 'message' string (conventional commit format, < 60 chars).\n\nExample Output:\n[\n  { \"files\": [\"path/to/file1\"], \"message\": \"feat: added new module\" }\n]\n\nGit Diff:\n\n$diff_content"
+
+  local prompt_json=$(jq -n --arg p "$ai_prompt" '{ contents: [{ parts: [{ text: $p }] }] }')
+  local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_VERSION:-gemini-3.6-flash}:generateContent?key=${GEMINI_API_KEY}"
+
+  local response=$(curl -s -X POST "$api_url" -H 'Content-Type: application/json' -d "$prompt_json")
+
+  # Extract JSON Array, stripping any conversational markdown wrappers
+  local generated_json=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty' | python3 -c '
 import sys, re
 text = sys.stdin.read()
 match = re.search(r"\[.*\]", text, re.DOTALL)
 if match: print(match.group(0))
 else: print(text)
-' 2>/dev/null)
+' 2> /dev/null)
 
-	if [ -n "$generated_json" ] && echo "$generated_json" | jq -e . >/dev/null 2>&1; then
-		# Reset the staging area so we can stage groups individually
-		git -C "$repo_dir" reset HEAD >/dev/null 2>&1
-		
-		echo "$generated_json" | jq -c '.[]' | while read -r commit_obj; do
-			local msg=$(echo "$commit_obj" | jq -r '.message')
-			local files_staged=0
-			
-			while read -r file_path; do
-				# Check if the file actually exists or is tracked to prevent hallucinated git errors
-				if [ -e "$repo_dir/$file_path" ] || git -C "$repo_dir" ls-files --error-unmatch "$file_path" >/dev/null 2>&1; then
-					git -C "$repo_dir" add "$file_path"
-					files_staged=1
-				fi
-			done < <(echo "$commit_obj" | jq -r '.files[]')
-			
-			if [ "$files_staged" -eq 1 ]; then
-				echo "💡 Committing: $msg"
-				git -C "$repo_dir" commit -m "$msg" >/dev/null
-			fi
-		done
-		return 0
-	else
-		echo "⚠️ Gemini API Debug Response or Invalid JSON: $response" >&2
-		return 1
-	fi
+  if [ -n "$generated_json" ] && echo "$generated_json" | jq -e . > /dev/null 2>&1; then
+    # Reset the staging area so we can stage groups individually
+    git -C "$repo_dir" reset HEAD > /dev/null 2>&1
+
+    echo "$generated_json" | jq -c '.[]' | while read -r commit_obj; do
+      local msg=$(echo "$commit_obj" | jq -r '.message')
+      local files_staged=0
+
+      while read -r file_path; do
+        # Check if the file actually exists or is tracked to prevent hallucinated git errors
+        if [ -e "$repo_dir/$file_path" ] || git -C "$repo_dir" ls-files --error-unmatch "$file_path" > /dev/null 2>&1; then
+          git -C "$repo_dir" add "$file_path"
+          files_staged=1
+        fi
+      done < <(echo "$commit_obj" | jq -r '.files[]')
+
+      if [ "$files_staged" -eq 1 ]; then
+        echo "💡 Committing: $msg"
+        git -C "$repo_dir" commit -m "$msg" > /dev/null
+      fi
+    done
+    return 0
+  else
+    echo "⚠️ Gemini API Debug Response or Invalid JSON: $response" >&2
+    return 1
+  fi
 }
 
 #######################################
@@ -136,44 +139,57 @@ else: print(text)
 #   0 on success, 1 on misconfigured URL path.
 #######################################
 vcs-sync-profile() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
 
-	local repo_dir="$SYNC_REPO_DIR"
-	local remote_url="${SYNC_REPO_URL:-}"
+  # Automatically format local bash scripts and python files to Google Style before syncing
+  if command -v google-fmt > /dev/null 2>&1; then
+    echo "🧹 Running Google Style code formatting before profile sync..."
+    google-fmt
+  fi
 
-	[[ -z "$remote_url" || "$remote_url" == "YOUR_SYNC_REPO_URL" || "$remote_url" == "null" ]] &&
-		{ echo "🚨 Error: No remote sync repository URL configured. Please run: add-sync-url \"your-git-remote-url\""; return 1; }
+  local repo_dir="$SYNC_REPO_DIR"
+  local remote_url="${SYNC_REPO_URL:-}"
 
-	echo "🔄 Syncing bash configuration to $repo_dir..."
+  [[ -z "$remote_url" || "$remote_url" == "YOUR_SYNC_REPO_URL" || "$remote_url" == "null" ]] &&
+    {
+      echo "🚨 Error: No remote sync repository URL configured. Please run: add-sync-url \"your-git-remote-url\""
+      return 1
+    }
 
-	__git_sync_init_repo "$repo_dir" "$remote_url"
-	__git_sync_copy_files "$repo_dir"
+  echo "🔄 Syncing bash configuration to $repo_dir..."
 
-	(
-		cd "$repo_dir" || exit 1
-		git diff --staged --quiet && { echo "✅ Configurations are already up to date. No changes to commit."; return 0; }
+  __git_sync_init_repo "$repo_dir" "$remote_url"
+  __git_sync_copy_files "$repo_dir"
 
-		local user_msg="${1:-}"
-		
-		if [ -z "$user_msg" ]; then
-			# Attempt AI systematic individual commits
-			__git_sync_ai_commit "$repo_dir"
-			
-			# Catch any leftover files that the AI missed (or if the AI failed entirely)
-			git add --all
-			if ! git diff --staged --quiet; then
-				echo "💡 Committing: chore: sync miscellaneous updates"
-				git commit -m "chore: sync miscellaneous updates" >/dev/null
-			fi
-		else
-			echo "📦 Committing all as a single batch..."
-			git commit -m "$user_msg" >/dev/null
-		fi
+  (
+    cd "$repo_dir" || exit 1
+    git diff --staged --quiet && {
+      echo "✅ Configurations are already up to date. No changes to commit."
+      return 0
+    }
 
-		echo "🚀 Successfully pushed updates to remote."
-		git push origin HEAD
-		git-web
-	)
+    local user_msg="${1:-}"
+
+    if [ -z "$user_msg" ]; then
+      __git_sync_ai_commit "$repo_dir"
+
+      git add --all
+      if ! git diff --staged --quiet; then
+        echo "💡 Committing: chore: sync miscellaneous updates"
+        git commit -m "chore: sync miscellaneous updates" > /dev/null
+      fi
+    else
+      echo "📦 Committing all as a single batch..."
+      git commit -m "$user_msg" > /dev/null
+    fi
+
+    echo "🚀 Successfully pushed updates to remote."
+    git push origin HEAD
+    git-web
+  )
 }
 
 #######################################
@@ -184,12 +200,18 @@ vcs-sync-profile() {
 #   0 on success, 1 on empty argument input.
 #######################################
 git-acp() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	[ -z "$1" ] && { echo -e "🚨 Error: Commit message cannot be empty.\nUsage: git-acp \"Your commit message\""; return 1; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  [ -z "$1" ] && {
+    echo -e "🚨 Error: Commit message cannot be empty.\nUsage: git-acp \"Your commit message\""
+    return 1
+  }
 
-	git add .
-	git commit -m "$1"
-	git push
+  git add .
+  git commit -m "$1"
+  git push
 }
 
 #######################################
@@ -202,10 +224,16 @@ git-acp() {
 #   0 on success, 1 on empty argument input.
 #######################################
 git-feature() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	[ -z "$1" ] && { echo -e "🚨 Error: Jira ID / branch suffix cannot be empty.\nUsage: git-chk-feat CCON-123"; return 1; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  [ -z "$1" ] && {
+    echo -e "🚨 Error: Jira ID / branch suffix cannot be empty.\nUsage: git-chk-feat CCON-123"
+    return 1
+  }
 
-	git checkout -b "${GIT_FEATURE_PREFIX:-feature/}$1"
+  git checkout -b "${GIT_FEATURE_PREFIX:-feature/}$1"
 }
 
 #######################################
@@ -218,20 +246,23 @@ git-feature() {
 #   Passes through standard git return codes.
 #######################################
 git() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
 
-	if [ "$1" != "clone" ]; then
-		command git "$@"
-		return $?
-	fi
+  if [ "$1" != "clone" ]; then
+    command git "$@"
+    return $?
+  fi
 
-	shift
-	mkdir -p "$VCS_ROOT"
-	echo "📥 Intercepting 'git clone': Redirecting to $VCS_ROOT/..."
-	if (cd "$VCS_ROOT" && command git clone "$@"); then
-		local repo_name=$(basename "${@: -1}" .git)
-		echo -e "\n✅ Repository cloned successfully.\n💡 To navigate to it, run: cd $VCS_ROOT/$repo_name"
-	fi
+  shift
+  mkdir -p "$VCS_ROOT"
+  echo "📥 Intercepting 'git clone': Redirecting to $VCS_ROOT/..."
+  if (cd "$VCS_ROOT" && command git clone "$@"); then
+    local repo_name=$(basename "${@: -1}" .git)
+    echo -e "\n✅ Repository cloned successfully.\n💡 To navigate to it, run: cd $VCS_ROOT/$repo_name"
+  fi
 }
 
 #######################################
@@ -242,21 +273,27 @@ git() {
 #   0 on success, 1 if no upstream origin is found.
 #######################################
 git-web() {
-	[[ "$1" == "-h" || "$1" == "--help" ]] && { mt-help "${FUNCNAME[0]}"; return 0; }
-	local origin_url=$(git config --get remote.origin.url 2>/dev/null)
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  local origin_url=$(git config --get remote.origin.url 2> /dev/null)
 
-	[ -z "$origin_url" ] && { echo "🚨 Error: No remote 'origin' found for the current repository."; return 1; }
+  [ -z "$origin_url" ] && {
+    echo "🚨 Error: No remote 'origin' found for the current repository."
+    return 1
+  }
 
-	local web_url="$origin_url"
-	if [[ "$web_url" == git@* ]]; then
-		web_url="${web_url#git@}"
-		web_url="${web_url/:/\//}"
-		web_url="https://${web_url}"
-	fi
+  local web_url="$origin_url"
+  if [[ "$web_url" == git@* ]]; then
+    web_url="${web_url#git@}"
+    web_url="${web_url/:/\//}"
+    web_url="https://${web_url}"
+  fi
 
-	web_url="${web_url%.git}"
-	echo "🌐 Opening $web_url in browser..."
-	explorer.exe "$web_url" >/dev/null 2>&1
+  web_url="${web_url%.git}"
+  echo "🌐 Opening $web_url in browser..."
+  explorer.exe "$web_url" > /dev/null 2>&1
 }
 
 #######################################
@@ -270,34 +307,46 @@ git-web() {
 #   0 on success, 1 on empty URL parameter or git clone failure.
 #######################################
 git-ide() {
-	local selected_ide="${DEFAULT_IDE:-vscode}"
-	local repo_url=""
+  local selected_ide="${DEFAULT_IDE:-vscode}"
+  local repo_url=""
 
-	while [[ $# -gt 0 ]]; do
-		case "$1" in
-		-h | --help) mt-help "${FUNCNAME[0]}"; return 0 ;;
-		-ide) selected_ide="$2"; shift 2 ;;
-		*) repo_url="$1"; shift ;;
-		esac
-	done
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -h | --help)
+        mt-help "${FUNCNAME[0]}"
+        return 0
+        ;;
+      -ide)
+        selected_ide="$2"
+        shift 2
+        ;;
+      *)
+        repo_url="$1"
+        shift
+        ;;
+    esac
+  done
 
-	[ -z "$repo_url" ] && { echo -e "🚨 Error: Repository URL cannot be empty.\nUsage: git-ide [-ide vscode|intellij] <repo-url>"; return 1; }
+  [ -z "$repo_url" ] && {
+    echo -e "🚨 Error: Repository URL cannot be empty.\nUsage: git-ide [-ide vscode|intellij] <repo-url>"
+    return 1
+  }
 
-	mkdir -p "$VCS_ROOT"
-	local repo_name=$(basename "$repo_url" .git)
+  mkdir -p "$VCS_ROOT"
+  local repo_name=$(basename "$repo_url" .git)
 
-	echo "📥 Cloning $repo_name to $VCS_ROOT/..."
+  echo "📥 Cloning $repo_name to $VCS_ROOT/..."
 
-	if ! git clone "$repo_url" "$VCS_ROOT/$repo_name"; then
-		echo "🚨 Error: Clone failed."
-		return 1
-	fi
+  if ! git clone "$repo_url" "$VCS_ROOT/$repo_name"; then
+    echo "🚨 Error: Clone failed."
+    return 1
+  fi
 
-	cd "$VCS_ROOT/$repo_name" || return 1
-	echo "✅ Moved to $(pwd)"
-	echo "🚀 Opening in $selected_ide..."
+  cd "$VCS_ROOT/$repo_name" || return 1
+  echo "✅ Moved to $(pwd)"
+  echo "🚀 Opening in $selected_ide..."
 
-	[ "$selected_ide" = "intellij" ] &&
-		{ idea . &>/dev/null || idea.exe . &>/dev/null || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' or 'idea.exe' is in your PATH."; } ||
-		code -n .
+  [ "$selected_ide" = "intellij" ] &&
+    { idea . &> /dev/null || idea.exe . &> /dev/null || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' or 'idea.exe' is in your PATH."; } ||
+    code -n .
 }
