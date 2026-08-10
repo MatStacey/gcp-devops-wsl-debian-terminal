@@ -1,0 +1,13 @@
+export C_RED=$'\e[38;2;255;85;85m'
+export C_GREEN=$'\e[38;2;80;250;123m'
+export C_YELLOW=$'\e[38;2;241;250;140m'
+export C_BLUE=$'\e[38;2;189;147;249m'
+export C_CYAN=$'\e[38;2;139;233;253m'
+export C_WHITE=$'\e[38;2;248;248;242m'
+export C_DIM=$'\e[38;2;98;114;164m'
+
+export CB_RED=$'\e[1;38;2;255;85;85m'
+export CB_GREEN=$'\e[1;38;2;80;250;123m'
+export CB_YELLOW=$'\e[1;38;2;241;250;140m'
+export CB_BLUE=$'\e[1;38;2;189;147;249m'
+export CB_CYAN=$'\e[1;38;2;139;233;253m'

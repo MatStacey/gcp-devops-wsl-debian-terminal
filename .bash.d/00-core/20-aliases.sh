@@ -1,0 +1,123 @@
+# ------------------------------------------
+# System & Navigation
+# ------------------------------------------
+#######################################
+# Change directory to ~/.bash.d
+#######################################
+alias cdbashd='cd ~/.bash.d'
+#######################################
+# Change directory to ~/vcs
+#######################################
+alias cdvcs='cd "$VCS_ROOT"'
+#######################################
+# Change directory to ~/vcs/personal
+#######################################
+alias cdvcsp='cd "$VCS_PERSONAL"'
+#######################################
+# Pipe output to Windows clipboard (e.g. cat file | clip)
+#######################################
+alias clip='clip.exe'
+#######################################
+# Print all aliases and functions
+#######################################
+alias mt='mytools'
+#######################################
+# Reload Bash profile
+#######################################
+alias reload='source ~/.bashrc'
+#######################################
+# Reload Bash profile
+#######################################
+alias rld='source ~/.bashrc'
+#######################################
+# Update, Upgrade, Boostrap, Reload
+#######################################
+alias sys-install-reload='sys-update;bootstrap-deps;reload'
+#######################################
+# Updates Debian/Ubuntu packages
+#######################################
+alias sys-update='sudo apt update && sudo apt upgrade'
+#######################################
+# Open ~/vcs/personal/exports Windows Explorer
+#######################################
+alias win-export='explorer.exe "$(wslpath -w "$VCS_EXPORTS")"'
+#######################################
+# Open ~/vcs Windows Explorer
+#######################################
+alias win-vcs='explorer.exe "$(wslpath -w "$VCS_ROOT")"'
+#######################################
+# Open current WSL dir in
+#######################################
+alias win='explorer.exe .'
+
+# ------------------------------------------
+# Development & Build Tools
+# ------------------------------------------
+#######################################
+# Spring Boot: Run application
+#######################################
+alias boot-run='./mvnw spring-boot:run'
+#######################################
+# Maven: Clean and Install
+#######################################
+alias mci='./mvnw clean install'
+#######################################
+# Install pip requirements
+#######################################
+alias pip-load='pip install -r requirements.txt'
+#######################################
+# Save pip requirements
+#######################################
+alias pip-save='pip freeze > requirements.txt'
+#######################################
+# Ruff: Format Python files and imports in current directory (recursive)
+#######################################
+alias ruff-fmt='ruff check --select I --fix . && ruff format .'
+#######################################
+# shfmt: Format all shell scripts in current directory (recursive)
+#######################################
+alias shfmtlw='shfmt -l -w .'
+#######################################
+# Create & active Python venv
+#######################################
+alias venv-make='python3 -m venv venv && source venv/bin/activate'
+#######################################
+# Activate existing Python venv
+#######################################
+alias venv-up='source venv/bin/activate'
+
+# ------------------------------------------
+# Modern CLI Replacements
+# ------------------------------------------
+#######################################
+# bat: Print file contents with syntax highlighting
+#######################################
+alias cat='batcat --style=plain'
+#######################################
+# bat: Print file contents with line numbers & Git gutters
+#######################################
+alias ccat='batcat'
+#######################################
+# Pretty-print JSON stream
+#######################################
+alias json-fmt='jq .'
+#######################################
+# eza: Detailed list with Git status
+#######################################
+alias ll='eza -la --color=auto --group-directories-first --git'
+#######################################
+# eza: List files with directories first
+#######################################
+alias ls='eza --color=auto --group-directories-first'
+#######################################
+# rg: Search with smart case, include hidden, ignore .git
+#######################################
+alias rg='rg --smart-case --hidden --glob "!.git/*"'
+#######################################
+# eza: Display directory structure as a tree
+#######################################
+alias tree='eza --tree'
+#######################################
+# Pretty-print YAML stream (requires yq)
+#######################################
+alias yaml-fmt='yq -P'
