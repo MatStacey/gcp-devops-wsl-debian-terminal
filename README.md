@@ -93,6 +93,11 @@ The following commands are automatically parsed and indexed from the codebase do
 | --- | --- | --- |
 | `kubectl` | Function | Kubectl wrapper (preserves args). |
 
+### 🐳 Container Management
+
+* **`docker-reboot-all`** → Restarts all currently running Docker containers gracefully.
+  * **Usage:** `docker-reboot-all`
+
 ### Development & Build Tools
 
 | Command | Type | Description |
