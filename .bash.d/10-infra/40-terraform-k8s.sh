@@ -45,15 +45,15 @@ tf-val-all() {
   local threads="${MAX_PARALLEL_THREADS:-8}"
 
   find terraform/ -type f -name "*.tf" -exec dirname {} \; | sort -u | xargs -I {} -P "$threads" bash -c '
-        echo -e "\n🔍 Validating {}..."
-        terraform -chdir="{}" init -backend=false > /dev/null 2>&1
-        if terraform -chdir="{}" validate; then
-            echo -e "🛡️ Scanning {} with Checkov..."
-            checkov -d "{}" --framework terraform --quiet
+        echo -e "\n🔍 Validating $1..."
+        terraform -chdir="$1" init -backend=false > /dev/null 2>&1
+        if terraform -chdir="$1" validate; then
+            echo -e "🛡️ Scanning $1 with Checkov..."
+            checkov -d "$1" --framework terraform --quiet
         else
-            echo -e "🚨 Validation failed for {}"
+            echo -e "🚨 Validation failed for $1"
         fi
-    '
+    ' _ {}
 }
 
 # Bypass the custom kubectl wrapper when generating completions to prevent terminal echo
