@@ -130,7 +130,7 @@ tf-yaml() {
     # 2. Extract specific environment configurations
     yq ".environments["${env_name}"]" "$yaml_file" > "$tmp_env"
 
-    if [ "$(cat "$tmp_env")" = "null" ]; then
+    if [ "$(command cat "$tmp_env")" = "null" ]; then
       echo -e "${CB_RED}🚨 Error: Environment '${env_name}' not found in ${yaml_file}.${C_RESET}"
       rm -f "$tmp_vars" "$tmp_globals" "$tmp_env"
       return 1

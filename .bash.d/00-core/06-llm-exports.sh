@@ -68,7 +68,7 @@ __vcs_core_export() {
     if [ -n "$block_regex" ] && [[ "$lower_file" =~ $block_regex ]]; then continue; fi
 
     echo "==> ./$clean_file <==" >> "$export_file"
-    cat "$file" >> "$export_file"
+    command cat "$file" >> "$export_file"
     echo -e "\n" >> "$export_file"
   done
 

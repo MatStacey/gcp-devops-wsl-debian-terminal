@@ -40,7 +40,7 @@ __ai_build_context() {
     echo "📦 Compiling target file '$target_file' for context..." >&2
     context_file=$(mktemp)
     echo "==> ./$target_file <==" >> "$context_file"
-    cat "$target_file" >> "$context_file"
+    command cat "$target_file" >> "$context_file"
     echo "✅ File context attached." >&2
     echo "$context_file"
     return 0
@@ -57,7 +57,7 @@ __ai_build_context() {
     [[ "$lower_file" =~ $blocklist ]] && continue
 
     echo "==> ./$clean_file <==" >> "$context_file"
-    cat "$file" >> "$context_file"
+    command cat "$file" >> "$context_file"
     echo -e "\n" >> "$context_file"
   done
   echo "✅ Codebase context attached." >&2

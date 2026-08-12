@@ -69,7 +69,7 @@ mytools() {
   local time_file="${cache_file}.time"
   local latest_mod=$(__bashd_latest_mod "$bashd_dir")
 
-  if [ ! -f "$cache_file" ] || [ ! -f "$time_file" ] || [ "$(cat "$time_file" 2> /dev/null)" != "$latest_mod" ]; then
+  if [ ! -f "$cache_file" ] || [ ! -f "$time_file" ] || [ "$(command cat "$time_file" 2> /dev/null)" != "$latest_mod" ]; then
     __rebuild_mytools_cache
   fi
   cat "$cache_file"

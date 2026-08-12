@@ -15,7 +15,7 @@ __check_updates() {
   # If a background check found updates, display the notification message
   if [ -f "$pending_file" ]; then
     local updates_count
-    updates_count=$(cat "$pending_file")
+    updates_count=$(command cat "$pending_file")
     echo -e "\n\e[33m📦 $updates_count system package(s) can be upgraded. Run \e[1msys-install\e[0m\e[33m to install them.\e[0m"
     return
   fi
@@ -23,7 +23,7 @@ __check_updates() {
   # Time calculation using TTL from config (default 12 hours = 43200 seconds)
   local last_check=0
   if [ -f "$cache_file" ]; then
-    last_check=$(cat "$cache_file")
+    last_check=$(command cat "$cache_file")
   fi
 
   local ttl="${UPDATE_CHECK_TTL_SEC:-43200}"
