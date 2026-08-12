@@ -60,7 +60,7 @@ __git_sync_copy_files() {
 
   (
     cd "$repo_dir" || exit 1
-    [ ! -f ".gitignore" ] || ! grep -q ".bash.d/config/config.yaml" .gitignore 2> /dev/null && echo ".bash.d/config/config.yaml" >> .gitignore
+    [ ! -f ".gitignore" ] || ! grep -q ".bash.d/config/config.yaml" .gitignore 2> /dev/null && sed -i -e '$a\' .gitignore && echo ".bash.d/config/config.yaml" >> .gitignore
     git ls-files --error-unmatch .bash.d/config/config.yaml > /dev/null 2>&1 && git rm -q --cached .bash.d/config/config.yaml
     rm -f .bash.d/config/config.yaml
     git add --all
