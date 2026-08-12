@@ -68,7 +68,12 @@ __prompt_git_info() {
   clean_url="${clean_url#*//}"
   clean_url="${clean_url//://}"
   clean_url="${clean_url%.git}"
-  __prompt_git_url="https://${clean_url}/src/${__prompt_git_branch}/"
+  local branch_path="/src/${__prompt_git_branch}/"
+  case "$clean_url" in
+    github.com*) branch_path="/tree/${__prompt_git_branch}/" ;;
+    gitlab.com*) branch_path="/-/tree/${__prompt_git_branch}/" ;;
+  esac
+  __prompt_git_url="https://${clean_url}${branch_path}"
 }
 
 __cloud_ps1() {
