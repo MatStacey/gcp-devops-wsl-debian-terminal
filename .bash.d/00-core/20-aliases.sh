@@ -121,3 +121,4 @@ alias tree='eza --tree'
 # Pretty-print YAML stream (requires yq)
 #######################################
 alias yaml-fmt='yq -P'
+alias sys-install='sudo apt update && sudo apt upgrade && rm -f $HOME/.bash.d/.update_pending'
