@@ -141,3 +141,62 @@ docker-sandbox() {
 
   docker run --rm -it "$image" /bin/bash || docker run --rm -it "$image" /bin/sh
 }
+
+#######################################
+# Docker: Concurrently tail logs from multiple selected containers
+#######################################
+docker-tail() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  # 1. Select containers using fzf multi-select (Tab to select multiple)
+  local selected
+  selected=$(docker ps --format "{{.Names}}" | fzf --multi --prompt="🐳 Select Containers (TAB to multi-select) > " --height=~15 --layout=reverse --border)
+
+  if [ -z "$selected" ]; then
+    echo "⚠️ No containers selected."
+    return 0
+  fi
+
+  # Replace newlines with spaces for the printout
+  local flat_selected
+  flat_selected=$(echo "$selected" | tr '\n' ' ')
+
+  echo -e "${CB_GREEN}🚀 Tailing logs for: ${flat_selected}${C_RESET}"
+  echo -e "${C_DIM}(Press Ctrl+C to stop)${C_RESET}\n"
+
+  # Array of distinct ANSI colors for the prefixes
+  local colors=("\e[36m" "\e[32m" "\e[33m" "\e[34m" "\e[35m" "\e[31m")
+  local color_reset="\e[0m"
+
+  # Keep track of background PIDs so we can cleanly kill them later
+  local pids=()
+
+  # Cleanup trap to kill all background streams when Ctrl+C is pressed
+  cleanup() {
+    echo -e "\n${CB_YELLOW}🛑 Stopping all log streams...${C_RESET}"
+    kill "${pids[@]}" 2> /dev/null || true
+  }
+  trap cleanup SIGINT
+
+  # Loop through selected containers, attach a color, and tail in the background
+  local i=0
+  for container in $selected; do
+    local color="${colors[$((i % ${#colors[@]}))]}"
+
+    # 2>&1 redirects stderr to stdout (catching error logs).
+    # sed -u forces unbuffered output so logs don't lag behind the live stream.
+    docker logs -f --tail 50 "$container" 2>&1 | sed -u "s/^/${color}[$container]${color_reset} /" &
+    pids+=($!)
+
+    ((i++))
+  done
+
+  # Wait for all background processes to finish (or until trap is triggered)
+  wait "${pids[@]}" 2> /dev/null || true
+
+  # Remove the trap once finished
+  trap - SIGINT
+}

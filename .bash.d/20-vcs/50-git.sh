@@ -42,14 +42,20 @@ __git_sync_copy_files() {
   local repo_dir="$1"
 
   mkdir -p "$repo_dir/.bash.d"
-  rsync -a "$HOME/.bashrc" "$repo_dir/"
 
-  # Exclude README.md from the subfolder mirror so it does not duplicate
-  rsync -a --exclude 'config/config.yaml' --exclude 'README.md' --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+  # Exclude root files and folders from the subfolder mirror so they do not duplicate
+  rsync -a --exclude "config/config.yaml" --exclude "README.md" --exclude ".bashrc" --exclude "install.sh" --exclude ".gitignore" --exclude ".github" --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
-  # Explicitly copy the README to the repository root for GitHub
-  if [ -f "$HOME/.bash.d/README.md" ]; then
-    cp "$HOME/.bash.d/README.md" "$repo_dir/README.md"
+  # Explicitly copy individual root files to the repository root for GitHub
+  for f in README.md .bashrc install.sh .gitignore; do
+    if [ -f "$HOME/.bash.d/$f" ]; then
+      cp "$HOME/.bash.d/$f" "$repo_dir/$f"
+    fi
+  done
+
+  # Explicitly copy root directories to the repository root
+  if [ -d "$HOME/.bash.d/.github" ]; then
+    cp -r "$HOME/.bash.d/.github" "$repo_dir/"
   fi
 
   (
