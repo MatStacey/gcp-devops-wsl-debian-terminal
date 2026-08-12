@@ -1,0 +1,142 @@
+func	Centralized Theme & Colors	ai	Consult universal AI
+func	Centralized Theme & Colors	__ai_build_context	Compiles local codebase files into a single context document for LLMs.
+func	Centralized Theme & Colors	_ai_get_next_version	Calculates the next available minor patch version for a generated file.
+func	Centralized Theme & Colors	__ai_query_claude	Formats payload and queries the Anthropic Claude API.
+func	Centralized Theme & Colors	__ai_query_gemini	Formats payload and queries the Google Gemini API.
+func	Centralized Theme & Colors	__ai_save_output	Formats and saves the generated code from LLMs into standard directories.
+func	Configuration Management	add-claude-key	Adds a Claude API key to the local YAML configuration.
+func	Configuration Management	add-gemini-key	Adds a Gemini API key to the local YAML configuration.
+func	Configuration Management	add-sync-url	Configures the remote git URL for the bash profile synchronization tool.
+func	Configuration Management	google-fmt	Formats Python and Shell scripts according to Google Style Guides.
+func	Configuration Management	mt-theme	Opens an interactive fuzzy-finder menu to select and apply a theme.
+func	Configuration Management	open-bashd-config	Opens the bash.d configuration directory directly in the configured IDE.
+func	Configuration Management	set-auto-cleanup-days	Modifies the threshold in days before exports are automatically deleted.
+func	Configuration Management	set-claude-version	Sets the default Claude model version in configuration.
+func	Configuration Management	set-default-ai	Sets the default LLM provider for the 'ai' command suite.
+func	Configuration Management	set-default-ide	Sets the default local IDE for launch commands.
+func	Configuration Management	set-gemini-version	Sets the default Gemini model version in configuration.
+func	Configuration Management	set-theme	Sets the active terminal color theme and reloads the color profile.
+func	Configuration Management	toggle-auto-cleanup	Toggles the background execution of the export cleanup script.
+func	Configuration Management	toggle-gemini-extended	Toggles the Gemini extended reasoning mode flag.
+func	Container Orchestration	kubectl	Kubectl wrapper (preserves args)
+func	GCP: Configuration & Authentication	gcl-config	GCP: List active configuration properties
+func	GCP: Configuration & Authentication	gcl-export-vars	GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell
+func	GCP: Configuration & Authentication	gcl-get-project	GCP: Print active project ID
+func	GCP: Configuration & Authentication	gcl-get-project-number	GCP: Print active project Number (API call required)
+func	GCP: Configuration & Authentication	gcl-get-region	GCP: Print active compute region
+func	GCP: Configuration & Authentication	gcl-get-user	GCP: Print active user account
+func	GCP: Configuration & Authentication	gcl-get-zone	GCP: Print active compute zone
+func	GCP: Configuration & Authentication	gcl-org-policies	GCP: List org policies for active project
+func	GCP: Configuration & Authentication	gcl-update	GCP: Update Google Cloud CLI tools
+func	GCP: Configuration & Authentication	gcp-login	GCP: Login to user & application default
+func	GCP: Configuration & Authentication	gcp-login-adc	GCP: Login to application default only
+func	GCP: Configuration & Authentication	gcp-set-project	GCP: Switch active project
+func	GCP: Resources & Services	bq-query	BigQuery: Run standard SQL query
+func	GCP: Resources & Services	gcl-as-json	Run gcloud command and output as formatted JSON
+func	GCP: Resources & Services	gcp-crf-logs	Functions: Tail logs of a function
+func	GCP: Resources & Services	gcp-gar-docker	Artifacts: Configure Docker auth
+func	GCP: Resources & Services	gcp-get-secret	Secrets: Read latest payload of a secret
+func	GCP: Resources & Services	gcp-iam-show	IAM: View IAM policy for active project
+func	GCP: Resources & Services	gcp-ps-pull	PubSub: Pull and auto-ack one message
+func	Google Style Code Formatting	google-fmt	Formats Python and Shell scripts according to Google Style Guides.
+func	Infrastructure as Code	terraform	Terraform wrapper (preserves args)
+func	Infrastructure as Code	tf-val-all	Terraform: Recursively validate and scan all Terraform directories
+func	LLM Code Export Utilities	cleanup-exports	LLM: Clean up export files
+func	LLM Code Export Utilities	export-all	LLM: Exports all text/code files
+func	LLM Code Export Utilities	export-bash	LLM: Exports local .sh files
+func	LLM Code Export Utilities	export-crf	LLM: Exports Python GCF codebase
+func	LLM Code Export Utilities	export-tf	LLM: Exports local TF codebase
+func	Path & URL Launchers (Config-Driven)	cd-ai	Config: Change directory to unified AI workspace
+func	Path & URL Launchers (Config-Driven)	cd-sync	Config: Change directory to sync repository root
+func	Path & URL Launchers (Config-Driven)	sync-web	Config: Open sync repository remote URL in default web browser
+func	Path & URL Launchers (Config-Driven)	win-ai	Config: Open unified AI workspace in Windows File Explorer
+func	Path & URL Launchers (Config-Driven)	win-sync	Config: Open sync repository in Windows File Explorer
+func	System & Environment Bootstrap	bootstrap	System: Bootstrap missing dependencies for bash aliases (Debian/WSL)
+func	Terraform	tf-iam	Terraform: Ask AI to list required Service Accounts and least-privilege roles
+func	Version Control (Git)	git	Git: Wrapper to force 'clone' into ~/vcs/ from anywhere
+func	Version Control (Git)	git-acp	Git: Add all files, commit with message, and push
+func	Version Control (Git)	git-feature	Git: Create and checkout a new feature branch
+func	Version Control (Git)	git-ide	Git: Clone a repository into ~/vcs/, cd into it, and open in IDE
+func	Version Control (Git)	__git_sync_ai_commit	Analyzes git diffs and calls the Gemini API to systematically generate
+func	Version Control (Git)	__git_sync_copy_files	Synchronizes the active bash config files over to the tracked git directory.
+func	Version Control (Git)	__git_sync_init_repo	Clones and initializes a repository into the sync directory.
+func	Version Control (Git)	git-web	Git: Open the current repository in the default Windows web browser
+func	Version Control (Git)	vcs-sync-profile	Git: Sync local bash configs to terminal repo and push (AI-powered systematic commits)
+alias	Development & Build Tools	boot-run	Spring Boot: Run application
+alias	Development & Build Tools	mci	Maven: Clean and Install
+alias	Development & Build Tools	pip-load	Install pip requirements
+alias	Development & Build Tools	pip-save	Save pip requirements
+alias	Development & Build Tools	ruff-fmt	Ruff: Format Python files and imports in current directory (recursive)
+alias	Development & Build Tools	shfmtlw	shfmt: Format all shell scripts in current directory (recursive)
+alias	Development & Build Tools	venv-make	Create & active Python venv
+alias	Development & Build Tools	venv-up	Activate existing Python venv
+alias	GCP: Configuration & Authentication	gcpp	GCP: Legacy shortcut to set project
+alias	GCP: Resources & Services	bq-ls	BigQuery: List datasets in project
+alias	GCP: Resources & Services	gce-ls	Compute: List all VM instances
+alias	GCP: Resources & Services	gce-ssh	Compute: SSH into an instance
+alias	GCP: Resources & Services	gcl-gar-ls	Artifacts: List Artifact Registry repos
+alias	GCP: Resources & Services	gcl-iam-ls	IAM: List service accounts in active project
+alias	GCP: Resources & Services	gcl-ps-subs	PubSub: List subscriptions
+alias	GCP: Resources & Services	gcl-ps-topics	PubSub: List topics
+alias	GCP: Resources & Services	gcp-crf-ls	Functions: List Cloud Run Functions
+alias	GCP: Resources & Services	gcs-ls	GCS: List buckets or contents
+alias	Infrastructure as Code	tf	Terraform: Base command
+alias	Infrastructure as Code	tfa	Terraform: Apply deployment
+alias	Infrastructure as Code	tfd	Terraform: Destroy resources
+alias	Infrastructure as Code	tff	Terraform: Format all TF files recursively
+alias	Infrastructure as Code	tfp	Terraform: Plan deployment
+alias	Infrastructure as Code	tf-scan	Checkov: Scan local terraform directory (./terraform)
+alias	Modern CLI Replacements	cat	bat: Print file contents with syntax highlighting
+alias	Modern CLI Replacements	ccat	bat: Print file contents with line numbers & Git gutters
+alias	Modern CLI Replacements	json-fmt	Pretty-print JSON stream
+alias	Modern CLI Replacements	ll	eza: Detailed list with Git status
+alias	Modern CLI Replacements	ls	eza: List files with directories first
+alias	Modern CLI Replacements	rg	rg: Search with smart case, include hidden, ignore .git
+alias	Modern CLI Replacements	tree	eza: Display directory structure as a tree
+alias	Modern CLI Replacements	yaml-fmt	Pretty-print YAML stream (requires yq)
+alias	System & Navigation	cdbashd	Change directory to ~/.bash.d
+alias	System & Navigation	cdvcs	Change directory to ~/vcs
+alias	System & Navigation	cdvcsp	Change directory to ~/vcs/personal
+alias	System & Navigation	clip	Pipe output to Windows clipboard (e.g. cat file | clip)
+alias	System & Navigation	mt	Print all aliases and functions
+alias	System & Navigation	reload	Reload Bash profile
+alias	System & Navigation	rld	Reload Bash profile
+alias	System & Navigation	sys-install-reload	Update, Upgrade, Boostrap, Reload
+alias	System & Navigation	sys-update	Updates Debian/Ubuntu packages
+alias	System & Navigation	win	Open current WSL dir in
+alias	System & Navigation	win-export	Open ~/vcs/personal/exports Windows Explorer
+alias	System & Navigation	win-vcs	Open ~/vcs Windows Explorer
+alias	Terraform	tf	Terraform: Base command
+alias	Terraform	tfa	Terraform: Apply deployment
+alias	Terraform	tfay	Terraform: Apply deployment (auto-approve)
+alias	Terraform	tfc	Terraform: Open interactive console
+alias	Terraform	tfd	Terraform: Destroy resources
+alias	Terraform	tfdy	Terraform: Destroy resources (auto-approve)
+alias	Terraform	tff	Terraform: Format codebase
+alias	Terraform	tffu	Terraform: Force unlock state
+alias	Terraform	tfg	Terraform: Generate graph
+alias	Terraform	tfim	Terraform: Import resource
+alias	Terraform	tfin	Terraform: Initialize directory
+alias	Terraform	tfinu	Terraform: Initialize and upgrade modules/providers
+alias	Terraform	tfo	Terraform: Read outputs
+alias	Terraform	tfp	Terraform: Plan deployment
+alias	Terraform	tfpde	Terraform: Plan destruction
+alias	Terraform	tfpr	Terraform: List providers
+alias	Terraform	tfr	Terraform: Refresh state
+alias	Terraform	tfs	Terraform: Manage state
+alias	Terraform	tfsh	Terraform: Show state
+alias	Terraform	tfsls	Terraform: List resources in state
+alias	Terraform	tfsmv	Terraform: Move resource in state
+alias	Terraform	tfsph	Terraform: Push state
+alias	Terraform	tfspl	Terraform: Pull state
+alias	Terraform	tfsrm	Terraform: Remove resource from state
+alias	Terraform	tfssw	Terraform: Show resource in state
+alias	Terraform	tft	Terraform: Taint resource
+alias	Terraform	tfut	Terraform: Untaint resource
+alias	Terraform	tfv	Terraform: Validate codebase
+alias	Terraform	tfw	Terraform: Manage workspaces
+alias	Terraform	tfwde	Terraform: Delete workspace
+alias	Terraform	tfwls	Terraform: List workspaces
+alias	Terraform	tfwnw	Terraform: Create new workspace
+alias	Terraform	tfwst	Terraform: Select workspace
+alias	Terraform	tfwsw	Terraform: Show active workspace
