@@ -78,12 +78,16 @@
   [1;38;2;235;203;139m[System & Environment Bootstrap][0m
     [38;2;76;86;106m•[0m [1;38;2;136;192;208mbootstrap               [0m [38;2;76;86;106m→[0m [38;2;236;239;244mSystem: Bootstrap missing dependencies for bash aliases (Debian/WSL)[0m
 
+  [1;38;2;235;203;139m[System Update Check][0m
+    [38;2;76;86;106m•[0m [1;38;2;136;192;208mdocker-ls               [0m [38;2;76;86;106m→[0m [38;2;236;239;244mDocker: List all running containers in a clean table format[0m
+    [38;2;76;86;106m•[0m [1;38;2;136;192;208mdocker-reboot-all       [0m [38;2;76;86;106m→[0m [38;2;236;239;244mDocker: Restart all currently running Docker containers[0m
+
   [1;38;2;235;203;139m[Terraform][0m
     [38;2;76;86;106m•[0m [1;38;2;136;192;208mtf-iam                  [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Ask AI to list required Service Accounts and least-privilege roles[0m
 
   [1;38;2;235;203;139m[Version Control (Git)][0m
     [38;2;76;86;106m•[0m [1;38;2;136;192;208mgit                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGit: Wrapper to force 'clone' into ~/vcs/ from anywhere[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgit-acp                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGit: Add all files, commit with message, and push[0m
+    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgit-ai-pc               [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGit: Add all files, intelligently group via AI, and push [Usage: git-ai-pc [optional message]][0m
     [38;2;76;86;106m•[0m [1;38;2;136;192;208mgit-feature             [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGit: Create and checkout a new feature branch[0m
     [38;2;76;86;106m•[0m [1;38;2;136;192;208mgit-ide                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGit: Clone a repository into ~/vcs/, cd into it, and open in IDE[0m
     [38;2;76;86;106m•[0m [1;38;2;136;192;208m__git_sync_ai_commit    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mAnalyzes git diffs and calls the Gemini API to systematically generate[0m

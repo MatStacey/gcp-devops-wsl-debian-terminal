@@ -52,9 +52,11 @@ func	Path & URL Launchers (Config-Driven)	sync-web	Config: Open sync repository 
 func	Path & URL Launchers (Config-Driven)	win-ai	Config: Open unified AI workspace in Windows File Explorer
 func	Path & URL Launchers (Config-Driven)	win-sync	Config: Open sync repository in Windows File Explorer
 func	System & Environment Bootstrap	bootstrap	System: Bootstrap missing dependencies for bash aliases (Debian/WSL)
+func	System Update Check	docker-ls	Docker: List all running containers in a clean table format
+func	System Update Check	docker-reboot-all	Docker: Restart all currently running Docker containers
 func	Terraform	tf-iam	Terraform: Ask AI to list required Service Accounts and least-privilege roles
 func	Version Control (Git)	git	Git: Wrapper to force 'clone' into ~/vcs/ from anywhere
-func	Version Control (Git)	git-acp	Git: Add all files, commit with message, and push
+func	Version Control (Git)	git-ai-pc	Git: Add all files, intelligently group via AI, and push [Usage: git-ai-pc [optional message]]
 func	Version Control (Git)	git-feature	Git: Create and checkout a new feature branch
 func	Version Control (Git)	git-ide	Git: Clone a repository into ~/vcs/, cd into it, and open in IDE
 func	Version Control (Git)	__git_sync_ai_commit	Analyzes git diffs and calls the Gemini API to systematically generate

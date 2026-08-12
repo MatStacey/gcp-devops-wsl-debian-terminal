@@ -47,6 +47,12 @@ def load_env():
     print(
         f"export AUTO_CLEANUP_DAYS={shlex.quote(str(sys_cfg.get('auto_cleanup_days', 7)))}"
     )
+    
+    # NEW: Docker Blocklist (comma-separated string)
+    docker_cfg = d.get("docker") or {}
+    print(
+        f"export DOCKER_BLOCKLIST={shlex.quote(docker_cfg.get('restart_blocklist', ''))}"
+    )
 
     gem = d.get("gemini") or d.get("ai") or {}
     print(f"export GEMINI_API_KEY={shlex.quote(gem.get('api_key', ''))}")

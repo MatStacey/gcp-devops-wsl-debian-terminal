@@ -7,13 +7,14 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 ## 🚀 Key Features
 
 * **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking utilizing zero-subshell file reads for maximum performance. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
-* **Asynchronous Update Checks:** Silently checks for APT package updates in the background on a 12-hour timer without blocking terminal initialization, prompting only when updates are ready.
-* **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment—keeping shell scripts clean and free of inline Python blocks.
-* **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT packages, Python linters (`ruff`, `checkov`), formatters (`shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`).
-* **Native AI Integration:** Chat with Google's Gemini models directly from the terminal with model selection (`flash`, `flash-lite`, `pro`), extended reasoning flags, targeted file context parsing (`-f`), and automated version-controlled payload exports.
-* **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` to concurrently validate and run Checkov security scans across all Terraform modules.
-* **Advanced LLM Export Utilities:** Integrated, regex-filtered export commands designed to safely compile text representations of local codebases for AI prompting. Features sub-directory isolation, `DD-MM-YYYY_HH-MM-SS` timestamping, semantic versioning, and a suite of automated cleanup tools.
-* **Dynamic Documentation & Search:** The `mt` (mytools) command utilizes a dedicated AWK parser to dynamically build a formatted help manual, supported by interactive fuzzy-finding (`mt-fzf`), keyword searching (`mt-search`), and syntax-highlighted command inspection (`mt-help`).
+* **Asynchronous Update Checks:** Silently checks for APT package updates in the background on a configurable TTL timer without blocking terminal initialization, prompting only when updates are ready.
+* **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment.
+* **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-theme`).
+* **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`).
+* **Native AI Integration:** Consult universal AI via the `ai` command with model selection (`flash`, `flash-lite`, `pro`), extended reasoning flags (`-x`), targeted file context parsing (`-f`), and automated version-controlled payload exports into a unified workspace (`AI_WORKSPACE_DIR`).
+* **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` with configurable thread limits to concurrently validate and run Checkov security scans across all Terraform modules.
+* **Advanced LLM Export Utilities:** Integrated, regex-filtered export commands (`export-all`, `export-tf`, `export-bash`, `export-crf`) designed to safely compile text representations of local codebases for AI prompting, managed via a unified pruning utility (`cleanup-exports`).
+* **Dynamic Documentation & Search:** The `mt` (mytools) command utilizes an advanced AWK parser to dynamically index and display a formatted help manual, supported by interactive fuzzy-finding (`mt-run`, `mt-fzf`), keyword searching (`mt-search`), and syntax-highlighted command inspection (`mt-help`).
 
 ---
 
@@ -23,25 +24,22 @@ The configuration abandons a monolithic `~/.bashrc` in favor of a logical `.bash
 
 | Module | Description |
 | :--- | :--- |
-| `00-core/` | Core configuration, color themes, prompts, aliases, update checking, and bootstrapping utilities. |
-| `10-infra/` | GCP wrappers, concurrent Terraform validation, and comprehensive Kubectl aliases. |
-| `20-vcs/` | Git wrappers, commit automation, feature branching, remote web launching, and self-syncing repositories. |
-| `30-ai/` | API integrations for interacting with Google Gemini. |
-| `config/` | JSON/YAML files containing system instructions and user-specific configurations. |
-| `lib/` | AWK parsers, configuration templates, and standalone Python utility scripts (`config_manager.py`). |
+| `00-core/` | Core configuration, centralized dynamic color themes, prompts, update checking, mytools engine, and bootstrapping utilities. |
+| `10-infra/` | GCP authentication/project switchers, concurrent Terraform validation, and comprehensive Kubectl aliases. |
+| `20-vcs/` | Git wrappers, AI-assisted feature-grouped commit automation (`git-ai-pc`), profile syncing, and web launching. |
+| `30-ai/` | API integrations for interacting with Google Gemini and Anthropic Claude via the universal `ai` command. |
+| `config/` | JSON/YAML files, `.env` caching, and modular theme definitions (`config/themes/`). |
+| `lib/` | AWK parsers (`mytools.awk`), configuration templates, and standalone Python utility scripts (`config_manager.py`). |
 
 ---
 
 ## 🛠️ Setup & Bootstrapping
 
 1. **Clone the repository** to your local WSL2 machine.
-
-2. **Sync the configuration** to your home directory:
+2. **Run the installation script** to automatically back up existing profiles, scaffold configurations, and sync files:
 
 ```bash
-rsync -a .bashrc ~/
-rsync -a --exclude 'config/config.yaml' --delete .bash.d/ ~/.bash.d/
-source ~/.bashrc
+./install.sh
 
 ```
 
@@ -56,7 +54,7 @@ bootstrap
 
 ## 🧰 Command Reference (MyTools)
 
-The following commands are automatically parsed and indexed from the codebase documentation blocks.
+The following commands are automatically parsed and indexed from codebase documentation blocks.
 
 ### Centralized Theme & Colors
 
@@ -76,6 +74,7 @@ The following commands are automatically parsed and indexed from the codebase do
 | `add-claude-key` | Function | Adds a Claude API key to the local YAML configuration. |
 | `add-gemini-key` | Function | Adds a Gemini API key to the local YAML configuration. |
 | `add-sync-url` | Function | Configures the remote git URL for the bash profile synchronization tool. |
+| `google-fmt` | Function | Formats Python and Shell scripts according to Google Style Guides. |
 | `mt-theme` | Function | Opens an interactive fuzzy-finder menu to select and apply a theme. |
 | `open-bashd-config` | Function | Opens the bash.d configuration directory directly in the configured IDE. |
 | `set-auto-cleanup-days` | Function | Modifies the threshold in days before exports are automatically deleted. |
@@ -87,16 +86,13 @@ The following commands are automatically parsed and indexed from the codebase do
 | `toggle-auto-cleanup` | Function | Toggles the background execution of the export cleanup script. |
 | `toggle-gemini-extended` | Function | Toggles the Gemini extended reasoning mode flag. |
 
-### Container Orchestration
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `kubectl` | Function | Kubectl wrapper (preserves args). |
-
 ### 🐳 Container Management
 
-* **`docker-reboot-all`** → Restarts all currently running Docker containers gracefully.
-  * **Usage:** `docker-reboot-all`
+* **`docker-ls`** → Lists all running Docker containers in a clean, readable table format.
+  * **Usage:** `docker-ls`
+* **`docker-reboot-all`** → Gracefully restarts running Docker containers. Respects the persistent `docker.restart_blocklist` defined in `config.yaml` to protect stateful containers (like databases).
+  * **Usage:** `docker-reboot-all [-x container1,container2]`
+  * **Options:** `-x` Accepts a comma-separated list of additional containers to exclude dynamically.
 
 ### Development & Build Tools
 
@@ -268,9 +264,8 @@ The following commands are automatically parsed and indexed from the codebase do
 | `vcs-sync-profile` | Function | Git: Sync local bash configs to terminal repo and push (AI-powered commit msgs if configured). |
 | `git-feature` | Function | Git: Create and checkout a new feature branch. |
 | `git-ide` | Function | Git: Clone a repository into ~/vcs/, cd into it, and open in IDE. |
-| `__git_sync_ai_commit` | Function | Analyzes git diffs and calls the Gemini API to produce an automated commit msg. |
+| `__git_sync_ai_commit` | Function | Analyzes git diffs and calls the Gemini API to systematically generate. |
 | `__git_sync_copy_files` | Function | Synchronizes the active bash config files over to the tracked git directory. |
 | `__git_sync_init_repo` | Function | Clones and initializes a repository into the sync directory. |
 | `git-web` | Function | Git: Open the current repository in the default Windows web browser. |
-
 
