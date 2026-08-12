@@ -6,8 +6,7 @@ import sys
 
 def get_config_path():
     return os.path.expanduser(
-        os.environ.get("CONFIG_FILE", "~/.bash.d/config/config.yaml")
-    )
+        os.environ.get("CONFIG_FILE", "~/.bash.d/config/config.yaml"))
 
 
 def load_env():
@@ -28,9 +27,7 @@ def load_env():
             with open(path, "r") as f:
                 d = yaml.safe_load(f) or {}
         except (yaml.YAMLError, OSError) as e:
-            print(
-                f"echo -e '\\033[01;31m🚨 Error parsing config.yaml: {e}\\033[0m' >&2"
-            )
+            print(f"echo -e '\\033[01;31m🚨 Error parsing config.yaml: {e}\\033[0m' >&2")
             return
 
     sys_cfg = d.get("system") or {}
@@ -39,15 +36,14 @@ def load_env():
     )
     print(f"export BASH_THEME={shlex.quote(sys_cfg.get('theme', 'default').lower())}")
     print(
-        f"export DEFAULT_AI={shlex.quote(sys_cfg.get('default_ai', 'gemini').lower())}"
-    )
+        f"export DEFAULT_AI={shlex.quote(sys_cfg.get('default_ai', 'gemini').lower())}")
     print(
         f"export AUTO_CLEANUP_EXPORTS={shlex.quote(str(sys_cfg.get('auto_cleanup_exports', False)).lower())}"
     )
     print(
         f"export AUTO_CLEANUP_DAYS={shlex.quote(str(sys_cfg.get('auto_cleanup_days', 7)))}"
     )
-    
+
     # NEW: Docker Blocklist (comma-separated string)
     docker_cfg = d.get("docker") or {}
     print(
@@ -57,8 +53,7 @@ def load_env():
     gem = d.get("gemini") or d.get("ai") or {}
     print(f"export GEMINI_API_KEY={shlex.quote(gem.get('api_key', ''))}")
     print(
-        f"export GEMINI_VERSION={shlex.quote(gem.get('version', 'gemini-3.6-flash'))}"
-    )
+        f"export GEMINI_VERSION={shlex.quote(gem.get('version', 'gemini-3.6-flash'))}")
     print(
         f"export GEMINI_EXTENDED={shlex.quote(str(gem.get('extended', False)).lower())}"
     )
