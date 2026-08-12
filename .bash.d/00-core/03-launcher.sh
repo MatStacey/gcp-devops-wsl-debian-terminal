@@ -16,7 +16,7 @@ cd-sync() {
 }
 
 #######################################
-# Config: Open sync repository in Windows File Explorer
+# Config: Open sync repository in the platform's native file manager
 # Arguments:
 #   win-sync
 #######################################
@@ -25,7 +25,7 @@ win-sync() {
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  explorer.exe "$(wslpath -w "$SYNC_REPO_DIR")" 2> /dev/null
+  __open_path_gui "$SYNC_REPO_DIR"
 }
 
 #######################################
@@ -49,7 +49,7 @@ sync-web() {
   fi
   web_url="${web_url%.git}"
   echo "🌐 Opening $web_url in browser..."
-  explorer.exe "$web_url" > /dev/null 2>&1
+  __open_url "$web_url"
 }
 
 #######################################
@@ -66,7 +66,7 @@ cd-ai() {
 }
 
 #######################################
-# Config: Open unified AI workspace in Windows File Explorer
+# Config: Open unified AI workspace in the platform's native file manager
 # Arguments:
 #   win-ai
 #######################################
@@ -75,5 +75,5 @@ win-ai() {
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  explorer.exe "$(wslpath -w "$AI_WORKSPACE_DIR")" 2> /dev/null
+  __open_path_gui "$AI_WORKSPACE_DIR"
 }

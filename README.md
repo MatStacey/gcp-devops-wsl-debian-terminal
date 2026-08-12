@@ -1,16 +1,17 @@
 # GCP DevOps WSL2 Debian Terminal
 
-A high-performance, fully modular Bash environment engineered specifically for Senior Cloud, Platform, and DevOps Engineers working within Windows Subsystem for Linux (WSL2) Debian.
+A high-performance, fully modular Bash environment engineered specifically for Senior Cloud, Platform, and DevOps Engineers. Runs natively on Windows Subsystem for Linux (WSL2) Debian and on macOS, with the platform auto-detected at shell startup — the same profile and command set works unmodified on both.
 
 This configuration adheres to DRY principles, relies on native Bash and standalone Python script execution for zero-latency loading, and aggregates modern CLI tools for Google Cloud Platform, Kubernetes, Terraform, and Python development.
 
 ## 🚀 Key Features
 
+* **Cross-Platform (WSL2 Debian & macOS):** A single `OS_FAMILY` auto-detection layer (`00-os.sh`) transparently swaps out platform-specific behavior — `explorer.exe` ↔ `open`, `clip.exe` ↔ `pbcopy`, APT ↔ Homebrew, `batcat` ↔ `bat` — so every command works unmodified on either OS. WSL remains the primary target; macOS support is additive and degrades gracefully on plain Linux too.
 * **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking utilizing zero-subshell file reads for maximum performance. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
-* **Asynchronous Update Checks:** Silently checks for APT package updates in the background on a configurable TTL timer without blocking terminal initialization, prompting only when updates are ready.
+* **Asynchronous Update Checks:** Silently checks for package updates (APT on WSL/Debian, Homebrew on macOS) in the background on a configurable TTL timer without blocking terminal initialization, prompting only when updates are ready.
 * **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment.
 * **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-theme`).
-* **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`).
+* **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required packages — APT on WSL/Debian, Homebrew (installed automatically if missing) on macOS — including Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `bat`/`batcat`).
 * **Native AI Integration:** Consult universal AI via the `ai` command with model selection (`flash`, `flash-lite`, `pro`), extended reasoning flags (`-x`), targeted file context parsing (`-f`), and automated version-controlled payload exports into a unified workspace (`AI_WORKSPACE_DIR`).
 * **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` with configurable thread limits to concurrently validate and run Checkov security scans across all Terraform modules.
 * **Advanced LLM Export Utilities:** Integrated, regex-filtered export commands (`export-all`, `export-tf`, `export-bash`, `export-crf`) designed to safely compile text representations of local codebases for AI prompting, managed via a unified pruning utility (`cleanup-exports`).
@@ -35,7 +36,7 @@ The configuration abandons a monolithic `~/.bashrc` in favor of a logical `.bash
 
 ## 🛠️ Setup & Bootstrapping
 
-1. **Clone the repository** to your local WSL2 machine.
+1. **Clone the repository** to your local WSL2 or macOS machine.
 2. **Run the installation script** to automatically back up existing profiles, scaffold configurations, and sync files:
 
 ```bash
@@ -49,6 +50,8 @@ The configuration abandons a monolithic `~/.bashrc` in favor of a logical `.bash
 bootstrap
 
 ```
+
+**macOS-specific note:** You do not need to pre-install Homebrew — `bootstrap` detects macOS via `OS_FAMILY` and installs Homebrew automatically (via the official install script) if `brew` isn't already on your `PATH`, then uses it to install the same tool set APT provides on WSL/Debian (`jq`, `fzf`, `ripgrep`, `bat`, `rsync`, `shfmt`, `yq`, `eza`, `zoxide`, etc.). If you'd rather install Homebrew yourself first, `bootstrap` will simply detect and use the existing installation.
 
 ---
 

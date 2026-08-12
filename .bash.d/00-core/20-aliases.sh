@@ -14,9 +14,12 @@ alias cdvcs='cd "$VCS_ROOT"'
 #######################################
 alias cdvcsp='cd "$VCS_PERSONAL"'
 #######################################
-# Pipe output to Windows clipboard (e.g. cat file | clip)
+# Pipe output to the system clipboard (e.g. cat file | clip)
+# Uses clip.exe on WSL, pbcopy on macOS, xclip/xsel on plain Linux.
 #######################################
-alias clip='clip.exe'
+clip() {
+  __clip_copy
+}
 #######################################
 # Print all aliases and functions
 #######################################
@@ -34,21 +37,23 @@ alias rld='source ~/.bashrc'
 #######################################
 alias sys-install-reload='sys-update;bootstrap-deps;reload'
 #######################################
-# Updates Debian/Ubuntu packages
+# Open ~/vcs/personal/exports in the platform's native file manager
 #######################################
-alias sys-update='sudo apt update && sudo apt upgrade'
+win-export() {
+  __open_path_gui "$VCS_EXPORTS"
+}
 #######################################
-# Open ~/vcs/personal/exports Windows Explorer
+# Open ~/vcs in the platform's native file manager
 #######################################
-alias win-export='explorer.exe "$(wslpath -w "$VCS_EXPORTS")"'
+win-vcs() {
+  __open_path_gui "$VCS_ROOT"
+}
 #######################################
-# Open ~/vcs Windows Explorer
+# Open current directory in the platform's native file manager
 #######################################
-alias win-vcs='explorer.exe "$(wslpath -w "$VCS_ROOT")"'
-#######################################
-# Open current WSL dir in
-#######################################
-alias win='explorer.exe .'
+win() {
+  __open_path_gui "$PWD"
+}
 
 # ------------------------------------------
 # Development & Build Tools
@@ -91,12 +96,13 @@ alias venv-up='source venv/bin/activate'
 # ------------------------------------------
 #######################################
 # bat: Print file contents with syntax highlighting
+# Resolves to 'batcat' on Debian/WSL, 'bat' on macOS/Homebrew (see BAT_BIN).
 #######################################
-alias cat='batcat --style=plain'
+alias cat="$BAT_BIN --style=plain"
 #######################################
 # bat: Print file contents with line numbers & Git gutters
 #######################################
-alias ccat='batcat'
+alias ccat="$BAT_BIN"
 #######################################
 # Pretty-print JSON stream
 #######################################
@@ -121,4 +127,3 @@ alias tree='eza --tree'
 # Pretty-print YAML stream (requires yq)
 #######################################
 alias yaml-fmt='yq -P'
-alias sys-install='sudo apt update && sudo apt upgrade && rm -f $HOME/.bash.d/.update_pending'

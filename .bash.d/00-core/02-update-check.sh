@@ -29,10 +29,20 @@ __check_updates() {
   local ttl="${UPDATE_CHECK_TTL_SEC:-43200}"
 
   if ((current_time - last_check >= ttl)); then
-    # Fire the APT check asynchronously in a background subshell (Zero startup lag)
+    # Fire the package update check asynchronously in a background subshell
+    # (Zero startup lag). APT on Debian/WSL, Homebrew on macOS.
     (
       local count
-      count=$(apt list --upgradable 2> /dev/null | grep -c -v 'Listing...')
+      if [ "$OS_FAMILY" = "macos" ]; then
+        if command -v brew > /dev/null 2>&1; then
+          count=$(brew outdated 2> /dev/null | grep -c .)
+        else
+          count=0
+        fi
+      else
+        count=$(apt list --upgradable 2> /dev/null | grep -c -v 'Listing...')
+      fi
+
       if [ "$count" -gt 0 ]; then
         echo "$count" > "$pending_file"
       else

@@ -2,6 +2,20 @@
 # MyTools Documentation & Runner
 # ------------------------------------------
 
+#######################################
+# Prints the most recent mtime across all .bash.d/*.sh files, used to
+# invalidate the mytools cache. GNU find's `-printf` isn't available on
+# macOS/BSD find, so fall back to `stat -f %m` there.
+#######################################
+__bashd_latest_mod() {
+  local bashd_dir="$1"
+  if [ "$OS_FAMILY" = "macos" ]; then
+    find "$bashd_dir" -type f -name "*.sh" -exec stat -f '%m' {} \; 2> /dev/null | sort -n | tail -1
+  else
+    find "$bashd_dir" -type f -name "*.sh" -printf '%T@\n' 2> /dev/null | sort -n | tail -1
+  fi
+}
+
 __rebuild_mytools_cache() {
   local bashd_dir="$HOME/.bash.d"
   local cache_file="$bashd_dir/.mt_cache"
@@ -40,7 +54,7 @@ __rebuild_mytools_cache() {
     echo ""
   } > "$cache_file"
 
-  local latest_mod=$(find "$bashd_dir" -type f -name "*.sh" -printf '%T@\n' 2> /dev/null | sort -n | tail -1)
+  local latest_mod=$(__bashd_latest_mod "$bashd_dir")
   echo "$latest_mod" > "$time_file"
 }
 
@@ -53,7 +67,7 @@ mytools() {
   local bashd_dir="$HOME/.bash.d"
   local cache_file="$bashd_dir/.mt_cache"
   local time_file="${cache_file}.time"
-  local latest_mod=$(find "$bashd_dir" -type f -name "*.sh" -printf '%T@\n' 2> /dev/null | sort -n | tail -1)
+  local latest_mod=$(__bashd_latest_mod "$bashd_dir")
 
   if [ ! -f "$cache_file" ] || [ ! -f "$time_file" ] || [ "$(cat "$time_file" 2> /dev/null)" != "$latest_mod" ]; then
     __rebuild_mytools_cache
@@ -212,7 +226,7 @@ mt-help() {
 			print "\033[1;32m" $0 "\033[0m"
 			exit
 		}
-	' "$file_path" | batcat --language=bash --style=plain 2> /dev/null ||
+	' "$file_path" | "$BAT_BIN" --language=bash --style=plain 2> /dev/null ||
     awk -v target="$target" '
 		/^#######################################/ { block = $0 "\n"; in_block = 1; next }
 		in_block && /^#/ { block = block $0 "\n"; next }

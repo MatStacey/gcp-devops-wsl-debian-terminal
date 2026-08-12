@@ -288,9 +288,9 @@ git() {
 }
 
 #######################################
-# Git: Open the current repository in the default Windows web browser
+# Git: Open the current repository in the default web browser
 # Outputs:
-#   Fires explorer.exe call.
+#   Opens the remote URL via the platform's default browser launcher.
 # Returns:
 #   0 on success, 1 if no upstream origin is found.
 #######################################
@@ -315,7 +315,7 @@ git-web() {
 
   web_url="${web_url%.git}"
   echo "🌐 Opening $web_url in browser..."
-  explorer.exe "$web_url" > /dev/null 2>&1
+  __open_url "$web_url"
 }
 
 #######################################
@@ -369,6 +369,6 @@ git-ide() {
   echo "🚀 Opening in $selected_ide..."
 
   [ "$selected_ide" = "intellij" ] &&
-    { idea . &> /dev/null || idea.exe . &> /dev/null || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' or 'idea.exe' is in your PATH."; } ||
+    { __launch_intellij . || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS."; } ||
     code -n .
 }

@@ -3,26 +3,39 @@
 # ------------------------------------------
 
 __win_explorer_focus() {
-  local target_path
-  target_path=$(wslpath -m "$1")
+  case "$OS_FAMILY" in
+    macos)
+      # `open` already reveals/refocuses an existing Finder window for the
+      # path, so there's no COM-style refocus trick needed here.
+      open "$1" 2> /dev/null
+      ;;
+    wsl)
+      local target_path
+      target_path=$(wslpath -m "$1")
 
-  local ps_script="
+      local ps_script="
 	\$path = '${target_path}'.TrimEnd([char]47);
 	\$shell = New-Object -ComObject Shell.Application;
-	\$win = @(\$shell.Windows() | Where-Object { 
-		\$null -ne \$_.Document -and \$null -ne \$_.Document.Folder -and 
-		\$_.Document.Folder.Self.Path.Replace([char]92, [char]47).TrimEnd([char]47) -eq \$path 
+	\$win = @(\$shell.Windows() | Where-Object {
+		\$null -ne \$_.Document -and \$null -ne \$_.Document.Folder -and
+		\$_.Document.Folder.Self.Path.Replace([char]92, [char]47).TrimEnd([char]47) -eq \$path
 	})[0];
-	
-	if (\$win) { 
-		\$win.Refresh(); 
-		(New-Object -ComObject WScript.Shell).AppActivate(\$win.Name); 
-	} else { 
+
+	if (\$win) {
+		\$win.Refresh();
+		(New-Object -ComObject WScript.Shell).AppActivate(\$win.Name);
+	} else {
 		\$winPath = \$path.Replace([char]47, [char]92);
-		Invoke-Item -LiteralPath \$winPath; 
+		Invoke-Item -LiteralPath \$winPath;
 	}"
 
-  powershell.exe -NoProfile -Command "$ps_script" > /dev/null 2>&1
+      powershell.exe -NoProfile -Command "$ps_script" > /dev/null 2>&1
+      ;;
+    *)
+      # No native window-focus mechanism on plain Linux; best effort only.
+      command -v xdg-open > /dev/null 2>&1 && xdg-open "$1" > /dev/null 2>&1
+      ;;
+  esac
 }
 
 __vcs_core_export() {
