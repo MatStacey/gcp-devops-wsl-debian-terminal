@@ -313,26 +313,3 @@ set-auto-cleanup-days() { # => Config: Modifies the threshold in days before exp
   export AUTO_CLEANUP_DAYS="$1"
   echo "✅ Auto-cleanup threshold set to $1 days."
 }
-
-google-fmt() { # => Config: Format Python and Shell scripts according to Google Style Guides [Usage: google-fmt]
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-
-  echo "🎨 Formatting Python scripts (Google Python Style)..."
-  if command -v yapf > /dev/null 2>&1; then
-    yapf -r -i --style="{based_on_style: google, column_limit: 88, spaces_before_comment: 2}" .
-    echo "✅ Python formatting complete."
-  else
-    echo "⚠️ 'yapf' not found. Run 'bootstrap' to install it."
-  fi
-
-  echo "🎨 Formatting Shell scripts (Google Shell Style Guide)..."
-  if command -v shfmt > /dev/null 2>&1; then
-    shfmt -i 2 -ci -sr -w .
-    echo "✅ Shell script formatting complete."
-  else
-    echo "⚠️ 'shfmt' not found."
-  fi
-}

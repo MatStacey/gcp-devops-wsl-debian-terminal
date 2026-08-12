@@ -1,34 +1,11 @@
 # ------------------------------------------
-# Terraform
+# Terraform & Kubernetes Wrappers
 # ------------------------------------------
 
-# ------------------------------------------
-# Infrastructure as Code
-# ------------------------------------------
 #######################################
 # Checkov: Scan local terraform directory (./terraform)
 #######################################
 alias tf-scan='checkov -d terraform/ --framework terraform --quiet'
-#######################################
-# Terraform: Base command
-#######################################
-alias tf='terraform'
-#######################################
-# Terraform: Apply deployment
-#######################################
-alias tfa='terraform apply'
-#######################################
-# Terraform: Destroy resources
-#######################################
-alias tfd='terraform destroy'
-#######################################
-# Terraform: Format all TF files recursively
-#######################################
-alias tff='terraform fmt -recursive'
-#######################################
-# Terraform: Plan deployment
-#######################################
-alias tfp='terraform plan'
 
 #######################################
 # Terraform wrapper (preserves args)
