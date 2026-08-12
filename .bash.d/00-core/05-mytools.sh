@@ -199,6 +199,10 @@ mt-help() {
   local file_path=$(grep -rlE "^(alias ${target}=|${target}\(\)[ \t]*\{)" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
 
   if [ -z "$file_path" ]; then
+    if ! type -t "$target" > /dev/null 2>&1; then
+      echo "🚨 Error: '\''$target'\'' is not a recognized command, alias, or function."
+      return 1
+    fi
     echo "⚠️  '$target' is not a custom MyTools command. Falling back to native help..."
     "$target" --help 2> /dev/null || man "$target" || "$target" -h
     return $?
