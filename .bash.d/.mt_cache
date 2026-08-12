@@ -13,20 +13,7 @@
     [38;2;76;86;106m•[0m [1;38;2;136;192;208m__ai_save_output        [0m [38;2;76;86;106m→[0m [38;2;236;239;244mFormats and saves the generated code from LLMs into standard directories.[0m
 
   [1;38;2;235;203;139m[Configuration Management][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208madd-claude-key          [0m [38;2;76;86;106m→[0m [38;2;236;239;244mAdds a Claude API key to the local YAML configuration.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208madd-gemini-key          [0m [38;2;76;86;106m→[0m [38;2;236;239;244mAdds a Gemini API key to the local YAML configuration.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208madd-sync-url            [0m [38;2;76;86;106m→[0m [38;2;236;239;244mConfigures the remote git URL for the bash profile synchronization tool.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgoogle-fmt              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mFormats Python and Shell scripts according to Google Style Guides.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mmt-theme                [0m [38;2;76;86;106m→[0m [38;2;236;239;244mOpens an interactive fuzzy-finder menu to select and apply a theme.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mopen-bashd-config       [0m [38;2;76;86;106m→[0m [38;2;236;239;244mOpens the bash.d configuration directory directly in the configured IDE.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mset-auto-cleanup-days   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mModifies the threshold in days before exports are automatically deleted.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mset-claude-version      [0m [38;2;76;86;106m→[0m [38;2;236;239;244mSets the default Claude model version in configuration.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mset-default-ai          [0m [38;2;76;86;106m→[0m [38;2;236;239;244mSets the default LLM provider for the 'ai' command suite.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mset-default-ide         [0m [38;2;76;86;106m→[0m [38;2;236;239;244mSets the default local IDE for launch commands.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mset-gemini-version      [0m [38;2;76;86;106m→[0m [38;2;236;239;244mSets the default Gemini model version in configuration.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mset-theme               [0m [38;2;76;86;106m→[0m [38;2;236;239;244mSets the active terminal color theme and reloads the color profile.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtoggle-auto-cleanup     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mToggles the background execution of the export cleanup script.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtoggle-gemini-extended  [0m [38;2;76;86;106m→[0m [38;2;236;239;244mToggles the Gemini extended reasoning mode flag.[0m
+    [38;2;76;86;106m•[0m [1;38;2;136;192;208mget-gemini-status       [0m [38;2;76;86;106m→[0m [38;2;236;239;244mPrints the current Gemini API model version and extended reasoning mode toggle.[0m
 
   [1;38;2;235;203;139m[Container Orchestration][0m
     [38;2;76;86;106m•[0m [1;38;2;136;192;208mkubectl                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mKubectl wrapper (preserves args)[0m

@@ -4,20 +4,7 @@ func	Centralized Theme & Colors	_ai_get_next_version	Calculates the next availab
 func	Centralized Theme & Colors	__ai_query_claude	Formats payload and queries the Anthropic Claude API.
 func	Centralized Theme & Colors	__ai_query_gemini	Formats payload and queries the Google Gemini API.
 func	Centralized Theme & Colors	__ai_save_output	Formats and saves the generated code from LLMs into standard directories.
-func	Configuration Management	add-claude-key	Adds a Claude API key to the local YAML configuration.
-func	Configuration Management	add-gemini-key	Adds a Gemini API key to the local YAML configuration.
-func	Configuration Management	add-sync-url	Configures the remote git URL for the bash profile synchronization tool.
-func	Configuration Management	google-fmt	Formats Python and Shell scripts according to Google Style Guides.
-func	Configuration Management	mt-theme	Opens an interactive fuzzy-finder menu to select and apply a theme.
-func	Configuration Management	open-bashd-config	Opens the bash.d configuration directory directly in the configured IDE.
-func	Configuration Management	set-auto-cleanup-days	Modifies the threshold in days before exports are automatically deleted.
-func	Configuration Management	set-claude-version	Sets the default Claude model version in configuration.
-func	Configuration Management	set-default-ai	Sets the default LLM provider for the 'ai' command suite.
-func	Configuration Management	set-default-ide	Sets the default local IDE for launch commands.
-func	Configuration Management	set-gemini-version	Sets the default Gemini model version in configuration.
-func	Configuration Management	set-theme	Sets the active terminal color theme and reloads the color profile.
-func	Configuration Management	toggle-auto-cleanup	Toggles the background execution of the export cleanup script.
-func	Configuration Management	toggle-gemini-extended	Toggles the Gemini extended reasoning mode flag.
+func	Configuration Management	get-gemini-status	Prints the current Gemini API model version and extended reasoning mode toggle.
 func	Container Orchestration	kubectl	Kubectl wrapper (preserves args)
 func	GCP: Configuration & Authentication	gcl-config	GCP: List active configuration properties
 func	GCP: Configuration & Authentication	gcl-export-vars	GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell
