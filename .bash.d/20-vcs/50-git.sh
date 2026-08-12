@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ------------------------------------------
 # Version Control (Git)
 # ------------------------------------------
@@ -44,7 +45,7 @@ __git_sync_copy_files() {
   mkdir -p "$repo_dir/.bash.d"
 
   # Exclude root files and folders from the subfolder mirror so they do not duplicate
-  rsync -a --exclude "config/config.yaml" --exclude "README.md" --exclude ".bashrc" --exclude "install.sh" --exclude ".gitignore" --exclude ".github" --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+  rsync -a --exclude "config/config.yaml" --exclude "config/.env.cache" --exclude "config/.env.cache" --exclude "README.md" --exclude ".bashrc" --exclude "install.sh" --exclude ".gitignore" --exclude ".github" --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
   # Explicitly copy individual root files to the repository root for GitHub
   for f in README.md .bashrc install.sh .gitignore; do
@@ -89,7 +90,8 @@ __git_sync_ai_commit() {
     }
 
   local bytes_limit="${AI_MAX_DIFF_BYTES:-4000}"
-  local diff_content=$(git -C "$repo_dir" diff --staged | head -c "$bytes_limit")
+  local diff_content
+  diff_content=$(git -C "$repo_dir" diff --staged | head -c "$bytes_limit")
 
   [ -z "$diff_content" ] && return 0
 
@@ -97,13 +99,16 @@ __git_sync_ai_commit() {
 
   local ai_prompt="Analyze this git diff and group the changes into logical features/tasks. Return ONLY a valid JSON array of objects representing separate commits. Each object must have a 'files' array (exact file paths from the diff) and a 'message' string (conventional commit format, < 60 chars).\n\nExample Output:\n[\n  { \"files\": [\"path/to/file1\"], \"message\": \"feat: added new module\" }\n]\n\nGit Diff:\n\n$diff_content"
 
-  local prompt_json=$(jq -n --arg p "$ai_prompt" '{ contents: [{ parts: [{ text: $p }] }] }')
+  local prompt_json
+  prompt_json=$(jq -n --arg p "$ai_prompt" '{ contents: [{ parts: [{ text: $p }] }] }')
   local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_VERSION:-gemini-3.6-flash}:generateContent"
 
-  local response=$(curl -s -X POST "$api_url" -H "x-goog-api-key: ${GEMINI_API_KEY}" -H 'Content-Type: application/json' -d "$prompt_json")
+  local response
+  response=$(curl -s -X POST "$api_url" -H "x-goog-api-key: ${GEMINI_API_KEY}" -H 'Content-Type: application/json' -d "$prompt_json")
 
   # Extract JSON Array, stripping any conversational markdown wrappers
-  local generated_json=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty' | python3 -c '
+  local generated_json
+  generated_json=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty' | python3 -c '
 import sys, re
 text = sys.stdin.read()
 match = re.search(r"\[.*\]", text, re.DOTALL)
@@ -116,7 +121,8 @@ else: print(text)
     git -C "$repo_dir" reset HEAD > /dev/null 2>&1
 
     echo "$generated_json" | jq -c '.[]' | while read -r commit_obj; do
-      local msg=$(echo "$commit_obj" | jq -r '.message')
+      local msg
+      msg=$(echo "$commit_obj" | jq -r '.message')
       local files_staged=0
 
       while read -r file_path; do
@@ -285,7 +291,8 @@ git() {
   mkdir -p "$VCS_ROOT"
   echo "📥 Intercepting 'git clone': Redirecting to $VCS_ROOT/..."
   if (cd "$VCS_ROOT" && command git clone "$@"); then
-    local repo_name=$(basename "${@: -1}" .git)
+    local repo_name
+    repo_name=$(basename "${@: -1}" .git)
     echo -e "\n✅ Repository cloned successfully.\n💡 To navigate to it, run: cd $VCS_ROOT/$repo_name"
   fi
 }
@@ -302,7 +309,8 @@ git-web() {
     mt-help "${FUNCNAME[0]}"
     return 0
   }
-  local origin_url=$(git config --get remote.origin.url 2> /dev/null)
+  local origin_url
+  origin_url=$(git config --get remote.origin.url 2> /dev/null)
 
   [ -z "$origin_url" ] && {
     echo "🚨 Error: No remote 'origin' found for the current repository."
@@ -358,7 +366,8 @@ git-ide() {
   }
 
   mkdir -p "$VCS_ROOT"
-  local repo_name=$(basename "$repo_url" .git)
+  local repo_name
+  repo_name=$(basename "$repo_url" .git)
 
   echo "📥 Cloning $repo_name to $VCS_ROOT/..."
 

@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ------------------------------------------
 # MyTools Documentation & Runner
 # ------------------------------------------
@@ -54,7 +55,8 @@ __rebuild_mytools_cache() {
     echo ""
   } > "$cache_file"
 
-  local latest_mod=$(__bashd_latest_mod "$bashd_dir")
+  local latest_mod
+  latest_mod=$(__bashd_latest_mod "$bashd_dir")
   echo "$latest_mod" > "$time_file"
 }
 
@@ -67,7 +69,8 @@ mytools() {
   local bashd_dir="$HOME/.bash.d"
   local cache_file="$bashd_dir/.mt_cache"
   local time_file="${cache_file}.time"
-  local latest_mod=$(__bashd_latest_mod "$bashd_dir")
+  local latest_mod
+  latest_mod=$(__bashd_latest_mod "$bashd_dir")
 
   if [ ! -f "$cache_file" ] || [ ! -f "$time_file" ] || [ "$(command cat "$time_file" 2> /dev/null)" != "$latest_mod" ]; then
     __rebuild_mytools_cache
@@ -135,9 +138,11 @@ mt-run() {
     return 0
   }
   mytools > /dev/null
-  local selected=$(awk -F'\t' '{ printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$HOME/.bash.d/.mt_data.tsv" | fzf --ansi --prompt="Run Tool > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
+  local selected
+  selected=$(awk -F'\t' '{ printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$HOME/.bash.d/.mt_data.tsv" | fzf --ansi --prompt="Run Tool > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
   if [ -n "$selected" ]; then
-    local cmd_name=$(echo "$selected" | awk '{print $1}')
+    local cmd_name
+    cmd_name=$(echo "$selected" | awk '{print $1}')
     echo -e "${CB_GREEN}🚀 Executing:${C_RESET} ${cmd_name}"
     eval "$cmd_name"
   fi
@@ -162,7 +167,8 @@ mt-fzf() {
     return 0
   }
   mytools > /dev/null
-  local selected=$(awk -F'\t' '{ printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$HOME/.bash.d/.mt_data.tsv" | fzf --ansi --prompt="Search MyTools > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
+  local selected
+  selected=$(awk -F'\t' '{ printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$HOME/.bash.d/.mt_data.tsv" | fzf --ansi --prompt="Search MyTools > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
   [ -n "$selected" ] && echo "$selected" | awk '{print $1}'
 }
 
@@ -196,7 +202,8 @@ mt-help() {
     return 1
   }
 
-  local file_path=$(grep -rlE "^(alias ${target}=|${target}\(\)[ \t]*\{)" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
+  local file_path
+  file_path=$(grep -rlE "^(alias ${target}=|${target}\(\)[ \t]*\{)" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
 
   if [ -z "$file_path" ]; then
     if ! type -t "$target" > /dev/null 2>&1; then
@@ -254,13 +261,15 @@ mt-help() {
 
 _mt_cat_completions() {
   local IFS=$'\n'
-  local cats=$(cut -f2 "$HOME/.bash.d/.mt_data.tsv" 2> /dev/null | sort -u)
+  local cats
+  cats=$(cut -f2 "$HOME/.bash.d/.mt_data.tsv" 2> /dev/null | sort -u)
   COMPREPLY=($(compgen -W "$cats" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 complete -F _mt_cat_completions mt-cat
 
 _mt_help_completions() {
-  local tools=$(cut -f3 "$HOME/.bash.d/.mt_data.tsv" 2> /dev/null)
+  local tools
+  tools=$(cut -f3 "$HOME/.bash.d/.mt_data.tsv" 2> /dev/null)
   COMPREPLY=($(compgen -W "$tools" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 complete -F _mt_help_completions mt-help

@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ------------------------------------------
 # LLM Code Export Utilities
 # ------------------------------------------
@@ -57,7 +58,7 @@ __vcs_core_export() {
 
   local export_file="${target_dir}/${export_prefix}-${timestamp}-v1.0.${patch}.txt"
   echo "Compiling codebase into ${export_file}..."
-  > "$export_file"
+  : > "$export_file"
 
   find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" -print0 | while IFS= read -r -d '' file; do
     local clean_file="${file#./}"
@@ -72,7 +73,8 @@ __vcs_core_export() {
     echo -e "\n" >> "$export_file"
   done
 
-  local file_size=$(du -h "$export_file" | cut -f1)
+  local file_size
+  file_size=$(du -h "$export_file" | cut -f1)
   echo "✅ Export saved to $export_file ($file_size)"
   __win_explorer_focus "$target_dir"
 }

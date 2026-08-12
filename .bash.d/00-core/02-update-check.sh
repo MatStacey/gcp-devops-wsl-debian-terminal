@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ------------------------------------------
 # System Update Check
 # ------------------------------------------
@@ -46,7 +47,7 @@ __check_updates() {
       if [ "$count" -gt 0 ]; then
         echo "$count" > "$pending_file"
       else
-        echo "$(date +%s)" > "$cache_file"
+        date +%s > "$cache_file"
       fi
     ) &
     disown

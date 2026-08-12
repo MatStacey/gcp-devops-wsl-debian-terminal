@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ------------------------------------------
 # GCP: Configuration & Authentication
 # ------------------------------------------
@@ -18,7 +19,7 @@ __get_gcp_config_val() {
   local gcp_config_file="$HOME/.config/gcloud/configurations/config_${gcp_active}"
 
   if [ -f "$gcp_config_file" ]; then
-    while read -r key equal val; do
+    while read -r key _ val; do
       if [ "$key" = "$target_key" ]; then
         echo "$val"
         return 0

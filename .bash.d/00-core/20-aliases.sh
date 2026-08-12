@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ------------------------------------------
 # System & Navigation
 # ------------------------------------------
@@ -31,7 +32,6 @@ alias reload='source ~/.bashrc'
 #######################################
 # Reload Bash profile
 #######################################
-alias rld='source ~/.bashrc'
 #######################################
 # Update, Upgrade, Boostrap, Reload
 #######################################
@@ -98,10 +98,12 @@ alias venv-up='source venv/bin/activate'
 # bat: Print file contents with syntax highlighting
 # Resolves to 'batcat' on Debian/WSL, 'bat' on macOS/Homebrew (see BAT_BIN).
 #######################################
+# shellcheck disable=SC2139
 alias cat="$BAT_BIN --style=plain"
 #######################################
 # bat: Print file contents with line numbers & Git gutters
 #######################################
+# shellcheck disable=SC2139
 alias ccat="$BAT_BIN"
 #######################################
 # Pretty-print JSON stream

@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ------------------------------------------
 # Path & URL Launchers (Config-Driven)
 # ------------------------------------------

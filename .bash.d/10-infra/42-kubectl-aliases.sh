@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ------------------------------------------
 # Container Orchestration (Kubernetes)
 # ------------------------------------------

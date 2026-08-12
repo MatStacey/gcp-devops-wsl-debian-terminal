@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 export C_RED=$'\e[31m'
 export C_GREEN=$'\e[32m'
 export C_YELLOW=$'\e[33m'

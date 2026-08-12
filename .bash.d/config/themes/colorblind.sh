@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Okabe-Ito Accessible Color Palette
 export C_RED=$'\e[38;2;213;94;0m'      # Vermillion
 export C_GREEN=$'\e[38;2;0;158;115m'   # Bluish Green

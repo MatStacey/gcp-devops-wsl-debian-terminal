@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ------------------------------------------
 # Configuration Management
 # ------------------------------------------
@@ -265,7 +266,8 @@ set-theme() { # => Config: Set terminal color theme [Usage: set-theme "theme_nam
 
 _set_theme_completions() {
   if [ -d "${THEMES_DIR}" ]; then
-    local themes=$(find "${THEMES_DIR}" -name "*.sh" -exec basename {} .sh \;)
+    local themes
+    themes=$(find "${THEMES_DIR}" -name "*.sh" -exec basename {} .sh \;)
     COMPREPLY=($(compgen -W "$themes" -- "${COMP_WORDS[COMP_CWORD]}"))
   fi
 }
@@ -281,7 +283,8 @@ mt-theme() { # => Config: Interactive menu to select and apply a theme [Usage: m
     return 1
   }
 
-  local selected_theme=$(find "${THEMES_DIR}" -maxdepth 1 -name "*.sh" -exec basename {} .sh \; | sort | fzf --prompt="🎨 Select Theme > " --height=~10 --layout=reverse --border)
+  local selected_theme
+  selected_theme=$(find "${THEMES_DIR}" -maxdepth 1 -name "*.sh" -exec basename {} .sh \; | sort | fzf --prompt="🎨 Select Theme > " --height=~10 --layout=reverse --border)
 
   [ -n "$selected_theme" ] && set-theme "$selected_theme" || echo "Theme selection cancelled."
 }

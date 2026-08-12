@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ~/.bash.d/00-env.sh
 
 # Only prepend ANT_ROOT if it's actually set — an empty/unset var here

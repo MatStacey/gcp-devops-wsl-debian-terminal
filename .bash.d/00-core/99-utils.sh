@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 #######################################
 # Docker: Restart all currently running Docker containers
 # Globals:
@@ -42,7 +43,8 @@ docker-reboot-all() {
     IFS=',' read -ra exclude_arr <<< "$full_excludes"
     for item in "${exclude_arr[@]}"; do
       # Trim leading/trailing whitespace
-      local trimmed_item=$(echo "$item" | xargs)
+      local trimmed_item
+      trimmed_item=$(echo "$item" | xargs)
       if [ -n "$trimmed_item" ]; then
         filter_args+=" --filter name=^/(?!${trimmed_item}$).*$"
       fi

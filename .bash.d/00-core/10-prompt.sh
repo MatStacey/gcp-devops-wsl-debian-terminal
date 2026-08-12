@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ~/.bash.d/10-prompt.sh
 # Generate dynamic zero-lag prompt with clickable links and color-coded Git status
 
@@ -7,7 +8,7 @@ __prompt_gcp_info() {
 
   local gcp_config_file="$HOME/.config/gcloud/configurations/config_${gcp_active}"
   if [ -f "$gcp_config_file" ]; then
-    while read -r key equal val; do
+    while read -r key _ val; do
       [ "$key" = "project" ] && __prompt_gcp_proj="$val"
       [ "$key" = "account" ] && __prompt_gcp_acct="$val"
     done < "$gcp_config_file"

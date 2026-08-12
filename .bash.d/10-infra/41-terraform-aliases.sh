@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ------------------------------------------
 # Terraform
 # ------------------------------------------
@@ -121,14 +122,16 @@ tf-yaml() {
   if [ -n "$env_name" ]; then
     echo -e "${CB_BLUE}🔄 Parsing variables for environment '${env_name}' from ${yaml_file}...${C_RESET}"
 
-    local tmp_globals=$(mktemp)
-    local tmp_env=$(mktemp)
+    local tmp_globals
+    tmp_globals=$(mktemp)
+    local tmp_env
+    tmp_env=$(mktemp)
 
     # 1. Isolate global configurations (ignoring environments)
     yq 'del(.environments)' "$yaml_file" > "$tmp_globals"
 
     # 2. Extract specific environment configurations
-    yq ".environments["${env_name}"]" "$yaml_file" > "$tmp_env"
+    yq ".environments[\"${env_name}\"]" "$yaml_file" > "$tmp_env"
 
     if [ "$(command cat "$tmp_env")" = "null" ]; then
       echo -e "${CB_RED}🚨 Error: Environment '${env_name}' not found in ${yaml_file}.${C_RESET}"

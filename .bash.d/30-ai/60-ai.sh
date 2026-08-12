@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ~/.bash.d/30-ai/60-ai.sh
 
 if [[ -z "${URI_GEMINI_MODELS:-}" ]]; then readonly URI_GEMINI_MODELS="https://generativelanguage.googleapis.com/v1beta/models"; fi
@@ -52,7 +53,8 @@ __ai_build_context() {
   context_file=$(mktemp)
   local blocklist="${EXPORT_BLOCKLIST:-(secret|token|credential|password|passwd|id_rsa|id_ed25519|\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)?$|(^|/)\.env(\..+)?$|lock\.hcl|__pycache__)}"
   find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" -print0 | while IFS= read -r -d '' file; do
-    local clean_file="${file#./}" lower_file="${clean_file,,}"
+    local clean_file="${file#./}"
+    local lower_file="${clean_file,,}"
     [[ "$lower_file" =~ \.(png|jpe?g|gif|ico|pdf|zip|tar|gz|mp4|mp3|wav|exe|dll|so|class|jar|bin|o|pyc|tfstate)$ ]] && continue
     [[ "$lower_file" =~ $blocklist ]] && continue
 
@@ -110,15 +112,19 @@ __ai_query_gemini() {
     prompt_json=$(jq -n --arg p "${prompt}" --arg t "${title}" '{ contents: [{ parts: [{ text: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p) }] }] }')
   fi
 
-  local system_json=$(jq -n --arg sp "${AI_SYSTEM_PROMPT}" '{ systemInstruction: { parts: [{ text: $sp }] } }')
-  local payload_file=$(mktemp)
+  local system_json
+  system_json=$(jq -n --arg sp "${AI_SYSTEM_PROMPT}" '{ systemInstruction: { parts: [{ text: $sp }] } }')
+  local payload_file
+  payload_file=$(mktemp)
   jq -s '.[0] * .[1] * .[2]' "$HOME/.bash.d/config/gemini-config.json" <(echo "$system_json") <(echo "$prompt_json") > "$payload_file"
 
   echo "⏳ Querying Gemini ($final_model)..." >&2
-  local response=$(curl -s -X POST "${api_url}" -H "x-goog-api-key: ${GEMINI_API_KEY}" -H 'Content-Type: application/json' -d @"$payload_file")
+  local response
+  response=$(curl -s -X POST "${api_url}" -H "x-goog-api-key: ${GEMINI_API_KEY}" -H 'Content-Type: application/json' -d @"$payload_file")
 
   rm -f "$payload_file"
-  local content=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty')
+  local content
+  content=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty')
 
   [ -z "$content" ] && {
     echo "🚨 Error: Failed to get a valid response from Gemini." >&2
@@ -159,15 +165,19 @@ __ai_query_claude() {
     prompt_json=$(jq -n --arg p "${prompt}" --arg t "${title}" '{ messages: [{ role: "user", content: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p) }] }')
   fi
 
-  local system_json=$(jq -n --arg sp "${AI_SYSTEM_PROMPT}" '{ system: $sp }')
-  local payload_file=$(mktemp)
+  local system_json
+  system_json=$(jq -n --arg sp "${AI_SYSTEM_PROMPT}" '{ system: $sp }')
+  local payload_file
+  payload_file=$(mktemp)
   jq -s '.[0] * .[1] * .[2] * {model: $model}' "$HOME/.bash.d/config/claude-config.json" <(echo "$system_json") <(echo "$prompt_json") --arg model "$final_model" > "$payload_file"
 
   echo "⏳ Querying Claude ($final_model)..." >&2
-  local response=$(curl -s -X POST "${api_url}" -H "x-api-key: ${CLAUDE_API_KEY}" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d @"$payload_file")
+  local response
+  response=$(curl -s -X POST "${api_url}" -H "x-api-key: ${CLAUDE_API_KEY}" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d @"$payload_file")
 
   rm -f "$payload_file"
-  local content=$(echo "$response" | jq -r '.content[0].text // empty')
+  local content
+  content=$(echo "$response" | jq -r '.content[0].text // empty')
 
   [ -z "$content" ] && {
     echo "🚨 Error: Failed to get a valid response from Claude." >&2
@@ -215,7 +225,8 @@ __ai_save_output() {
     esac
 
     mkdir -p "$target_dir"
-    local version=$(_ai_get_next_version "$base_name" "$ext")
+    local version
+    version=$(_ai_get_next_version "$base_name" "$ext")
     target_file_path="${base_name}-${version}.${ext}"
   fi
 
@@ -267,7 +278,8 @@ ai() {
     return 1
   }
 
-  local context_file=$(__ai_build_context "$target_file" "$export_context")
+  local context_file
+  context_file=$(__ai_build_context "$target_file" "$export_context")
   [ $? -ne 0 ] && return 1
 
   local content=""
@@ -283,7 +295,8 @@ ai() {
 
   [ -f "$context_file" ] && rm -f "$context_file"
 
-  local clean_content=$(echo "$content" | python3 -c '
+  local clean_content
+  clean_content=$(echo "$content" | python3 -c '
 import sys, re
 text = sys.stdin.read()
 match = re.search(r"\{.*\}", text, re.DOTALL)
@@ -291,12 +304,18 @@ if match: print(match.group(0))
 else: print(text)
 ' 2> /dev/null)
 
-  local category=$(echo "$clean_content" | jq -r '.category // empty')
-  local lang=$(echo "$clean_content" | jq -r '.language // empty')
-  local ext=$(echo "$clean_content" | jq -r '.extension // empty')
-  local code=$(echo "$clean_content" | jq -r '.code // empty')
-  local msg=$(echo "$clean_content" | jq -r '.message // empty')
-  local gen_title=$(echo "$clean_content" | jq -r '.title // empty')
+  local category
+  category=$(echo "$clean_content" | jq -r '.category // empty')
+  local lang
+  lang=$(echo "$clean_content" | jq -r '.language // empty')
+  local ext
+  ext=$(echo "$clean_content" | jq -r '.extension // empty')
+  local code
+  code=$(echo "$clean_content" | jq -r '.code // empty')
+  local msg
+  msg=$(echo "$clean_content" | jq -r '.message // empty')
+  local gen_title
+  gen_title=$(echo "$clean_content" | jq -r '.title // empty')
 
   local final_title="${title:-$gen_title}"
   final_title="${final_title:-untitled}"
@@ -308,7 +327,8 @@ else: print(text)
     return 0
   fi
 
-  local saved_path=$(__ai_save_output "$explicit_out_file" "$category" "$lang" "$ext" "$final_title" "$code")
+  local saved_path
+  saved_path=$(__ai_save_output "$explicit_out_file" "$category" "$lang" "$ext" "$final_title" "$code")
 
   echo -e "\e[38;5;208m${provider^}:\e[0m $msg"
   echo -e "\e[32mSaved to:\e[0m $saved_path"

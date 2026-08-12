@@ -30,6 +30,15 @@ def load_env():
             print(f"echo -e '\\033[01;31m🚨 Error parsing config.yaml: {e}\\033[0m' >&2")
             return
 
+    # Helper to dry up all the print/shlex/str boilerplate
+    def export(var_name, value, to_lower=False, resolve_home=False):
+        val_str = str(value)
+        if to_lower:
+            val_str = val_str.lower()
+        if resolve_home and val_str.startswith("~/"):
+            val_str = val_str.replace("~", home, 1)
+        print(f"export {var_name}={shlex.quote(val_str)}")
+
     # Extract Blocks
     sys_cfg = d.get("system") or {}
     ai_cfg = d.get("ai") or {}
@@ -41,91 +50,70 @@ def load_env():
     docker_cfg = d.get("docker") or {}
 
     # System
-    print(
-        f"export DEFAULT_IDE={shlex.quote(sys_cfg.get('default_ide', 'vscode').lower())}"
-    )
-    print(f"export BASH_THEME={shlex.quote(sys_cfg.get('theme', 'default').lower())}")
-    print(
-        f"export UPDATE_CHECK_TTL_SEC={shlex.quote(str(sys_cfg.get('update_check_ttl_sec', 43200)))}"
-    )
-    print(
-        f"export MAX_PARALLEL_THREADS={shlex.quote(str(sys_cfg.get('max_parallel_threads', 8)))}"
-    )
+    export("DEFAULT_IDE", sys_cfg.get('default_ide', 'vscode'), to_lower=True)
+    export("BASH_THEME", sys_cfg.get('theme', 'default'), to_lower=True)
+    export("UPDATE_CHECK_TTL_SEC", sys_cfg.get('update_check_ttl_sec', 43200))
+    export("MAX_PARALLEL_THREADS", sys_cfg.get('max_parallel_threads', 8))
 
     # AI
-    print(
-        f"export AI_ENABLED={shlex.quote(str(ai_cfg.get('enabled', sys_cfg.get('ai_enabled', True))).lower())}"
-    )
-    print(
-        f"export DEFAULT_AI={shlex.quote(ai_cfg.get('default_provider', sys_cfg.get('default_ai', 'gemini')).lower())}"
-    )
-    print(
-        f"export AI_SYSTEM_PROMPT={shlex.quote(ai_cfg.get('system_prompt', gem_cfg.get('system_prompt', '')))}"
-    )
+    export("AI_ENABLED",
+           ai_cfg.get('enabled', sys_cfg.get('ai_enabled', True)),
+           to_lower=True)
+    export("DEFAULT_AI",
+           ai_cfg.get('default_provider', sys_cfg.get('default_ai', 'gemini')),
+           to_lower=True)
+    export("AI_SYSTEM_PROMPT",
+           ai_cfg.get('system_prompt', gem_cfg.get('system_prompt', '')))
 
-    print(f"export GEMINI_API_KEY={shlex.quote(gem_cfg.get('api_key', ''))}")
-    print(
-        f"export GEMINI_VERSION={shlex.quote(gem_cfg.get('version', 'gemini-3.6-flash'))}"
-    )
-    print(
-        f"export GEMINI_EXTENDED={shlex.quote(str(gem_cfg.get('extended', False)).lower())}"
-    )
+    export("GEMINI_API_KEY", gem_cfg.get('api_key', ''))
+    export("GEMINI_VERSION", gem_cfg.get('version', 'gemini-3.6-flash'))
+    export("GEMINI_EXTENDED", gem_cfg.get('extended', False), to_lower=True)
 
-    print(f"export CLAUDE_API_KEY={shlex.quote(cla_cfg.get('api_key', ''))}")
-    print(
-        f"export CLAUDE_VERSION={shlex.quote(cla_cfg.get('version', 'claude-3-7-sonnet-latest'))}"
-    )
+    export("CLAUDE_API_KEY", cla_cfg.get('api_key', ''))
+    export("CLAUDE_VERSION", cla_cfg.get('version', 'claude-3-7-sonnet-latest'))
 
     # Exports
-    print(
-        f"export AUTO_CLEANUP_EXPORTS={shlex.quote(str(exp_cfg.get('auto_cleanup', sys_cfg.get('auto_cleanup_exports', True))).lower())}"
-    )
-    print(
-        f"export AUTO_CLEANUP_DAYS={shlex.quote(str(exp_cfg.get('auto_cleanup_days', sys_cfg.get('auto_cleanup_days', 7))))}"
-    )
+    export("AUTO_CLEANUP_EXPORTS",
+           exp_cfg.get('auto_cleanup', sys_cfg.get('auto_cleanup_exports', True)),
+           to_lower=True)
+    export("AUTO_CLEANUP_DAYS",
+           exp_cfg.get('auto_cleanup_days', sys_cfg.get('auto_cleanup_days', 7)))
+
     default_blocklist = (
         r"(secret|token|credential|password|passwd|id_rsa|id_ed25519|"
         r"\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|"
         r"service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)?$|"
         r"(^|/)\.env(\..+)?$|lock\.hcl|__pycache__)")
-    print(
-        f"export EXPORT_BLOCKLIST={shlex.quote(exp_cfg.get('blocklist', paths_cfg.get('export_blocklist', default_blocklist)))}"
-    )
+    export(
+        "EXPORT_BLOCKLIST",
+        exp_cfg.get('blocklist', paths_cfg.get('export_blocklist', default_blocklist)))
 
     # Git
-    print(f"export SYNC_REPO_URL={shlex.quote(git_cfg.get('sync_repo_url', ''))}")
-    print(
-        f"export GIT_FEATURE_PREFIX={shlex.quote(git_cfg.get('feature_prefix', 'feature/'))}"
-    )
-    print(
-        f"export AI_MAX_DIFF_BYTES={shlex.quote(str(git_cfg.get('ai_max_diff_bytes', 4000)))}"
-    )
+    export("SYNC_REPO_URL", git_cfg.get('sync_repo_url', ''))
+    export("GIT_FEATURE_PREFIX", git_cfg.get('feature_prefix', 'feature/'))
+    export("AI_MAX_DIFF_BYTES", git_cfg.get('ai_max_diff_bytes', 4000))
 
     # Paths
-    print(
-        f"export VCS_ROOT={shlex.quote(paths_cfg.get('vcs_root', '~/vcs').replace('~', home))}"
-    )
-    print(
-        f"export VCS_PERSONAL={shlex.quote(paths_cfg.get('vcs_personal', '~/vcs/personal').replace('~', home))}"
-    )
-    print(
-        f"export VCS_EXPORTS={shlex.quote(paths_cfg.get('vcs_exports', '~/vcs/personal/exports').replace('~', home))}"
-    )
-    print(
-        f"export SYNC_REPO_DIR={shlex.quote(paths_cfg.get('sync_repo', '~/vcs/personal/gcp-devops-wsl-debian-terminal').replace('~', home))}"
-    )
-    print(
-        f"export AI_WORKSPACE_DIR={shlex.quote(paths_cfg.get('ai_workspace', '~/vcs/ai-workspace').replace('~', home))}"
-    )
-    print(
-        f"export SCRIPTS_IAM_DIR={shlex.quote(paths_cfg.get('scripts_iam', '~/vcs/scripts/iam').replace('~', home))}"
-    )
-    print(f"export THEMES_DIR={shlex.quote(f'{home}/.bash.d/config/themes')}")
+    export("VCS_ROOT", paths_cfg.get('vcs_root', '~/vcs'), resolve_home=True)
+    export("VCS_PERSONAL",
+           paths_cfg.get('vcs_personal', '~/vcs/personal'),
+           resolve_home=True)
+    export("VCS_EXPORTS",
+           paths_cfg.get('vcs_exports', '~/vcs/personal/exports'),
+           resolve_home=True)
+    export("SYNC_REPO_DIR",
+           paths_cfg.get('sync_repo', '~/vcs/personal/gcp-devops-wsl-debian-terminal'),
+           resolve_home=True)
+    export("AI_WORKSPACE_DIR",
+           paths_cfg.get('ai_workspace', '~/vcs/ai-workspace'),
+           resolve_home=True)
+    export("SCRIPTS_IAM_DIR",
+           paths_cfg.get('scripts_iam', '~/vcs/scripts/iam'),
+           resolve_home=True)
+    export("THEMES_DIR", f"{home}/.bash.d/config/themes")
 
     # Docker
-    print(
-        f"export DOCKER_BLOCKLIST={shlex.quote(docker_cfg.get('restart_blocklist', ''))}"
-    )
+    export("DOCKER_BLOCKLIST", docker_cfg.get('restart_blocklist', ''))
 
 
 def update_yaml(cat_path, key, val):

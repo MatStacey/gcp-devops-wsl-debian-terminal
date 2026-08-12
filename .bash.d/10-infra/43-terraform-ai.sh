@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ~/.bash.d/10-infra/43-terraform-ai.sh
 
 #######################################
@@ -50,10 +51,12 @@ tf-iam() {
     prompt+="Output the script strictly as code. Ensure the script is DRY."
 
     echo "🤖 Analyzing Terraform codebase and generating IAM provisioning script..."
+    # shellcheck disable=SC2086
     ai $override_ai -e -t "${repo_name}-iam-provisioning" -o "$target_script" "$prompt"
   else
     prompt+="Output the result as a copy-pastable comma-separated list of roles in 'roles/<role>' format for each service account, with the service account name as the header. Output this as a chat message, not a code block."
     echo "🤖 Analyzing Terraform codebase for IAM requirements..."
+    # shellcheck disable=SC2086
     ai $override_ai -e "$prompt"
   fi
 }

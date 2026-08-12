@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # ------------------------------------------
 # OS Detection & Cross-Platform Helpers
 # ------------------------------------------
