@@ -37,6 +37,11 @@ if [ -f "$ENV_CACHE" ]; then
   source "$ENV_CACHE"
 fi
 
+# Ensure color definitions are loaded before running startup checks
+if [ -f "$HOME/.bash.d/00-core/01-colors.sh" ]; then
+  source "$HOME/.bash.d/00-core/01-colors.sh"
+fi
+
 if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
   unset GEMINI_API_KEY
   echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-gemini-key \"your-api-key\"\e[0m"
@@ -46,7 +51,6 @@ if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CL
   unset CLAUDE_API_KEY
   echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-claude-key \"your-api-key\"\e[0m"
 fi
-
 #######################################
 # Prints the current Gemini API model version and extended reasoning mode toggle.
 # Globals:
