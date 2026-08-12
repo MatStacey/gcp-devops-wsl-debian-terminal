@@ -225,50 +225,36 @@ The following commands are automatically parsed and indexed from codebase docume
 | `tf` | Alias | Terraform: Base command. |
 | `tfa` | Alias | Terraform: Apply deployment. |
 | `tfay` | Alias | Terraform: Apply deployment (auto-approve). |
+| `tfap` | Alias | Terraform: Apply a saved `tfplan` file. |
 | `tfc` | Alias | Terraform: Open interactive console. |
+| `tf-clean` | Function | Aggressively clean local caching (`.terraform`, locks, plans). |
 | `tfd` | Alias | Terraform: Destroy resources. |
 | `tfdy` | Alias | Terraform: Destroy resources (auto-approve). |
-| `tff` | Alias | Terraform: Format codebase. |
-| `tffu` | Alias | Terraform: Force unlock state. |
-| `tfg` | Alias | Terraform: Generate graph. |
-| `tf-iam` | Function | Terraform: Ask AI to list required Service Accounts and least-privilege roles. |
-| `tfim` | Alias | Terraform: Import resource. |
+| `tff` | Alias | Terraform: Format all TF files recursively. |
 | `tfin` | Alias | Terraform: Initialize directory. |
 | `tfinu` | Alias | Terraform: Initialize and upgrade modules/providers. |
 | `tfo` | Alias | Terraform: Read outputs. |
 | `tfp` | Alias | Terraform: Plan deployment. |
-| `tfpde` | Alias | Terraform: Plan destruction. |
-| `tfpr` | Alias | Terraform: List providers. |
-| `tfr` | Alias | Terraform: Refresh state. |
-| `tfs` | Alias | Terraform: Manage state. |
-| `tfsh` | Alias | Terraform: Show state. |
-| `tfsls` | Alias | Terraform: List resources in state. |
-| `tfsmv` | Alias | Terraform: Move resource in state. |
-| `tfsph` | Alias | Terraform: Push state. |
-| `tfspl` | Alias | Terraform: Pull state. |
-| `tfsrm` | Alias | Terraform: Remove resource from state. |
-| `tfssw` | Alias | Terraform: Show resource in state. |
-| `tft` | Alias | Terraform: Taint resource. |
-| `tfut` | Alias | Terraform: Untaint resource. |
+| `tfpd` | Alias | Terraform: Plan destruction. |
+| `tfpo` | Alias | Terraform: Plan deployment and output to `tfplan`. |
+| `tf-refresh` | Alias | Modern alternative to `terraform refresh` (`apply -refresh-only`). |
+| `tf-replace` | Function | Modern alternative to `terraform taint` (`apply -replace="<resource>"`). |
+| `tf-yaml` (`tfy`) | Function | Execute Terraform commands injecting variables directly from a YAML config file. |
+| `tfs*` | Aliases | State management commands (`tfs`, `tfsh`, `tfsls`, `tfsmv`, `tfsrm`, `tfssw`). |
 | `tfv` | Alias | Terraform: Validate codebase. |
-| `tfw` | Alias | Terraform: Manage workspaces. |
-| `tfwde` | Alias | Terraform: Delete workspace. |
-| `tfwls` | Alias | Terraform: List workspaces. |
-| `tfwnw` | Alias | Terraform: Create new workspace. |
-| `tfwst` | Alias | Terraform: Select workspace. |
-| `tfwsw` | Alias | Terraform: Show active workspace. |
+| `tfw*` | Aliases | Workspace management commands (`tfw`, `tfwls`, `tfwnw`, `tfwst`, `tfwde`, `tfwsw`). |
 
 ### Version Control (Git)
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `git` | Function | Git: Wrapper to force 'clone' into ~/vcs/ from anywhere. |
-| `git-acp` | Function | Git: Add all files, commit with message, and push. |
-| `vcs-sync-profile` | Function | Git: Sync local bash configs to terminal repo and push (AI-powered commit msgs if configured). |
-| `git-feature` | Function | Git: Create and checkout a new feature branch. |
-| `git-ide` | Function | Git: Clone a repository into ~/vcs/, cd into it, and open in IDE. |
-| `__git_sync_ai_commit` | Function | Analyzes git diffs and calls the Gemini API to systematically generate. |
-| `__git_sync_copy_files` | Function | Synchronizes the active bash config files over to the tracked git directory. |
-| `__git_sync_init_repo` | Function | Clones and initializes a repository into the sync directory. |
-| `git-web` | Function | Git: Open the current repository in the default Windows web browser. |
-
+| `git` | Function | Wrapper to force 'clone' into `~/vcs/` from anywhere. |
+| `git-ai-pc` | Function | Add all files, intelligently group via AI, and push. |
+| `git-cleanup` | Function | Safely delete all local branches that have been merged into the default branch. |
+| `git-feature` | Function | Create and checkout a new feature branch using the configured prefix. |
+| `git-ide` | Function | Clone a repository into `~/vcs/`, `cd` into it, and open in IDE. |
+| `git-lg` | Function | Print a beautiful, color-coded, single-line graph log. |
+| `git-nuke` | Function | Hard reset and wipe all untracked files on the current branch (includes safety prompt). |
+| `git-update` | Function | Fetch upstream and rebase the current branch onto the default branch. |
+| `git-web` | Function | Open the current repository in the default Windows web browser. |
+| `vcs-sync-profile` | Function | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |

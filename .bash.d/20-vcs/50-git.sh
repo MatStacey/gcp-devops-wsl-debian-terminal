@@ -372,3 +372,104 @@ git-ide() {
     { idea . &> /dev/null || idea.exe . &> /dev/null || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' or 'idea.exe' is in your PATH."; } ||
     code -n .
 }
+
+#######################################
+# Git: Print a beautiful, color-coded, single-line graph log
+#######################################
+git-lg() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  git log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all
+}
+
+#######################################
+# Git: Safely delete all local branches that have been merged into the default branch
+#######################################
+git-cleanup() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  # Auto-detect default branch (main or master)
+  local default_branch
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
+  default_branch="${default_branch:-main}"
+
+  echo -e "${CB_BLUE}🧹 Switching to ${default_branch} and pulling latest...${C_RESET}"
+  git checkout "$default_branch"
+  git pull origin "$default_branch"
+
+  echo -e "\n${CB_YELLOW}🔍 Scanning for merged local branches...${C_RESET}"
+  local merged_branches
+  merged_branches=$(git branch --merged | grep -v "\*" | grep -v -E "^[[:space:]]*${default_branch}$" || true)
+
+  if [ -z "$merged_branches" ]; then
+    echo -e "${CB_GREEN}✅ Workspace is clean. No merged branches found.${C_RESET}"
+    return 0
+  fi
+
+  echo "$merged_branches" | xargs -n 1 git branch -d
+  echo -e "${CB_GREEN}✅ Local branch cleanup complete.${C_RESET}"
+}
+
+#######################################
+# Git: Fetch upstream and rebase the current branch onto the default branch
+#######################################
+git-update() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local current_branch
+  current_branch=$(git branch --show-current)
+
+  local default_branch
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
+  default_branch="${default_branch:-main}"
+
+  if [ "$current_branch" = "$default_branch" ]; then
+    echo "You are already on the default branch (${default_branch}). Pulling latest..."
+    git pull origin "$default_branch"
+    return 0
+  fi
+
+  echo -e "${CB_BLUE}🔄 Fetching remote and rebasing ${current_branch} onto origin/${default_branch}...${C_RESET}"
+  git fetch origin
+  git rebase "origin/$default_branch"
+}
+
+#######################################
+# Git: Hard reset and wipe all untracked files on the current branch
+#######################################
+git-nuke() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local current_branch
+  current_branch=$(git branch --show-current)
+
+  if [ -z "$current_branch" ]; then
+    echo "🚨 Error: Not currently on any branch."
+    return 1
+  fi
+
+  echo -e "${CB_RED}⚠️  WARNING: This will DESTROY all local uncommitted changes AND untracked files.${C_RESET}"
+  read -p "Reset '${current_branch}' to origin/${current_branch}? [y/N] " -n 1 -r
+  echo
+
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "💥 Nuking local environment..."
+    git fetch origin
+    git reset --hard "origin/$current_branch"
+    git clean -fd
+    echo -e "${CB_GREEN}✅ Branch reset to upstream state.${C_RESET}"
+  else
+    echo "🛑 Aborted."
+  fi
+}

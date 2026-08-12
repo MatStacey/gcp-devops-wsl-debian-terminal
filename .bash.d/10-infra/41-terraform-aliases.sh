@@ -1,154 +1,158 @@
-# Copyright 2017 Google Inc.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     https://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-
 # ------------------------------------------
 # Terraform
 # ------------------------------------------
 
-#######################################
-# Terraform: Base command
-#######################################
+# Core Execution
 alias tf='terraform'
-#######################################
-# Terraform: Apply deployment
-#######################################
 alias tfa='terraform apply'
-#######################################
-# Terraform: Apply deployment (auto-approve)
-#######################################
 alias tfay='terraform apply -auto-approve'
-#######################################
-# Terraform: Open interactive console
-#######################################
 alias tfc='terraform console'
-#######################################
-# Terraform: Destroy resources
-#######################################
 alias tfd='terraform destroy'
-#######################################
-# Terraform: Destroy resources (auto-approve)
-#######################################
 alias tfdy='terraform destroy -auto-approve'
-#######################################
-# Terraform: Format codebase
-#######################################
-alias tff='terraform fmt'
-#######################################
-# Terraform: Force unlock state
-#######################################
-alias tffu='terraform force-unlock'
-#######################################
-# Terraform: Generate graph
-#######################################
-alias tfg='terraform graph'
-#######################################
-# Terraform: Import resource
-#######################################
-alias tfim='terraform import'
-#######################################
-# Terraform: Initialize directory
-#######################################
 alias tfin='terraform init'
-#######################################
-# Terraform: Initialize and upgrade modules/providers
-#######################################
 alias tfinu='terraform init -upgrade'
-#######################################
-# Terraform: Read outputs
-#######################################
 alias tfo='terraform output'
-#######################################
-# Terraform: Plan deployment
-#######################################
 alias tfp='terraform plan'
-#######################################
-# Terraform: Plan destruction
-#######################################
-alias tfpde='terraform plan --destroy'
-#######################################
-# Terraform: List providers
-#######################################
-alias tfpr='terraform providers'
-#######################################
-# Terraform: Refresh state
-#######################################
-alias tfr='terraform refresh'
-#######################################
-# Terraform: Manage state
-#######################################
-alias tfs='terraform state'
-#######################################
-# Terraform: Show state
-#######################################
-alias tfsh='terraform show'
-#######################################
-# Terraform: List resources in state
-#######################################
-alias tfsls='terraform state list'
-#######################################
-# Terraform: Move resource in state
-#######################################
-alias tfsmv='terraform state mv'
-#######################################
-# Terraform: Push state
-#######################################
-alias tfsph='terraform state push'
-#######################################
-# Terraform: Pull state
-#######################################
-alias tfspl='terraform state pull'
-#######################################
-# Terraform: Remove resource from state
-#######################################
-alias tfsrm='terraform state rm'
-#######################################
-# Terraform: Show resource in state
-#######################################
-alias tfssw='terraform state show'
-#######################################
-# Terraform: Taint resource
-#######################################
-alias tft='terraform taint'
-#######################################
-# Terraform: Untaint resource
-#######################################
-alias tfut='terraform untaint'
-#######################################
-# Terraform: Validate codebase
-#######################################
+alias tfpd='terraform plan -destroy'
 alias tfv='terraform validate'
-#######################################
-# Terraform: Manage workspaces
-#######################################
+
+# Formatting (Recursive by default)
+alias tff='terraform fmt -recursive'
+
+# File-based Plan Workflow
+alias tfpo='terraform plan -out=tfplan'
+alias tfap='terraform apply tfplan'
+
+# Modern Terraform Paradigms
+alias tf-refresh='terraform apply -refresh-only'
+
+# State Management
+alias tfs='terraform state'
+alias tfsh='terraform show'
+alias tfsls='terraform state list'
+alias tfsmv='terraform state mv'
+alias tfsrm='terraform state rm'
+alias tfssw='terraform state show'
+
+# Workspace Management
 alias tfw='terraform workspace'
-#######################################
-# Terraform: Delete workspace
-#######################################
 alias tfwde='terraform workspace delete'
-#######################################
-# Terraform: List workspaces
-#######################################
 alias tfwls='terraform workspace list'
-#######################################
-# Terraform: Create new workspace
-#######################################
 alias tfwnw='terraform workspace new'
-#######################################
-# Terraform: Select workspace
-#######################################
 alias tfwst='terraform workspace select'
-#######################################
-# Terraform: Show active workspace
-#######################################
 alias tfwsw='terraform workspace show'
+
+#######################################
+# Terraform: Replace a specific resource (Modern alternative to taint)
+# Arguments:
+#   $1 - The resource address to replace (e.g., google_compute_instance.web)
+#######################################
+tf-replace() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [ -z "$1" ]; then
+    echo "Usage: tf-replace <resource_address>"
+    return 1
+  fi
+  echo "🔄 Planning replacement for: $1"
+  terraform apply -replace="$1"
+}
+
+#######################################
+# Terraform: Aggressively clean local caching (.terraform, locks, plans)
+#######################################
+tf-clean() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  echo "🧹 Cleaning local Terraform caches..."
+  find . -type d -name ".terraform" -exec rm -rf {} + 2> /dev/null
+  find . -type f -name ".terraform.lock.hcl" -delete 2> /dev/null
+  find . -type f -name "tfplan" -delete 2> /dev/null
+  echo -e "${CB_GREEN}✅ Clean complete. Run 'tfin' to reinitialize.${C_RESET}"
+}
+
+#######################################
+# Terraform: Wrapper to execute Terraform using a YAML config file for variables
+# Arguments:
+#   $1 - Path to the YAML configuration file
+#   $2 - (Optional) Target environment key if YAML is hierarchically structured
+#   $@ - Terraform command and arguments (e.g., plan, apply)
+#######################################
+tf-yaml() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local yaml_file="$1"
+  shift
+
+  if [ -z "$yaml_file" ] || [ ! -f "$yaml_file" ]; then
+    echo -e "${CB_RED}🚨 Error: You must provide a valid YAML file path.${C_RESET}"
+    echo "Usage: tf-yaml <config.yaml> [environment] <terraform command> [args...]"
+    return 1
+  fi
+
+  local env_name=""
+  # If the next argument is not a known TF command or a flag, treat it as the environment key
+  if [[ -n "$1" && ! "$1" =~ ^(-.*|plan|apply|destroy|init|validate|output|console|refresh|show|state|workspace|fmt|import)$ ]]; then
+    env_name="$1"
+    shift
+  fi
+
+  if [ $# -eq 0 ]; then
+    echo -e "${CB_RED}🚨 Error: You must provide a Terraform command.${C_RESET}"
+    echo "Usage: tf-yaml <config.yaml> [environment] <terraform command> [args...]"
+    return 1
+  fi
+
+  if ! command -v yq > /dev/null 2>&1; then
+    echo -e "${CB_RED}🚨 Error: 'yq' is not installed. Run 'bootstrap' to install it.${C_RESET}"
+    return 1
+  fi
+
+  local tmp_vars
+  tmp_vars=$(mktemp --suffix=.json)
+
+  if [ -n "$env_name" ]; then
+    echo -e "${CB_BLUE}🔄 Parsing variables for environment '${env_name}' from ${yaml_file}...${C_RESET}"
+
+    local tmp_globals=$(mktemp)
+    local tmp_env=$(mktemp)
+
+    # 1. Isolate global configurations (ignoring environments)
+    yq 'del(.environments)' "$yaml_file" > "$tmp_globals"
+
+    # 2. Extract specific environment configurations
+    yq ".environments["${env_name}"]" "$yaml_file" > "$tmp_env"
+
+    if [ "$(cat "$tmp_env")" = "null" ]; then
+      echo -e "${CB_RED}🚨 Error: Environment '${env_name}' not found in ${yaml_file}.${C_RESET}"
+      rm -f "$tmp_vars" "$tmp_globals" "$tmp_env"
+      return 1
+    fi
+
+    # 3. Deep merge the globals and the environment together and convert to JSON
+    yq -o=json eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "$tmp_globals" "$tmp_env" > "$tmp_vars"
+    rm -f "$tmp_globals" "$tmp_env"
+  else
+    echo -e "${CB_BLUE}🔄 Parsing variables from ${yaml_file}...${C_RESET}"
+    yq -o=json '.' "$yaml_file" > "$tmp_vars"
+  fi
+
+  echo -e "${CB_GREEN}🚀 Executing: terraform $* -var-file=...${C_RESET}"
+  terraform "$@" -var-file="$tmp_vars"
+  local tf_exit=$?
+
+  # Cleanup temporary json payload
+  rm -f "$tmp_vars"
+
+  return $tf_exit
+}
+
+# Shortcut alias for tf-yaml
+alias tfy='tf-yaml'
