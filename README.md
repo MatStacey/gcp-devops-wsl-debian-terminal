@@ -222,7 +222,8 @@ The following commands are automatically parsed and indexed from codebase docume
 | `git-lg` | Function | Print a beautiful, color-coded, single-line graph log. |
 | `git-nuke` | Function | Hard reset and wipe all untracked files on the current branch (includes safety prompt). |
 | `git-update` | Function | Fetch upstream and rebase the current branch onto the default branch. |
-| `git-web` | Function | Open the current repository in the default web browser.|
+| `git-web` | Function | Open the current repository in the default Windows web browser. |
+| `vcs-pull-profile` | Function | Pull latest remote profile changes and safely apply them to the local terminal workspace. |
 | `vcs-sync-profile` | Function | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |
 
 #### Development & Build Tools

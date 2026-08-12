@@ -476,3 +476,37 @@ git-nuke() {
     echo "🛑 Aborted."
   fi
 }
+
+#######################################
+# Git: Pull latest profile changes from remote and sync to local workspace
+#######################################
+vcs-pull-profile() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local repo_dir="$SYNC_REPO_DIR"
+
+  if [ -z "$repo_dir" ] || [ ! -d "$repo_dir/.git" ]; then
+    echo -e "${CB_RED}🚨 Error: Sync repository not found at ${repo_dir:-unknown}.${C_RESET}"
+    return 1
+  fi
+
+  echo -e "${CB_BLUE}⬇️ Pulling latest changes from remote repository...${C_RESET}"
+  (
+    cd "$repo_dir" || exit 1
+    git pull origin "$(git rev-parse --abbrev-ref HEAD)"
+  )
+
+  echo -e "\n${CB_YELLOW}🔄 Applying updates to local ~/.bash.d workspace...${C_RESET}"
+  if [ -f "$repo_dir/install.sh" ]; then
+    bash "$repo_dir/install.sh"
+    # Note: install.sh advises the user to run 'reload'.
+    # We will automatically trigger it here for a seamless experience.
+    source "$HOME/.bashrc"
+  else
+    echo -e "${CB_RED}🚨 Error: install.sh missing from repository root.${C_RESET}"
+    return 1
+  fi
+}
