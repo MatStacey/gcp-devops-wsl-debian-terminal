@@ -25,7 +25,7 @@ fi
 # Validate Keys
 if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
 	unset GEMINI_API_KEY
-	echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-gemini-key \"your-api-key\"\e[0m"
+	echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-ai.gemini-key \"your-api-key\"\e[0m"
 fi
 
 if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "null" ]]; then
@@ -33,27 +33,27 @@ if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CL
 	echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-claude-key \"your-api-key\"\e[0m"
 fi
 
-add-gemini-key() { # => Config: Add Gemini API key to config.yaml [Usage: add-gemini-key "key"]
+add-ai.gemini-key() { # => Config: Add Gemini API key to config.yaml [Usage: add-ai.gemini-key "key"]
 	if [[ "$1" == "-h" || "$1" == "--help" ]]; then mt-help "${FUNCNAME[0]}"; return 0; fi
-	if [ -z "$1" ]; then echo "Usage: add-gemini-key <key>"; return 1; fi
-	python3 "$CONFIG_MANAGER" update "gemini" "api_key" "$1"
+	if [ -z "$1" ]; then echo "Usage: add-ai.gemini-key <key>"; return 1; fi
+	python3 "$CONFIG_MANAGER" update "ai.gemini" "api_key" "$1"
 	export GEMINI_API_KEY="$1"
 	echo "✅ Gemini API Key added to $CONFIG_FILE."
 }
 
-set-gemini-version() { # => Config: Set Gemini model version [Usage: set-gemini-version "gemini-1.5-pro"]
+set-ai.gemini-version() { # => Config: Set Gemini model version [Usage: set-ai.gemini-version "ai.gemini-1.5-pro"]
 	if [[ "$1" == "-h" || "$1" == "--help" ]]; then mt-help "${FUNCNAME[0]}"; return 0; fi
-	if [ -z "$1" ]; then echo "Usage: set-gemini-version <version>"; return 1; fi
-	python3 "$CONFIG_MANAGER" update "gemini" "version" "$1"
+	if [ -z "$1" ]; then echo "Usage: set-ai.gemini-version <version>"; return 1; fi
+	python3 "$CONFIG_MANAGER" update "ai.gemini" "version" "$1"
 	export GEMINI_VERSION="$1"
 	echo "✅ Gemini version set to $1."
 }
 
-toggle-gemini-extended() { # => Config: Toggle Gemini extended mode true/false
+toggle-ai.gemini-extended() { # => Config: Toggle Gemini extended mode true/false
 	if [[ "$1" == "-h" || "$1" == "--help" ]]; then mt-help "${FUNCNAME[0]}"; return 0; fi
 	local new_val="true"
 	if [ "$GEMINI_EXTENDED" = "true" ]; then new_val="false"; fi
-	python3 "$CONFIG_MANAGER" update "gemini" "extended" "$new_val"
+	python3 "$CONFIG_MANAGER" update "ai.gemini" "extended" "$new_val"
 	export GEMINI_EXTENDED="$new_val"
 	echo "✅ Gemini extended mode set to $new_val."
 }
@@ -93,10 +93,10 @@ set-default-ide() { # => Config: Set default IDE [Usage: set-default-ide "vscode
 	echo "✅ Default IDE set to $1."
 }
 
-set-default-ai() { # => Config: Set default AI model [Usage: set-default-ai "gemini|claude"]
+set-default-ai() { # => Config: Set default AI model [Usage: set-default-ai "ai.gemini|claude"]
 	if [[ "$1" == "-h" || "$1" == "--help" ]]; then mt-help "${FUNCNAME[0]}"; return 0; fi
-	if [[ "$1" != "gemini" && "$1" != "claude" ]]; then
-		echo "Usage: set-default-ai <gemini|claude>"
+	if [[ "$1" != "ai.gemini" && "$1" != "claude" ]]; then
+		echo "Usage: set-default-ai <ai.gemini|claude>"
 		return 1
 	fi
 	python3 "$CONFIG_MANAGER" update "system" "default_ai" "$1"
@@ -182,7 +182,7 @@ mt-theme() { # => Config: Interactive menu to select and apply a terminal theme 
 # Outputs:
 #   Writes the configuration status to STDOUT.
 #######################################
-get-gemini-status() { # => Config: Print the active Gemini version and extended mode status
+get-ai.gemini-status() { # => Config: Print the active Gemini version and extended mode status
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
