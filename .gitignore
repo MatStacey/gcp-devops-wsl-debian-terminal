@@ -1,7 +1,2 @@
 .bash.d/config/.env.cache
 .bash.d/config/config.yaml
-.bash.d/.mt_data.tsv
-.bash.d/.mt_cache.time
-.bash.d/.update_check_cache
-.bash.d/.*cache*
-.bash.d/.*_pending
