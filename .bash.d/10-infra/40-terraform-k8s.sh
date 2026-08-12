@@ -54,7 +54,7 @@ tf-val-all() {
         else
             echo -e "🚨 Validation failed for $1"
         fi
-    ' _ {}
+    ' _ "{}"
 }
 
 # Bypass the custom kubectl wrapper when generating completions to prevent terminal echo
