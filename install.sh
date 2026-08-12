@@ -1,4 +1,3 @@
-# shellcheck shell=bash
 #!/usr/bin/env bash
 set -e
 
