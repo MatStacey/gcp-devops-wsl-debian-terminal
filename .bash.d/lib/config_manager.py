@@ -122,21 +122,15 @@ def load_env():
 
 def update_yaml(cat_path, key, val):
     import yaml
+
     path = get_config_path()
     d = {}
     if os.path.exists(path):
         with open(path, "r") as f:
             d = yaml.safe_load(f) or {}
 
-    if str(val).lower() == "true":
-        val = True
-    elif str(val).lower() == "false":
-        val = False
-    elif str(val).isdigit():
-        val = int(val)
-
     # Allow dot notation for nested categories (e.g. ai.gemini)
-    keys = cat_path.split('.')
+    keys = cat_path.split(".")
     current = d
     for k in keys:
         if k not in current or not isinstance(current[k], dict):
@@ -148,10 +142,15 @@ def update_yaml(cat_path, key, val):
     with open(path, "w") as f:
         yaml.safe_dump(d, f, sort_keys=False)
 
+    # Force cache invalidation to prevent WSL mtime race conditions
+    cache_file = os.path.join(os.path.dirname(path), ".env.cache")
+    if os.path.exists(cache_file):
+        os.remove(cache_file)
+
 
 if __name__ == "__main__" and len(sys.argv) > 1:
     cmd = sys.argv[1]
     if cmd == "load-env":
         load_env()
-    elif cmd == "update" and len(sys.argv) == 4:
+    elif cmd == "update" and len(sys.argv) == 5:
         update_yaml(sys.argv[2], sys.argv[3], sys.argv[4])

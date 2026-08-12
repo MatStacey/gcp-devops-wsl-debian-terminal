@@ -102,7 +102,7 @@ fi
 if [ -d "$HOME/.bash.d" ]; then
     while IFS= read -r -d '' f; do
         [ -r "$f" ] && source "$f"
-    done < <(find "$HOME/.bash.d" -type f -name "*.sh" -print0 | sort -z)
+    done < <(find "$HOME/.bash.d" -type f -name "*.sh" -not -path "*/config/themes/*" -print0 | sort -z)
 fi
 
 # Notify successful load (Green text, resets color afterwards)
