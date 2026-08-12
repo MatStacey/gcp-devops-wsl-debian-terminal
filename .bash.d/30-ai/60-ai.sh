@@ -50,10 +50,11 @@ __ai_build_context() {
 
   echo "📦 Compiling local directory codebase for context..." >&2
   context_file=$(mktemp)
+  local blocklist="${EXPORT_BLOCKLIST:-(secret|token|credential|password|passwd|id_rsa|id_ed25519|\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)?$|(^|/)\.env(\..+)?$|lock\.hcl|__pycache__)}"
   find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" -print0 | while IFS= read -r -d '' file; do
     local clean_file="${file#./}" lower_file="${clean_file,,}"
     [[ "$lower_file" =~ \.(png|jpe?g|gif|ico|pdf|zip|tar|gz|mp4|mp3|wav|exe|dll|so|class|jar|bin|o|pyc|tfstate)$ ]] && continue
-    [[ "$lower_file" =~ (secret|token|credential|pass|key|rsa|env|lock\.hcl|__pycache__) ]] && continue
+    [[ "$lower_file" =~ $blocklist ]] && continue
 
     echo "==> ./$clean_file <==" >> "$context_file"
     cat "$file" >> "$context_file"
@@ -100,7 +101,7 @@ __ai_query_gemini() {
     [[ "$final_model" == *-flash-lite ]] && final_model="${final_model%-flash-lite}-pro"
   fi
 
-  local api_url="${URI_GEMINI_MODELS}/${final_model}:generateContent?key=${GEMINI_API_KEY}"
+  local api_url="${URI_GEMINI_MODELS}/${final_model}:generateContent"
   local prompt_json
 
   if [ -f "$context_file" ]; then
@@ -114,7 +115,7 @@ __ai_query_gemini() {
   jq -s '.[0] * .[1] * .[2]' "$HOME/.bash.d/config/gemini-config.json" <(echo "$system_json") <(echo "$prompt_json") > "$payload_file"
 
   echo "⏳ Querying Gemini ($final_model)..." >&2
-  local response=$(curl -s -X POST "${api_url}" -H 'Content-Type: application/json' -d @"$payload_file")
+  local response=$(curl -s -X POST "${api_url}" -H "x-goog-api-key: ${GEMINI_API_KEY}" -H 'Content-Type: application/json' -d @"$payload_file")
 
   rm -f "$payload_file"
   local content=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty')

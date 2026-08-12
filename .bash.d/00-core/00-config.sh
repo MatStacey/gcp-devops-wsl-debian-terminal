@@ -12,12 +12,14 @@ if [ ! -s "$CONFIG_FILE" ]; then
   mkdir -p "$(dirname "$CONFIG_FILE")"
   [ -f "$YAML_TEMPLATE" ] && cp "$YAML_TEMPLATE" "$CONFIG_FILE" || touch "$CONFIG_FILE"
 fi
+chmod 600 "$CONFIG_FILE" 2> /dev/null
 
 __reload_config_if_modified() {
   if [ -f "$CONFIG_MANAGER" ]; then
     if [ ! -f "$ENV_CACHE" ] || [ "$CONFIG_FILE" -nt "$ENV_CACHE" ]; then
       local old_theme="$BASH_THEME"
       python3 "$CONFIG_MANAGER" load-env > "$ENV_CACHE"
+      chmod 600 "$ENV_CACHE" 2> /dev/null
       source "$ENV_CACHE"
 
       if [ "$old_theme" != "$BASH_THEME" ]; then
@@ -67,17 +69,24 @@ get-gemini-status() { # => Config: Print the active Gemini version and extended 
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
 }
 
-add-gemini-key() { # => Config: Add Gemini API key to config.yaml [Usage: add-gemini-key "key"]
+add-gemini-key() { # => Config: Add Gemini API key to config.yaml [Usage: add-gemini-key ["key"]]
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  if [ -z "$1" ]; then
-    echo "Usage: add-gemini-key <key>"
+  local key="$1"
+  # Passing the key as an argument lands it in shell history. Prefer the
+  # hidden prompt; the positional form still works for scripting.
+  if [ -z "$key" ]; then
+    read -rsp "Enter Gemini API Key (input hidden): " key
+    echo
+  fi
+  if [ -z "$key" ]; then
+    echo "Usage: add-gemini-key [<key>]"
     return 1
   fi
-  python3 "$CONFIG_MANAGER" update "ai.gemini" "api_key" "$1"
-  export GEMINI_API_KEY="$1"
+  python3 "$CONFIG_MANAGER" update "ai.gemini" "api_key" "$key"
+  export GEMINI_API_KEY="$key"
   echo "✅ Gemini API Key added to $CONFIG_FILE."
 }
 
@@ -107,17 +116,24 @@ toggle-gemini-extended() { # => Config: Toggle Gemini extended mode true/false
   echo "✅ Gemini extended mode set to $new_val."
 }
 
-add-claude-key() { # => Config: Add Claude API key to config.yaml [Usage: add-claude-key "key"]
+add-claude-key() { # => Config: Add Claude API key to config.yaml [Usage: add-claude-key ["key"]]
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  if [ -z "$1" ]; then
-    echo "Usage: add-claude-key <key>"
+  local key="$1"
+  # Passing the key as an argument lands it in shell history. Prefer the
+  # hidden prompt; the positional form still works for scripting.
+  if [ -z "$key" ]; then
+    read -rsp "Enter Claude API Key (input hidden): " key
+    echo
+  fi
+  if [ -z "$key" ]; then
+    echo "Usage: add-claude-key [<key>]"
     return 1
   fi
-  python3 "$CONFIG_MANAGER" update "ai.claude" "api_key" "$1"
-  export CLAUDE_API_KEY="$1"
+  python3 "$CONFIG_MANAGER" update "ai.claude" "api_key" "$key"
+  export CLAUDE_API_KEY="$key"
   echo "✅ Claude API Key added to $CONFIG_FILE."
 }
 

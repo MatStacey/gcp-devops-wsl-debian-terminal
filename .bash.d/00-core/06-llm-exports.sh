@@ -105,7 +105,7 @@ export-crf() {
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __vcs_core_export "gcf-repo-export" "\.(py|tf|sh|ya?ml|json|toml|md|properties|txt)$" "(secret|token|credential|pass|key|rsa|env|__pycache__|\.egg-info|test-reports|\.pyc$)"
+  __vcs_core_export "gcf-repo-export" "\.(py|tf|sh|ya?ml|json|toml|md|properties|txt)$" "${EXPORT_BLOCKLIST}|(\.egg-info|test-reports|\.pyc$)"
 }
 
 #######################################

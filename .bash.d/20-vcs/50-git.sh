@@ -98,9 +98,9 @@ __git_sync_ai_commit() {
   local ai_prompt="Analyze this git diff and group the changes into logical features/tasks. Return ONLY a valid JSON array of objects representing separate commits. Each object must have a 'files' array (exact file paths from the diff) and a 'message' string (conventional commit format, < 60 chars).\n\nExample Output:\n[\n  { \"files\": [\"path/to/file1\"], \"message\": \"feat: added new module\" }\n]\n\nGit Diff:\n\n$diff_content"
 
   local prompt_json=$(jq -n --arg p "$ai_prompt" '{ contents: [{ parts: [{ text: $p }] }] }')
-  local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_VERSION:-gemini-3.6-flash}:generateContent?key=${GEMINI_API_KEY}"
+  local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_VERSION:-gemini-3.6-flash}:generateContent"
 
-  local response=$(curl -s -X POST "$api_url" -H 'Content-Type: application/json' -d "$prompt_json")
+  local response=$(curl -s -X POST "$api_url" -H "x-goog-api-key: ${GEMINI_API_KEY}" -H 'Content-Type: application/json' -d "$prompt_json")
 
   # Extract JSON Array, stripping any conversational markdown wrappers
   local generated_json=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty' | python3 -c '

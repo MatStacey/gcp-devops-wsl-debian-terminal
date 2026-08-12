@@ -19,7 +19,10 @@ ai:
 exports:
   auto_cleanup: true
   auto_cleanup_days: 7
-  blocklist: (secret|token|credential|pass|key|rsa|env|lock\.hcl|__pycache__)
+  # Precise patterns, not bare substrings: the old (pass|key|env|rsa) blocked
+  # legit files like environment.tf while missing GCP service-account JSON
+  # keys, .tfvars, and .pem/.p12 certs entirely.
+  blocklist: (secret|token|credential|password|passwd|id_rsa|id_ed25519|\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)?$|(^|/)\.env(\..+)?$|lock\.hcl|__pycache__)
 
 git:
   sync_repo_url: YOUR_SYNC_REPO_URL

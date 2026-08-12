@@ -83,8 +83,13 @@ def load_env():
     print(
         f"export AUTO_CLEANUP_DAYS={shlex.quote(str(exp_cfg.get('auto_cleanup_days', sys_cfg.get('auto_cleanup_days', 7))))}"
     )
+    default_blocklist = (
+        r"(secret|token|credential|password|passwd|id_rsa|id_ed25519|"
+        r"\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|"
+        r"service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)?$|"
+        r"(^|/)\.env(\..+)?$|lock\.hcl|__pycache__)")
     print(
-        f"export EXPORT_BLOCKLIST={shlex.quote(exp_cfg.get('blocklist', paths_cfg.get('export_blocklist', '(secret|token|credential|pass|key|rsa|env|lock\\\\.hcl|__pycache__)')))}"
+        f"export EXPORT_BLOCKLIST={shlex.quote(exp_cfg.get('blocklist', paths_cfg.get('export_blocklist', default_blocklist)))}"
     )
 
     # Git
@@ -141,6 +146,9 @@ def update_yaml(cat_path, key, val):
 
     with open(path, "w") as f:
         yaml.safe_dump(d, f, sort_keys=False)
+
+    # config.yaml holds API keys in plaintext — lock it down.
+    os.chmod(path, 0o600)
 
     # Force cache invalidation to prevent WSL mtime race conditions
     cache_file = os.path.join(os.path.dirname(path), ".env.cache")
