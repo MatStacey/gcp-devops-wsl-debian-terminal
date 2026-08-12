@@ -4,33 +4,23 @@
 # ~/.bash.d/02-update-check.sh
 
 __check_updates() {
-  # 1. Exit immediately if not in an interactive shell
+  # Exit immediately if not in an interactive shell
   if [[ $- != *i* ]]; then return; fi
 
   local pending_file="$HOME/.bash.d/.update_pending"
   local cache_file="$HOME/.bash.d/.update_check_cache"
-  local current_time=$(date +%s)
+  local current_time
+  current_time=$(date +%s)
 
-  # 2. If a background check finished previously and left a pending file, prompt immediately
+  # If a background check found updates, display the notification message
   if [ -f "$pending_file" ]; then
     local updates_count
     updates_count=$(cat "$pending_file")
-    echo -e "\n\e[33m📦 $updates_count system package(s) can be upgraded.\e[0m"
-    read -p "Run sys-update now? [Y/n] " -n 1 -r choice
-    echo
-
-    if [[ $choice =~ ^[Yy]$ ]] || [[ -z $choice ]]; then
-      sudo apt update && sudo apt upgrade
-      rm -f "$pending_file"
-      echo "$current_time" > "$cache_file"
-    else
-      rm -f "$pending_file"
-      echo "$current_time" > "$cache_file"
-    fi
+    echo -e "\n\e[33m📦 $updates_count system package(s) can be upgraded. Run \e[1msys-install\e[0m\e[33m to install them.\e[0m"
     return
   fi
 
-  # 3. Time calculation
+  # Time calculation using TTL from config (default 12 hours = 43200 seconds)
   local last_check=0
   if [ -f "$cache_file" ]; then
     last_check=$(cat "$cache_file")
@@ -39,14 +29,13 @@ __check_updates() {
   local ttl="${UPDATE_CHECK_TTL_SEC:-43200}"
 
   if ((current_time - last_check >= ttl)); then
-    # 4. Fire the expensive apt check in an asynchronous background subshell
+    # Fire the APT check asynchronously in a background subshell (Zero startup lag)
     (
       local count
       count=$(apt list --upgradable 2> /dev/null | grep -c -v 'Listing...')
       if [ "$count" -gt 0 ]; then
         echo "$count" > "$pending_file"
       else
-        # If 0 updates, update cache so we don't check again for 12 hours
         echo "$(date +%s)" > "$cache_file"
       fi
     ) &
