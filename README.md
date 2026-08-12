@@ -10,6 +10,7 @@ Before installing this terminal environment, ensure your local workstation meets
 
 *   **WSL2 (Debian):** This environment is explicitly built and tested for Windows Subsystem for Linux 2 running the **Debian** distribution.
 *   **Visual Studio Code:** Required for seamless IDE integration. Ensure the **WSL Extension** is installed so the `code .` CLI triggers route correctly from the WSL file system to your Windows host.
+*   **VSCode Extension Pack:** It is highly recommended to install the standardized extension pack to ensure all linting, formatting, and infrastructure integrations (like Terraform and Checkov) function perfectly alongside this terminal environment. You can install it from the dedicated repository here: [MatStacey/vscode-ext-pack](https://github.com/MatStacey/vscode-ext-pack).
 *   **Git:** Required to clone the initial repository and handle ongoing AI-assisted profile synchronization.
 
 ---
