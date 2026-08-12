@@ -17,7 +17,16 @@ fi
 echo "📂 Copying .bashrc and .bash.d/ structure..."
 rsync -a "$REPO_DIR/.bashrc" "$HOME_DIR/"
 mkdir -p "$TARGET_BASHD"
-rsync -a --delete --exclude 'config/config.yaml' "$REPO_DIR/.bash.d/" "$TARGET_BASHD/"
+# --delete would otherwise wipe local-only files (*private*.sh, *.local.sh)
+# that the repo's own .gitignore tells users to keep secrets in, plus the
+# generated env cache — exclude all of them alongside config.yaml.
+rsync -a --delete \
+  --exclude 'config/config.yaml' \
+  --exclude 'config/.env.cache' \
+  --exclude '*private*.sh' \
+  --exclude '*.local.sh' \
+  --exclude '*.local' \
+  "$REPO_DIR/.bash.d/" "$TARGET_BASHD/"
 
 # 3. Scaffold config.yaml from template if missing
 CONFIG_FILE="$TARGET_BASHD/config/config.yaml"
@@ -34,8 +43,12 @@ echo "✅ Files successfully synced to home directory."
 read -p "🔍 Would you like to run 'bootstrap' to install system dependencies (jq, fzf, PyYAML, terraform, etc.) now? [Y/n] " -n 1 -r
 echo
 if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-  # Source temporarily to make bootstrap available in this session
-  source "$HOME_DIR/.bashrc"
+  # install.sh runs non-interactively, so `.bashrc` returns immediately
+  # (its "if not running interactively, don't do anything" guard) without
+  # defining bootstrap — sourcing it wholesale here was a silent no-op
+  # that then hit `set -e` on the undefined `bootstrap` call. Source the
+  # bootstrap module directly instead.
+  source "$TARGET_BASHD/00-core/04-bootstrap.sh"
   bootstrap
 else
   echo "💡 You can run 'bootstrap' anytime later from your terminal."

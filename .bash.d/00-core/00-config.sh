@@ -29,7 +29,7 @@ __reload_config_if_modified() {
   fi
 }
 
-PROMPT_COMMAND="__reload_config_if_modified; ${PROMPT_COMMAND:-}"
+[[ "$PROMPT_COMMAND" != *"__reload_config_if_modified"* ]] && PROMPT_COMMAND="__reload_config_if_modified; ${PROMPT_COMMAND:-}"
 __reload_config_if_modified
 
 # Force load the cache for fresh terminal sessions
