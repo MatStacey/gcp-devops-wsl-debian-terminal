@@ -35,7 +35,7 @@ alias rld='source ~/.bashrc'
 #######################################
 # Update, Upgrade, Boostrap, Reload
 #######################################
-alias sys-install-reload='sys-update;bootstrap-deps;reload'
+alias sys-install-reload='sys-update;bootstrap;reload'
 #######################################
 # Open ~/vcs/personal/exports in the platform's native file manager
 #######################################

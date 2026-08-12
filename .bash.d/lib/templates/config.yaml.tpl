@@ -32,6 +32,7 @@ git:
 paths:
   vcs_root: ~/vcs
   vcs_personal: ~/vcs/personal
+  vcs_exports: ~/vcs/personal/exports
   sync_repo: ~/vcs/personal/gcp-devops-wsl-debian-terminal
   ai_workspace: ~/vcs/ai-workspace
   scripts_iam: ~/vcs/scripts/iam

@@ -109,6 +109,9 @@ def load_env():
         f"export VCS_PERSONAL={shlex.quote(paths_cfg.get('vcs_personal', '~/vcs/personal').replace('~', home))}"
     )
     print(
+        f"export VCS_EXPORTS={shlex.quote(paths_cfg.get('vcs_exports', '~/vcs/personal/exports').replace('~', home))}"
+    )
+    print(
         f"export SYNC_REPO_DIR={shlex.quote(paths_cfg.get('sync_repo', '~/vcs/personal/gcp-devops-wsl-debian-terminal').replace('~', home))}"
     )
     print(
