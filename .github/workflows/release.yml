@@ -14,15 +14,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        # Pinned to actions/checkout@v4.1.7
-        uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Required to fetch all tags and commit history for SemVer calculation
 
       - name: Calculate SemVer and Push Tag
         id: tag_version
-        # Pinned to mathieudutour/github-tag-action@v6.2
-        uses: mathieudutour/github-tag-action@a22ce0d31b615e8b8853639d11e3f056bc2713f0
+        uses: mathieudutour/github-tag-action@v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: patch
@@ -37,8 +35,7 @@ jobs:
           zip -r "$ZIP_NAME" . -x "*.git*" -x ".github/*" -x "venv/*" -x "*/__pycache__/*" -x ".terraform/*" -x "*.tfstate*"
 
       - name: Create GitHub Release
-        # Pinned to softprops/action-gh-release@v2.0.8
-        uses: softprops/action-gh-release@c062e08bd532815e2082a85e87e3ef29c3e6d191
+        uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
