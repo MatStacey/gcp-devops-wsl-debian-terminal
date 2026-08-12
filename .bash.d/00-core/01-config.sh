@@ -31,6 +31,12 @@ __reload_config_if_modified() {
 PROMPT_COMMAND="__reload_config_if_modified; ${PROMPT_COMMAND:-}"
 __reload_config_if_modified
 
+# Force load the cache and re-initialize colors for fresh terminal sessions
+if [ -f "$ENV_CACHE" ]; then
+  source "$ENV_CACHE"
+  source "$HOME/.bash.d/00-core/00-colors.sh"
+fi
+
 if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
   unset GEMINI_API_KEY
   echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-gemini-key \"your-api-key\"\e[0m"
@@ -288,4 +294,36 @@ set-auto-cleanup-days() { # => Config: Modifies the threshold in days before exp
   python3 "$CONFIG_MANAGER" update "exports" "auto_cleanup_days" "$1"
   export AUTO_CLEANUP_DAYS="$1"
   echo "✅ Auto-cleanup threshold set to $1 days."
+}
+
+#######################################
+# Formats Python and Shell scripts according to Google Style Guides.
+# Uses yapf for Python and shfmt for Shell scripts.
+# Outputs:
+#   Writes formatting progress and status updates to STDOUT.
+# Returns:
+#   0 on successful execution.
+#######################################
+google-fmt() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  echo "🎨 Formatting Python scripts (Google Python Style)..."
+  if command -v yapf > /dev/null 2>&1; then
+    yapf -r -i --style="{based_on_style: google, column_limit: 88, spaces_before_comment: 2}" .
+    echo "✅ Python formatting complete."
+  else
+    echo "⚠️ 'yapf' not found. Run 'bootstrap' to install it."
+  fi
+
+  echo "🎨 Formatting Shell scripts (Google Shell Style - 2-space indent)..."
+  if command -v shfmt > /dev/null 2>&1; then
+    # Google Shell Style Guide mandates 2-space indents, -ci for switch cases, and -sr for spaces after redirects
+    shfmt -i 2 -ci -sr -w .
+    echo "✅ Shell script formatting complete."
+  else
+    echo "⚠️ 'shfmt' not found."
+  fi
 }
