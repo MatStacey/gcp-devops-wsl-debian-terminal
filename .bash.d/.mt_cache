@@ -1,179 +1,179 @@
-[1;38;2;129;161;193m==========================================================[0m
-[1;38;2;129;161;193m                   MY CUSTOM BASH TOOLS                   [0m
-[1;38;2;129;161;193m==========================================================[0m
+[1;38;2;189;147;249m==========================================================[0m
+[1;38;2;189;147;249m                   MY CUSTOM BASH TOOLS                   [0m
+[1;38;2;189;147;249m==========================================================[0m
 
-[1;38;2;129;161;193m▶ FUNCTIONS[0m
+[1;38;2;189;147;249m▶ FUNCTIONS[0m
 
-  [1;38;2;235;203;139m[Centralized Theme & Colors][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mai                      [0m [38;2;76;86;106m→[0m [38;2;236;239;244mConsult universal AI[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208m__ai_build_context      [0m [38;2;76;86;106m→[0m [38;2;236;239;244mCompiles local codebase files into a single context document for LLMs.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208m_ai_get_next_version    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mCalculates the next available minor patch version for a generated file.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208m__ai_query_claude       [0m [38;2;76;86;106m→[0m [38;2;236;239;244mFormats payload and queries the Anthropic Claude API.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208m__ai_query_gemini       [0m [38;2;76;86;106m→[0m [38;2;236;239;244mFormats payload and queries the Google Gemini API.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208m__ai_save_output        [0m [38;2;76;86;106m→[0m [38;2;236;239;244mFormats and saves the generated code from LLMs into standard directories.[0m
+  [1;38;2;241;250;140m[Centralized Theme & Colors][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mai                      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConsult universal AI[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_build_context      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mCompiles local codebase files into a single context document for LLMs.[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m_ai_get_next_version    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mCalculates the next available minor patch version for a generated file.[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_query_claude       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats payload and queries the Anthropic Claude API.[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_query_gemini       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats payload and queries the Google Gemini API.[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_save_output        [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats and saves the generated code from LLMs into standard directories.[0m
 
-  [1;38;2;235;203;139m[Configuration Management][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mget-gemini-status       [0m [38;2;76;86;106m→[0m [38;2;236;239;244mPrints the current Gemini API model version and extended reasoning mode toggle.[0m
+  [1;38;2;241;250;140m[Configuration Management][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mget-gemini-status       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPrints the current Gemini API model version and extended reasoning mode toggle.[0m
 
-  [1;38;2;235;203;139m[Container Orchestration][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mkubectl                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mKubectl wrapper (preserves args)[0m
+  [1;38;2;241;250;140m[Container Orchestration][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mkubectl                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mKubectl wrapper (preserves args)[0m
 
-  [1;38;2;235;203;139m[GCP: Configuration & Authentication][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-config              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: List active configuration properties[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-export-vars         [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-get-project         [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: Print active project ID[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-get-project-number  [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: Print active project Number (API call required)[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-get-region          [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: Print active compute region[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-get-user            [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: Print active user account[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-get-zone            [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: Print active compute zone[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-org-policies        [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: List org policies for active project[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-update              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: Update Google Cloud CLI tools[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcp-login               [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: Login to user & application default[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcp-login-adc           [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: Login to application default only[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcp-set-project         [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: Switch active project[0m
+  [1;38;2;241;250;140m[GCP: Configuration & Authentication][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-config              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: List active configuration properties[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-export-vars         [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-get-project         [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: Print active project ID[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-get-project-number  [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: Print active project Number (API call required)[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-get-region          [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: Print active compute region[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-get-user            [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: Print active user account[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-get-zone            [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: Print active compute zone[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-org-policies        [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: List org policies for active project[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-update              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: Update Google Cloud CLI tools[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcp-login               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: Login to user & application default[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcp-login-adc           [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: Login to application default only[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcp-set-project         [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: Switch active project[0m
 
-  [1;38;2;235;203;139m[GCP: Resources & Services][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mbq-query                [0m [38;2;76;86;106m→[0m [38;2;236;239;244mBigQuery: Run standard SQL query[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-as-json             [0m [38;2;76;86;106m→[0m [38;2;236;239;244mRun gcloud command and output as formatted JSON[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcp-crf-logs            [0m [38;2;76;86;106m→[0m [38;2;236;239;244mFunctions: Tail logs of a function[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcp-gar-docker          [0m [38;2;76;86;106m→[0m [38;2;236;239;244mArtifacts: Configure Docker auth[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcp-get-secret          [0m [38;2;76;86;106m→[0m [38;2;236;239;244mSecrets: Read latest payload of a secret[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcp-iam-show            [0m [38;2;76;86;106m→[0m [38;2;236;239;244mIAM: View IAM policy for active project[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcp-ps-pull             [0m [38;2;76;86;106m→[0m [38;2;236;239;244mPubSub: Pull and auto-ack one message[0m
+  [1;38;2;241;250;140m[GCP: Resources & Services][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mbq-query                [0m [38;2;98;114;164m→[0m [38;2;248;248;242mBigQuery: Run standard SQL query[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-as-json             [0m [38;2;98;114;164m→[0m [38;2;248;248;242mRun gcloud command and output as formatted JSON[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcp-crf-logs            [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFunctions: Tail logs of a function[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcp-gar-docker          [0m [38;2;98;114;164m→[0m [38;2;248;248;242mArtifacts: Configure Docker auth[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcp-get-secret          [0m [38;2;98;114;164m→[0m [38;2;248;248;242mSecrets: Read latest payload of a secret[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcp-iam-show            [0m [38;2;98;114;164m→[0m [38;2;248;248;242mIAM: View IAM policy for active project[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcp-ps-pull             [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPubSub: Pull and auto-ack one message[0m
 
-  [1;38;2;235;203;139m[Google Style Code Formatting][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgoogle-fmt              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mFormats Python and Shell scripts according to Google Style Guides.[0m
+  [1;38;2;241;250;140m[Google Style Code Formatting][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgoogle-fmt              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats Python and Shell scripts according to Google Style Guides.[0m
 
-  [1;38;2;235;203;139m[Infrastructure as Code][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mterraform               [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform wrapper (preserves args)[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtf-val-all              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Recursively validate and scan all Terraform directories[0m
+  [1;38;2;241;250;140m[Infrastructure as Code][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mterraform               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform wrapper (preserves args)[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtf-val-all              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Recursively validate and scan all Terraform directories[0m
 
-  [1;38;2;235;203;139m[LLM Code Export Utilities][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mcleanup-exports         [0m [38;2;76;86;106m→[0m [38;2;236;239;244mLLM: Clean up export files[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mexport-all              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mLLM: Exports all text/code files[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mexport-bash             [0m [38;2;76;86;106m→[0m [38;2;236;239;244mLLM: Exports local .sh files[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mexport-crf              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mLLM: Exports Python GCF codebase[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mexport-tf               [0m [38;2;76;86;106m→[0m [38;2;236;239;244mLLM: Exports local TF codebase[0m
+  [1;38;2;241;250;140m[LLM Code Export Utilities][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mcleanup-exports         [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Clean up export files[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mexport-all              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports all text/code files[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mexport-bash             [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports local .sh files[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mexport-crf              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports Python GCF codebase[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mexport-tf               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports local TF codebase[0m
 
-  [1;38;2;235;203;139m[Path & URL Launchers (Config-Driven)][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mcd-ai                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mConfig: Change directory to unified AI workspace[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mcd-sync                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mConfig: Change directory to sync repository root[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208msync-web                [0m [38;2;76;86;106m→[0m [38;2;236;239;244mConfig: Open sync repository remote URL in default web browser[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mwin-ai                  [0m [38;2;76;86;106m→[0m [38;2;236;239;244mConfig: Open unified AI workspace in Windows File Explorer[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mwin-sync                [0m [38;2;76;86;106m→[0m [38;2;236;239;244mConfig: Open sync repository in Windows File Explorer[0m
+  [1;38;2;241;250;140m[Path & URL Launchers (Config-Driven)][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mcd-ai                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Change directory to unified AI workspace[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mcd-sync                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Change directory to sync repository root[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253msync-web                [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open sync repository remote URL in default web browser[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mwin-ai                  [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open unified AI workspace in Windows File Explorer[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mwin-sync                [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open sync repository in Windows File Explorer[0m
 
-  [1;38;2;235;203;139m[System & Environment Bootstrap][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mbootstrap               [0m [38;2;76;86;106m→[0m [38;2;236;239;244mSystem: Bootstrap missing dependencies for bash aliases (Debian/WSL)[0m
+  [1;38;2;241;250;140m[System & Environment Bootstrap][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mbootstrap               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mSystem: Bootstrap missing dependencies for bash aliases (Debian/WSL)[0m
 
-  [1;38;2;235;203;139m[System Update Check][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mdocker-ls               [0m [38;2;76;86;106m→[0m [38;2;236;239;244mDocker: List all running containers in a clean table format[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mdocker-reboot-all       [0m [38;2;76;86;106m→[0m [38;2;236;239;244mDocker: Restart all currently running Docker containers[0m
+  [1;38;2;241;250;140m[System Update Check][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mdocker-ls               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mDocker: List all running containers in a clean table format[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mdocker-reboot-all       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mDocker: Restart all currently running Docker containers[0m
 
-  [1;38;2;235;203;139m[Terraform][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtf-iam                  [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Ask AI to list required Service Accounts and least-privilege roles[0m
+  [1;38;2;241;250;140m[Terraform][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtf-iam                  [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Ask AI to list required Service Accounts and least-privilege roles[0m
 
-  [1;38;2;235;203;139m[Version Control (Git)][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgit                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGit: Wrapper to force 'clone' into ~/vcs/ from anywhere[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgit-ai-pc               [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGit: Add all files, intelligently group via AI, and push [Usage: git-ai-pc [optional message]][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgit-feature             [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGit: Create and checkout a new feature branch[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgit-ide                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGit: Clone a repository into ~/vcs/, cd into it, and open in IDE[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208m__git_sync_ai_commit    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mAnalyzes git diffs and calls the Gemini API to systematically generate[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208m__git_sync_copy_files   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mSynchronizes the active bash config files over to the tracked git directory.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208m__git_sync_init_repo    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mClones and initializes a repository into the sync directory.[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgit-web                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGit: Open the current repository in the default Windows web browser[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mvcs-sync-profile        [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGit: Sync local bash configs to terminal repo and push (AI-powered systematic commits)[0m
+  [1;38;2;241;250;140m[Version Control (Git)][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Wrapper to force 'clone' into ~/vcs/ from anywhere[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ai-pc               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Add all files, intelligently group via AI, and push [Usage: git-ai-pc [optional message]][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-feature             [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Create and checkout a new feature branch[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ide                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Clone a repository into ~/vcs/, cd into it, and open in IDE[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__git_sync_ai_commit    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mAnalyzes git diffs and calls the Gemini API to systematically generate[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__git_sync_copy_files   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mSynchronizes the active bash config files over to the tracked git directory.[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__git_sync_init_repo    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mClones and initializes a repository into the sync directory.[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-web                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Open the current repository in the default Windows web browser[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mvcs-sync-profile        [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Sync local bash configs to terminal repo and push (AI-powered systematic commits)[0m
 
-[1;38;2;129;161;193m▶ ALIASES[0m
+[1;38;2;189;147;249m▶ ALIASES[0m
 
-  [1;38;2;235;203;139m[Development & Build Tools][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mboot-run                [0m [38;2;76;86;106m→[0m [38;2;236;239;244mSpring Boot: Run application[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mmci                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mMaven: Clean and Install[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mpip-load                [0m [38;2;76;86;106m→[0m [38;2;236;239;244mInstall pip requirements[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mpip-save                [0m [38;2;76;86;106m→[0m [38;2;236;239;244mSave pip requirements[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mruff-fmt                [0m [38;2;76;86;106m→[0m [38;2;236;239;244mRuff: Format Python files and imports in current directory (recursive)[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mshfmtlw                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mshfmt: Format all shell scripts in current directory (recursive)[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mvenv-make               [0m [38;2;76;86;106m→[0m [38;2;236;239;244mCreate & active Python venv[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mvenv-up                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mActivate existing Python venv[0m
+  [1;38;2;241;250;140m[Development & Build Tools][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mboot-run                [0m [38;2;98;114;164m→[0m [38;2;248;248;242mSpring Boot: Run application[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmci                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mMaven: Clean and Install[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mpip-load                [0m [38;2;98;114;164m→[0m [38;2;248;248;242mInstall pip requirements[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mpip-save                [0m [38;2;98;114;164m→[0m [38;2;248;248;242mSave pip requirements[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mruff-fmt                [0m [38;2;98;114;164m→[0m [38;2;248;248;242mRuff: Format Python files and imports in current directory (recursive)[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mshfmtlw                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mshfmt: Format all shell scripts in current directory (recursive)[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mvenv-make               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mCreate & active Python venv[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mvenv-up                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mActivate existing Python venv[0m
 
-  [1;38;2;235;203;139m[GCP: Configuration & Authentication][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcpp                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCP: Legacy shortcut to set project[0m
+  [1;38;2;241;250;140m[GCP: Configuration & Authentication][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcpp                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCP: Legacy shortcut to set project[0m
 
-  [1;38;2;235;203;139m[GCP: Resources & Services][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mbq-ls                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mBigQuery: List datasets in project[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgce-ls                  [0m [38;2;76;86;106m→[0m [38;2;236;239;244mCompute: List all VM instances[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgce-ssh                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mCompute: SSH into an instance[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-gar-ls              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mArtifacts: List Artifact Registry repos[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-iam-ls              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mIAM: List service accounts in active project[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-ps-subs             [0m [38;2;76;86;106m→[0m [38;2;236;239;244mPubSub: List subscriptions[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcl-ps-topics           [0m [38;2;76;86;106m→[0m [38;2;236;239;244mPubSub: List topics[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcp-crf-ls              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mFunctions: List Cloud Run Functions[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mgcs-ls                  [0m [38;2;76;86;106m→[0m [38;2;236;239;244mGCS: List buckets or contents[0m
+  [1;38;2;241;250;140m[GCP: Resources & Services][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mbq-ls                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mBigQuery: List datasets in project[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgce-ls                  [0m [38;2;98;114;164m→[0m [38;2;248;248;242mCompute: List all VM instances[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgce-ssh                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mCompute: SSH into an instance[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-gar-ls              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mArtifacts: List Artifact Registry repos[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-iam-ls              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mIAM: List service accounts in active project[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-ps-subs             [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPubSub: List subscriptions[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcl-ps-topics           [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPubSub: List topics[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcp-crf-ls              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFunctions: List Cloud Run Functions[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgcs-ls                  [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGCS: List buckets or contents[0m
 
-  [1;38;2;235;203;139m[Infrastructure as Code][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtf                      [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Base command[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfa                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Apply deployment[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfd                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Destroy resources[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtff                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Format all TF files recursively[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfp                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Plan deployment[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtf-scan                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mCheckov: Scan local terraform directory (./terraform)[0m
+  [1;38;2;241;250;140m[Infrastructure as Code][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtf                      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Base command[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfa                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Apply deployment[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfd                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Destroy resources[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtff                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Format all TF files recursively[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfp                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Plan deployment[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtf-scan                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mCheckov: Scan local terraform directory (./terraform)[0m
 
-  [1;38;2;235;203;139m[Modern CLI Replacements][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mcat                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mbat: Print file contents with syntax highlighting[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mccat                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mbat: Print file contents with line numbers & Git gutters[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mjson-fmt                [0m [38;2;76;86;106m→[0m [38;2;236;239;244mPretty-print JSON stream[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mll                      [0m [38;2;76;86;106m→[0m [38;2;236;239;244meza: Detailed list with Git status[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mls                      [0m [38;2;76;86;106m→[0m [38;2;236;239;244meza: List files with directories first[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mrg                      [0m [38;2;76;86;106m→[0m [38;2;236;239;244mrg: Search with smart case, include hidden, ignore .git[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtree                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244meza: Display directory structure as a tree[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208myaml-fmt                [0m [38;2;76;86;106m→[0m [38;2;236;239;244mPretty-print YAML stream (requires yq)[0m
+  [1;38;2;241;250;140m[Modern CLI Replacements][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mcat                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mbat: Print file contents with syntax highlighting[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mccat                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mbat: Print file contents with line numbers & Git gutters[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mjson-fmt                [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPretty-print JSON stream[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mll                      [0m [38;2;98;114;164m→[0m [38;2;248;248;242meza: Detailed list with Git status[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mls                      [0m [38;2;98;114;164m→[0m [38;2;248;248;242meza: List files with directories first[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mrg                      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mrg: Search with smart case, include hidden, ignore .git[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtree                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242meza: Display directory structure as a tree[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253myaml-fmt                [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPretty-print YAML stream (requires yq)[0m
 
-  [1;38;2;235;203;139m[System & Navigation][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mcdbashd                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mChange directory to ~/.bash.d[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mcdvcs                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mChange directory to ~/vcs[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mcdvcsp                  [0m [38;2;76;86;106m→[0m [38;2;236;239;244mChange directory to ~/vcs/personal[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mclip                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mPipe output to Windows clipboard (e.g. cat file | clip)[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mmt                      [0m [38;2;76;86;106m→[0m [38;2;236;239;244mPrint all aliases and functions[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mreload                  [0m [38;2;76;86;106m→[0m [38;2;236;239;244mReload Bash profile[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mrld                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mReload Bash profile[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208msys-install-reload      [0m [38;2;76;86;106m→[0m [38;2;236;239;244mUpdate, Upgrade, Boostrap, Reload[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208msys-update              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mUpdates Debian/Ubuntu packages[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mwin                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mOpen current WSL dir in[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mwin-export              [0m [38;2;76;86;106m→[0m [38;2;236;239;244mOpen ~/vcs/personal/exports Windows Explorer[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mwin-vcs                 [0m [38;2;76;86;106m→[0m [38;2;236;239;244mOpen ~/vcs Windows Explorer[0m
+  [1;38;2;241;250;140m[System & Navigation][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mcdbashd                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mChange directory to ~/.bash.d[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mcdvcs                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mChange directory to ~/vcs[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mcdvcsp                  [0m [38;2;98;114;164m→[0m [38;2;248;248;242mChange directory to ~/vcs/personal[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mclip                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPipe output to Windows clipboard (e.g. cat file | clip)[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt                      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPrint all aliases and functions[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mreload                  [0m [38;2;98;114;164m→[0m [38;2;248;248;242mReload Bash profile[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mrld                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mReload Bash profile[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253msys-install-reload      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mUpdate, Upgrade, Boostrap, Reload[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253msys-update              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mUpdates Debian/Ubuntu packages[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mwin                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mOpen current WSL dir in[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mwin-export              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mOpen ~/vcs/personal/exports Windows Explorer[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mwin-vcs                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mOpen ~/vcs Windows Explorer[0m
 
-  [1;38;2;235;203;139m[Terraform][0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtf                      [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Base command[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfa                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Apply deployment[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfay                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Apply deployment (auto-approve)[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfc                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Open interactive console[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfd                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Destroy resources[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfdy                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Destroy resources (auto-approve)[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtff                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Format codebase[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtffu                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Force unlock state[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfg                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Generate graph[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfim                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Import resource[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfin                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Initialize directory[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfinu                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Initialize and upgrade modules/providers[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfo                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Read outputs[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfp                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Plan deployment[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfpde                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Plan destruction[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfpr                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: List providers[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfr                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Refresh state[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfs                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Manage state[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfsh                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Show state[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfsls                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: List resources in state[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfsmv                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Move resource in state[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfsph                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Push state[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfspl                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Pull state[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfsrm                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Remove resource from state[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfssw                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Show resource in state[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtft                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Taint resource[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfut                    [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Untaint resource[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfv                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Validate codebase[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfw                     [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Manage workspaces[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfwde                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Delete workspace[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfwls                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: List workspaces[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfwnw                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Create new workspace[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfwst                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Select workspace[0m
-    [38;2;76;86;106m•[0m [1;38;2;136;192;208mtfwsw                   [0m [38;2;76;86;106m→[0m [38;2;236;239;244mTerraform: Show active workspace[0m
+  [1;38;2;241;250;140m[Terraform][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtf                      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Base command[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfa                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Apply deployment[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfay                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Apply deployment (auto-approve)[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfc                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Open interactive console[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfd                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Destroy resources[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfdy                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Destroy resources (auto-approve)[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtff                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Format codebase[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtffu                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Force unlock state[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfg                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Generate graph[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfim                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Import resource[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfin                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Initialize directory[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfinu                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Initialize and upgrade modules/providers[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfo                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Read outputs[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfp                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Plan deployment[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfpde                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Plan destruction[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfpr                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: List providers[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfr                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Refresh state[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfs                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Manage state[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfsh                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Show state[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfsls                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: List resources in state[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfsmv                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Move resource in state[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfsph                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Push state[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfspl                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Pull state[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfsrm                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Remove resource from state[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfssw                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Show resource in state[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtft                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Taint resource[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfut                    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Untaint resource[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfv                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Validate codebase[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfw                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Manage workspaces[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfwde                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Delete workspace[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfwls                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: List workspaces[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfwnw                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Create new workspace[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfwst                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Select workspace[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mtfwsw                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Show active workspace[0m
 

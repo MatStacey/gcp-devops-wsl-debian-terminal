@@ -110,10 +110,13 @@ __ai_query_gemini() {
   fi
 
   local system_json=$(jq -n --arg sp "${AI_SYSTEM_PROMPT}" '{ systemInstruction: { parts: [{ text: $sp }] } }')
-  local payload=$(jq -s '.[0] * .[1] * .[2]' "$HOME/.bash.d/config/gemini-config.json" <(echo "$system_json") <(echo "$prompt_json"))
+  local payload_file=$(mktemp)
+  jq -s '.[0] * .[1] * .[2]' "$HOME/.bash.d/config/gemini-config.json" <(echo "$system_json") <(echo "$prompt_json") > "$payload_file"
 
   echo "⏳ Querying Gemini ($final_model)..." >&2
-  local response=$(curl -s -X POST "${api_url}" -H 'Content-Type: application/json' -d "${payload}")
+  local response=$(curl -s -X POST "${api_url}" -H 'Content-Type: application/json' -d @"$payload_file")
+
+  rm -f "$payload_file"
   local content=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty')
 
   [ -z "$content" ] && {
@@ -156,10 +159,13 @@ __ai_query_claude() {
   fi
 
   local system_json=$(jq -n --arg sp "${AI_SYSTEM_PROMPT}" '{ system: $sp }')
-  local payload=$(jq -s '.[0] * .[1] * .[2] * {model: $model}' "$HOME/.bash.d/config/claude-config.json" <(echo "$system_json") <(echo "$prompt_json") --arg model "$final_model")
+  local payload_file=$(mktemp)
+  jq -s '.[0] * .[1] * .[2] * {model: $model}' "$HOME/.bash.d/config/claude-config.json" <(echo "$system_json") <(echo "$prompt_json") --arg model "$final_model" > "$payload_file"
 
   echo "⏳ Querying Claude ($final_model)..." >&2
-  local response=$(curl -s -X POST "${api_url}" -H "x-api-key: ${CLAUDE_API_KEY}" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d "${payload}")
+  local response=$(curl -s -X POST "${api_url}" -H "x-api-key: ${CLAUDE_API_KEY}" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d @"$payload_file")
+
+  rm -f "$payload_file"
   local content=$(echo "$response" | jq -r '.content[0].text // empty')
 
   [ -z "$content" ] && {
