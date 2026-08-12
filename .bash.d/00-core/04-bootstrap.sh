@@ -11,6 +11,7 @@ __bootstrap_apt() {
   command -v rsync > /dev/null 2>&1 || apt_deps+=("rsync")
   command -v shfmt > /dev/null 2>&1 || apt_deps+=("shfmt")
   command -v file > /dev/null 2>&1 || apt_deps+=("file")
+  command -v zoxide > /dev/null 2>&1 || apt_deps+=("zoxide")
   python3 -c "import yaml" 2> /dev/null || apt_deps+=("python3-yaml")
 
   if [ ${#apt_deps[@]} -gt 0 ]; then
