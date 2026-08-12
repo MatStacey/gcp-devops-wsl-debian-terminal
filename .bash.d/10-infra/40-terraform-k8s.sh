@@ -34,11 +34,10 @@ alias tfp='terraform plan'
 # Terraform wrapper (preserves args)
 #######################################
 terraform() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  echo "+ terraform $*"
+  # Deliberately does NOT intercept -h/--help here (unlike other mytools
+  # wrappers) — this wraps a real command with its own --help. Use
+  # `mt-help terraform` for the custom doc block instead.
+  echo "+ terraform $*" >&2
   command terraform "$@"
 }
 
@@ -49,10 +48,7 @@ terraform() {
 # Kubectl wrapper (preserves args)
 #######################################
 kubectl() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
+  # Deliberately does NOT intercept -h/--help here — see terraform() above.
   echo "+ kubectl $*" >&2
   command kubectl "$@"
 }

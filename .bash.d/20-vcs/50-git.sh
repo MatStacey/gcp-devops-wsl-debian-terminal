@@ -197,9 +197,13 @@ vcs-sync-profile() {
       git commit -m "$user_msg" > /dev/null
     fi
 
-    echo "🚀 Successfully pushed updates to remote."
-    git push origin HEAD
-    git-web
+    if git push origin HEAD; then
+      echo "🚀 Successfully pushed updates to remote."
+      git-web
+    else
+      echo "🚨 Error: Failed to push updates to remote." >&2
+      return 1
+    fi
   )
 }
 
@@ -268,11 +272,10 @@ git-feature() {
 #   Passes through standard git return codes.
 #######################################
 git() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  }
-
+  # Deliberately does NOT intercept -h/--help here (unlike other mytools
+  # wrappers) — this wraps a real command with its own --help, and
+  # shadowing it broke `git --help`/`git <subcommand> --help` entirely.
+  # Use `mt-help git` for the custom doc block instead.
   if [ "$1" != "clone" ]; then
     command git "$@"
     return $?
