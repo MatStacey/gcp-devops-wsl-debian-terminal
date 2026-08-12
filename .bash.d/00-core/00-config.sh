@@ -237,7 +237,7 @@ open-bashd-config() { # => Config: Open bash.d directory and config.yaml in IDE 
 
   echo "🚀 Opening bash config in $selected_ide..."
   [ "$selected_ide" = "intellij" ] &&
-    { idea "$config_dir" "$config_file" &> /dev/null || idea.exe "$config_dir" "$config_file" &> /dev/null || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' or 'idea.exe' is in your PATH."; } ||
+    { __launch_intellij "$config_dir" "$config_file" || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS."; } ||
     code "$config_dir" "$config_file"
 }
 
