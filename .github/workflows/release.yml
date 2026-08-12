@@ -4,13 +4,40 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 # Grant the action permission to write tags and releases to the repo
 permissions:
   contents: write
 
 jobs:
+  lint:
+    name: Lint & Format Check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: sudo apt-get update && sudo apt-get install -y shellcheck shfmt
+
+      - name: Run ShellCheck
+        run: |
+          echo "🔍 Running ShellCheck..."
+          find .bash.d -type f -name "*.sh" -print0 | xargs -0 shellcheck -e SC1090,SC1091
+          shellcheck -e SC1090,SC1091 install.sh .bashrc
+
+      - name: Verify Formatting (shfmt)
+        run: |
+          echo "🎨 Verifying Google Shell Style..."
+          shfmt -d -i 2 -ci -sr .
+
   build-and-release:
+    name: Build and Release
+    needs: lint
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
