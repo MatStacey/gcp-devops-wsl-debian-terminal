@@ -4,6 +4,16 @@ A high-performance, fully modular Bash environment engineered specifically for S
 
 This configuration adheres to DRY principles, relies on native Bash and standalone Python script execution for zero-latency loading, and aggregates modern CLI tools for Google Cloud Platform, Kubernetes, Terraform, and Python development.
 
+## 📋 Prerequisites
+
+Before installing this terminal environment, ensure your local workstation meets the following baseline requirements:
+
+*   **WSL2 (Debian):** This environment is explicitly built and tested for Windows Subsystem for Linux 2 running the **Debian** distribution.
+*   **Visual Studio Code:** Required for seamless IDE integration. Ensure the **WSL Extension** is installed so the `code .` CLI triggers route correctly from the WSL file system to your Windows host.
+*   **Git:** Required to clone the initial repository and handle ongoing AI-assisted profile synchronization.
+
+---
+
 ## 🚀 Key Features
 
 * **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking utilizing zero-subshell file reads for maximum performance. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
@@ -18,26 +28,10 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 ---
 
-## 📂 Directory Structure
-
-The configuration abandons a monolithic `~/.bashrc` in favor of a logical `.bash.d/` directory structure.
-
-| Module | Description |
-| :--- | :--- |
-| `00-core/` | Core configuration, centralized dynamic color themes, prompts, update checking, mytools engine, and bootstrapping utilities. |
-| `10-infra/` | GCP authentication/project switchers, concurrent Terraform validation, and comprehensive Kubectl aliases. |
-| `20-vcs/` | Git wrappers, AI-assisted feature-grouped commit automation (`git-ai-pc`), profile syncing, and web launching. |
-| `30-ai/` | API integrations for interacting with Google Gemini and Anthropic Claude via the universal `ai` command. |
-| `config/` | JSON/YAML files, `.env` caching, and modular theme definitions (`config/themes/`). |
-| `lib/` | AWK parsers (`mytools.awk`), configuration templates, and standalone Python utility scripts (`config_manager.py`). |
-
----
-
 ## 🛠️ Setup & Bootstrapping
 
 1. **Clone the repository** to your local WSL2 machine.
 2. **Run the installation script** to automatically back up existing profiles, scaffold configurations, and sync files:
-
 ```bash
 ./install.sh
 
@@ -52,65 +46,88 @@ bootstrap
 
 ---
 
+## 📂 Directory Structure
+
+The configuration abandons a monolithic `~/.bashrc` in favor of a logical `.bash.d/` directory structure.
+
+| Module | Description |
+| --- | --- |
+| `00-core/` | Core configuration, centralized dynamic color themes, prompts, update checking, mytools engine, and bootstrapping utilities. |
+| `10-infra/` | GCP authentication/project switchers, concurrent Terraform validation, and comprehensive Kubectl aliases. |
+| `20-vcs/` | Git wrappers, AI-assisted feature-grouped commit automation (`git-ai-pc`), profile syncing, and web launching. |
+| `30-ai/` | API integrations for interacting with Google Gemini and Anthropic Claude via the universal `ai` command. |
+| `config/` | JSON/YAML files, `.env` caching, and modular theme definitions (`config/themes/`). |
+| `lib/` | AWK parsers (`mytools.awk`), configuration templates, and standalone Python utility scripts (`config_manager.py`). |
+
+---
+
 ## 🧰 Command Reference (MyTools)
 
 The following commands are automatically parsed and indexed from codebase documentation blocks.
 
-### Centralized Theme & Colors
+### ⚙️ Core System & Environment
+
+#### System & Environment Bootstrap
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `ai` | Function | Consult universal AI. |
-| `__ai_build_context` | Function | Compiles local codebase files into a single context document for LLMs. |
-| `_ai_get_next_version` | Function | Calculates the next available minor patch version for a generated file. |
-| `__ai_query_claude` | Function | Formats payload and queries the Anthropic Claude API. |
-| `__ai_query_gemini` | Function | Formats payload and queries the Google Gemini API. |
-| `__ai_save_output` | Function | Formats and saves the generated code from LLMs into standard directories. |
+| `bootstrap` | Function | System: Bootstrap missing dependencies for bash aliases (Debian/WSL). |
 
-### Configuration Management
+#### Configuration Management
 
 | Command | Type | Description |
 | --- | --- | --- |
 | `add-claude-key` | Function | Adds a Claude API key to the local YAML configuration. |
 | `add-gemini-key` | Function | Adds a Gemini API key to the local YAML configuration. |
 | `add-sync-url` | Function | Configures the remote git URL for the bash profile synchronization tool. |
-| `google-fmt` | Function | Formats Python and Shell scripts according to Google Style Guides. |
-| `mt-theme` | Function | Opens an interactive fuzzy-finder menu to select and apply a theme. |
 | `open-bashd-config` | Function | Opens the bash.d configuration directory directly in the configured IDE. |
 | `set-auto-cleanup-days` | Function | Modifies the threshold in days before exports are automatically deleted. |
 | `set-claude-version` | Function | Sets the default Claude model version in configuration. |
 | `set-default-ai` | Function | Sets the default LLM provider for the 'ai' command suite. |
 | `set-default-ide` | Function | Sets the default local IDE for launch commands. |
 | `set-gemini-version` | Function | Sets the default Gemini model version in configuration. |
-| `set-theme` | Function | Sets the active terminal color theme and reloads the color profile. |
 | `toggle-auto-cleanup` | Function | Toggles the background execution of the export cleanup script. |
 | `toggle-gemini-extended` | Function | Toggles the Gemini extended reasoning mode flag. |
 
-### 🐳 Container Management
+#### Centralized Theme & Colors
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `docker-ls` | Function | Lists all running Docker containers in a clean, readable table format. |
-| `docker-nuke` | Function | Aggressively cleans up your local Docker environment by pruning all stopped containers, dangling images, unused networks, and orphaned volumes to reclaim WSL2 disk space. |
-| `docker-reboot-all` | Function | Gracefully restarts running Docker containers, respecting the persistent `docker.restart_blocklist` defined in `config.yaml`. |
-| `docker-sandbox` | Function | Instantly spins up a temporary, throwaway container that automatically deletes itself (`--rm`) the moment you exit the shell. |
-| `docker-shell` | Function | Launches an interactive fuzzy-finder (`fzf`) menu to instantly drop you into a bash/sh terminal inside the selected container. |
-| `docker-tail` | Function | Multi-select (`TAB`) several containers via `fzf` to concurrently tail their logs. Streams are prefixed with color-coded container names for easy real-time reading. |
+| `mt-theme` | Function | Opens an interactive fuzzy-finder menu to select and apply a theme. |
+| `set-theme` | Function | Sets the active terminal color theme and reloads the color profile. |
 
-### Development & Build Tools
+#### System & Navigation
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `boot-run` | Alias | Spring Boot: Run application. |
-| `mci` | Alias | Maven: Clean and Install. |
-| `pip-load` | Alias | Install pip requirements. |
-| `pip-save` | Alias | Save pip requirements. |
-| `ruff-fmt` | Alias | Ruff: Format Python files and imports in current directory (recursive). |
-| `shfmtlw` | Alias | shfmt: Format all shell scripts in current directory (recursive). |
-| `venv-make` | Alias | Create & active Python venv. |
-| `venv-up` | Alias | Activate existing Python venv. |
+| `cdbashd` | Alias | Change directory to ~/.bash.d. |
+| `cdvcs` | Alias | Change directory to ~/vcs. |
+| `cdvcsp` | Alias | Change directory to ~/vcs/personal. |
+| `clip` | Alias | Pipe output to Windows clipboard (e.g. cat file | clip). |
+| `mt` | Alias | Print all aliases and functions. |
+| `reload` | Alias | Reload Bash profile. |
+| `rld` | Alias | Reload Bash profile. |
+| `sys-install-reload` | Alias | Update, Upgrade, Boostrap, Reload. |
+| `sys-update` | Alias | Updates Debian/Ubuntu packages. |
 
-### GCP: Configuration & Authentication
+#### Path & URL Launchers (Config-Driven)
+
+| Command | Type | Description |
+| --- | --- | --- |
+| `cd-ai` | Function | Config: Change directory to unified AI workspace. |
+| `cd-sync` | Function | Config: Change directory to sync repository root. |
+| `sync-web` | Function | Config: Open sync repository remote URL in default web browser. |
+| `win` | Alias | Open current WSL dir in Windows Explorer. |
+| `win-ai` | Function | Config: Open unified AI workspace in Windows File Explorer. |
+| `win-export` | Alias | Open ~/vcs/personal/exports Windows Explorer. |
+| `win-sync` | Function | Config: Open sync repository in Windows File Explorer. |
+| `win-vcs` | Alias | Open ~/vcs Windows Explorer. |
+
+---
+
+### ☁️ Cloud & Infrastructure
+
+#### GCP: Configuration & Authentication
 
 | Command | Type | Description |
 | --- | --- | --- |
@@ -128,7 +145,7 @@ The following commands are automatically parsed and indexed from codebase docume
 | `gcpp` | Alias | GCP: Legacy shortcut to set project. |
 | `gcp-set-project` | Function | GCP: Switch active project. |
 
-### GCP: Resources & Services
+#### GCP: Resources & Services
 
 | Command | Type | Description |
 | --- | --- | --- |
@@ -149,7 +166,7 @@ The following commands are automatically parsed and indexed from codebase docume
 | `gcp-ps-pull` | Function | PubSub: Pull and auto-ack one message. |
 | `gcs-ls` | Alias | GCS: List buckets or contents. |
 
-### Infrastructure as Code
+#### Infrastructure as Code (Terraform)
 
 | Command | Type | Description |
 | --- | --- | --- |
@@ -162,89 +179,37 @@ The following commands are automatically parsed and indexed from codebase docume
 | `tf-scan` | Alias | Checkov: Scan local terraform directory (./terraform). |
 | `tf-val-all` | Function | Terraform: Recursively validate and scan all Terraform directories. |
 
-### LLM Code Export Utilities
+#### Container Management (Docker)
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `cleanup-exports` | Function | LLM: Clean up export files. |
-| `export-all` | Function | LLM: Exports all text/code files. |
-| `export-bash` | Function | LLM: Exports local .sh files. |
-| `export-crf` | Function | LLM: Exports Python GCF codebase. |
-| `export-tf` | Function | LLM: Exports local TF codebase. |
+| `docker-ls` | Function | Lists all running Docker containers in a clean, readable table format. |
+| `docker-nuke` | Function | Aggressively cleans up your local Docker environment by pruning all stopped containers, dangling images, unused networks, and orphaned volumes to reclaim WSL2 disk space. |
+| `docker-reboot-all` | Function | Gracefully restarts running Docker containers, respecting the persistent `docker.restart_blocklist` defined in `config.yaml`. |
+| `docker-sandbox` | Function | Instantly spins up a temporary, throwaway container that automatically deletes itself (`--rm`) the moment you exit the shell. |
+| `docker-shell` | Function | Launches an interactive fuzzy-finder (`fzf`) menu to instantly drop you into a bash/sh terminal inside the selected container. |
+| `docker-tail` | Function | Multi-select (`TAB`) several containers via `fzf` to concurrently tail their logs. Streams are prefixed with color-coded container names for easy real-time reading. |
 
-### Modern CLI Replacements
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `cat` | Alias | bat: Print file contents with syntax highlighting. |
-| `ccat` | Alias | bat: Print file contents with line numbers & Git gutters. |
-| `json-fmt` | Alias | Pretty-print JSON stream. |
-| `ll` | Alias | eza: Detailed list with Git status. |
-| `ls` | Alias | eza: List files with directories first. |
-| `rg` | Alias | rg: Search with smart case, include hidden, ignore .git. |
-| `tree` | Alias | eza: Display directory structure as a tree. |
-| `yaml-fmt` | Alias | Pretty-print YAML stream (requires yq). |
-
-### Path & URL Launchers (Config-Driven)
+#### Container Orchestration (Kubernetes)
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `cd-ai` | Function | Config: Change directory to unified AI workspace. |
-| `cd-sync` | Function | Config: Change directory to sync repository root. |
-| `sync-web` | Function | Config: Open sync repository remote URL in default web browser. |
-| `win-ai` | Function | Config: Open unified AI workspace in Windows File Explorer. |
-| `win-sync` | Function | Config: Open sync repository in Windows File Explorer. |
+| `k` | Alias | `kubectl` |
+| `ka` / `kak` | Aliases | `kubectl apply -f` and `kubectl apply -k` |
+| `krm` / `krmf` | Aliases | `kubectl delete` and `kubectl delete -f` |
+| `kg*` | Aliases | Get resources (`kgpo`, `kgdep`, `kgsvc`, `kging`, `kgcm`, `kgsec`, `kgno`, `kgns`, `kgall`) |
+| `kd*` | Aliases | Describe resources (`kdpo`, `kddep`, `kdsvc`, `kding`, `kdcm`, `kdsec`, `kdno`) |
+| `klo` / `klop` | Aliases | Tail logs (`kubectl logs -f`) / tail previous container (`-p`) |
+| `kex` | Alias | Exec interactively (`kubectl exec -i -t`) |
+| `kpf` | Alias | Port forward (`kubectl port-forward`) |
+| `ksys` | Alias | Execute command explicitly in `kube-system` namespace |
+| `kns` | Function | View or interactively set (`TAB` completion) the default namespace context |
 
-### System & Environment Bootstrap
+---
 
-| Command | Type | Description |
-| --- | --- | --- |
-| `bootstrap` | Function | System: Bootstrap missing dependencies for bash aliases (Debian/WSL). |
+### 💻 Development & Workflows
 
-### System & Navigation
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `cdbashd` | Alias | Change directory to ~/.bash.d. |
-| `cdvcs` | Alias | Change directory to ~/vcs. |
-| `cdvcsp` | Alias | Change directory to ~/vcs/personal. |
-| `clip` | Alias | Pipe output to Windows clipboard (e.g. cat file | clip). |
-| `mt` | Alias | Print all aliases and functions. |
-| `reload` | Alias | Reload Bash profile. |
-| `rld` | Alias | Reload Bash profile. |
-| `sys-install-reload` | Alias | Update, Upgrade, Boostrap, Reload. |
-| `sys-update` | Alias | Updates Debian/Ubuntu packages. |
-| `win` | Alias | Open current WSL dir in. |
-| `win-export` | Alias | Open ~/vcs/personal/exports Windows Explorer. |
-| `win-vcs` | Alias | Open ~/vcs Windows Explorer. |
-
-### Terraform
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `tf` | Alias | Terraform: Base command. |
-| `tfa` | Alias | Terraform: Apply deployment. |
-| `tfay` | Alias | Terraform: Apply deployment (auto-approve). |
-| `tfap` | Alias | Terraform: Apply a saved `tfplan` file. |
-| `tfc` | Alias | Terraform: Open interactive console. |
-| `tf-clean` | Function | Aggressively clean local caching (`.terraform`, locks, plans). |
-| `tfd` | Alias | Terraform: Destroy resources. |
-| `tfdy` | Alias | Terraform: Destroy resources (auto-approve). |
-| `tff` | Alias | Terraform: Format all TF files recursively. |
-| `tfin` | Alias | Terraform: Initialize directory. |
-| `tfinu` | Alias | Terraform: Initialize and upgrade modules/providers. |
-| `tfo` | Alias | Terraform: Read outputs. |
-| `tfp` | Alias | Terraform: Plan deployment. |
-| `tfpd` | Alias | Terraform: Plan destruction. |
-| `tfpo` | Alias | Terraform: Plan deployment and output to `tfplan`. |
-| `tf-refresh` | Alias | Modern alternative to `terraform refresh` (`apply -refresh-only`). |
-| `tf-replace` | Function | Modern alternative to `terraform taint` (`apply -replace="<resource>"`). |
-| `tf-yaml` (`tfy`) | Function | Execute Terraform commands injecting variables directly from a YAML config file. |
-| `tfs*` | Aliases | State management commands (`tfs`, `tfsh`, `tfsls`, `tfsmv`, `tfsrm`, `tfssw`). |
-| `tfv` | Alias | Terraform: Validate codebase. |
-| `tfw*` | Aliases | Workspace management commands (`tfw`, `tfwls`, `tfwnw`, `tfwst`, `tfwde`, `tfwsw`). |
-
-### Version Control (Git)
+#### Version Control (Git)
 
 | Command | Type | Description |
 | --- | --- | --- |
@@ -258,3 +223,51 @@ The following commands are automatically parsed and indexed from codebase docume
 | `git-update` | Function | Fetch upstream and rebase the current branch onto the default branch. |
 | `git-web` | Function | Open the current repository in the default Windows web browser. |
 | `vcs-sync-profile` | Function | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |
+
+#### Development & Build Tools
+
+| Command | Type | Description |
+| --- | --- | --- |
+| `boot-run` | Alias | Spring Boot: Run application. |
+| `mci` | Alias | Maven: Clean and Install. |
+| `pip-load` | Alias | Install pip requirements. |
+| `pip-save` | Alias | Save pip requirements. |
+| `venv-make` | Alias | Create & active Python venv. |
+| `venv-up` | Alias | Activate existing Python venv. |
+
+#### Code Formatting
+
+| Command | Type | Description |
+| --- | --- | --- |
+| `google-fmt` | Function | Formats Python and Shell scripts according to Google Style Guides. |
+| `ruff-fmt` | Alias | Ruff: Format Python files and imports in current directory (recursive). |
+| `shfmtlw` | Alias | shfmt: Format all shell scripts in current directory (recursive). |
+
+#### Modern CLI Replacements
+
+| Command | Type | Description |
+| --- | --- | --- |
+| `cat` | Alias | bat: Print file contents with syntax highlighting. |
+| `ccat` | Alias | bat: Print file contents with line numbers & Git gutters. |
+| `json-fmt` | Alias | Pretty-print JSON stream. |
+| `ll` | Alias | eza: Detailed list with Git status. |
+| `ls` | Alias | eza: List files with directories first. |
+| `rg` | Alias | rg: Search with smart case, include hidden, ignore .git. |
+| `tree` | Alias | eza: Display directory structure as a tree. |
+| `yaml-fmt` | Alias | Pretty-print YAML stream (requires yq). |
+
+#### Universal AI & LLM Utilities
+
+| Command | Type | Description |
+| --- | --- | --- |
+| `ai` | Function | Consult universal AI. |
+| `__ai_build_context` | Function | Compiles local codebase files into a single context document for LLMs. |
+| `_ai_get_next_version` | Function | Calculates the next available minor patch version for a generated file. |
+| `__ai_query_claude` | Function | Formats payload and queries the Anthropic Claude API. |
+| `__ai_query_gemini` | Function | Formats payload and queries the Google Gemini API. |
+| `__ai_save_output` | Function | Formats and saves the generated code from LLMs into standard directories. |
+| `cleanup-exports` | Function | LLM: Clean up export files. |
+| `export-all` | Function | LLM: Exports all text/code files. |
+| `export-bash` | Function | LLM: Exports local .sh files. |
+| `export-crf` | Function | LLM: Exports Python GCF codebase. |
+| `export-tf` | Function | LLM: Exports local TF codebase. |
