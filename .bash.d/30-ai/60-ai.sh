@@ -280,6 +280,7 @@ ai() {
 
   local context_file
   context_file=$(__ai_build_context "$target_file" "$export_context")
+  # shellcheck disable=SC2181
   [ $? -ne 0 ] && return 1
 
   local content=""
@@ -291,6 +292,7 @@ ai() {
     echo "🚨 Error: Invalid provider '$provider'." >&2
     return 1
   fi
+  # shellcheck disable=SC2181
   [ $? -ne 0 ] && return 1
 
   [ -f "$context_file" ] && rm -f "$context_file"

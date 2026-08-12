@@ -204,7 +204,8 @@ gcl-export-vars() {
   export PROJECT_ID="$target_project"
 
   if [ -n "$PROJECT_ID" ]; then
-    export PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
+    export PROJECT_NUMBER
+    PROJECT_NUMBER=$(gcloud projects describe "$PROJECT_ID" --format='value(projectNumber)')
     echo "✅ Exported PROJECT_ID=${PROJECT_ID} and PROJECT_NUMBER=${PROJECT_NUMBER}"
   else
     echo "🚨 Error: Could not determine active project ID."
