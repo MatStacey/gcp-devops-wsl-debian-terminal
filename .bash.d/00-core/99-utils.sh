@@ -81,3 +81,63 @@ docker-ls() {
   fi
   docker ps --format "table {{.Names}}\t{{.Image}}\t{{.Status}}\t{{.Ports}}"
 }
+
+#######################################
+# Docker: Interactive fuzzy-finder to exec into a running container
+#######################################
+docker-shell() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local target
+  target=$(docker ps --format "{{.Names}}" | fzf --prompt="🐳 Select Container > " --height=~10 --layout=reverse --border)
+
+  if [ -n "$target" ]; then
+    echo -e "${CB_GREEN}🚀 Entering sandbox for: ${target}...${C_RESET}"
+    # Try bash first, fallback to standard sh if bash isn't installed in the container
+    docker exec -it "$target" /bin/bash || docker exec -it "$target" /bin/sh
+  else
+    echo "⚠️ Selection cancelled."
+  fi
+}
+
+#######################################
+# Docker: Aggressive cleanup of all unused containers, images, and volumes
+#######################################
+docker-nuke() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  echo -e "${CB_RED}⚠️  WARNING: This will destroy all stopped containers, unused networks, dangling images, and unused volumes.${C_RESET}"
+  read -p "Are you sure you want to proceed? [y/N] " -n 1 -r
+  echo
+
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    echo "💥 Nuking unused Docker resources..."
+    docker system prune -a --volumes -f
+    echo -e "${CB_GREEN}✅ Docker environment sanitized.${C_RESET}"
+  else
+    echo "🛑 Aborted."
+  fi
+}
+
+#######################################
+# Docker: Spin up a temporary, throwaway container sandbox
+# Arguments:
+#   $1 - Target image (default: debian)
+#######################################
+docker-sandbox() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local image="${1:-debian}"
+  echo -e "${CB_BLUE}🚀 Launching temporary ${image} sandbox...${C_RESET}"
+
+  docker run --rm -it "$image" /bin/bash || docker run --rm -it "$image" /bin/sh
+}

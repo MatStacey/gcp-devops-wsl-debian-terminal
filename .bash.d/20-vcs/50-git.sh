@@ -43,7 +43,14 @@ __git_sync_copy_files() {
 
   mkdir -p "$repo_dir/.bash.d"
   rsync -a "$HOME/.bashrc" "$repo_dir/"
-  rsync -a --exclude 'config/config.yaml' --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+
+  # Exclude README.md from the subfolder mirror so it does not duplicate
+  rsync -a --exclude 'config/config.yaml' --exclude 'README.md' --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+
+  # Explicitly copy the README to the repository root for GitHub
+  if [ -f "$HOME/.bash.d/README.md" ]; then
+    cp "$HOME/.bash.d/README.md" "$repo_dir/README.md"
+  fi
 
   (
     cd "$repo_dir" || exit 1
