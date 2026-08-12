@@ -1,0 +1,45 @@
+name: Automated Semantic Release
+
+on:
+  push:
+    branches:
+      - main
+
+# Grant the action permission to write tags and releases to the repo
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Required to fetch all tags and commit history for SemVer calculation
+
+      - name: Calculate SemVer and Push Tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.2
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          default_bump: patch
+          tag_prefix: v
+
+      - name: Package Repository Zip
+        run: |
+          ZIP_NAME="gcp-devops-terminal-${{ steps.tag_version.outputs.new_tag }}.zip"
+          echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
+
+          # Recursively zip the directory while stripping out VCS, cache, and pipeline folders
+          zip -r "$ZIP_NAME" . -x "*.git*" -x ".github/*" -x "venv/*" -x "*/__pycache__/*" -x ".terraform/*" -x "*.tfstate*"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: ${{ steps.tag_version.outputs.changelog }}
+          files: ${{ env.ZIP_NAME }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
