@@ -13,19 +13,14 @@ if [ ! -s "$CONFIG_FILE" ]; then
   [ -f "$YAML_TEMPLATE" ] && cp "$YAML_TEMPLATE" "$CONFIG_FILE" || touch "$CONFIG_FILE"
 fi
 
-#######################################
-# Auto-reload configuration on prompt if modified
-# Uses native 0ms Bash mtime comparison
-#######################################
 __reload_config_if_modified() {
   if [ -f "$CONFIG_MANAGER" ]; then
     if [ ! -f "$ENV_CACHE" ] || [ "$CONFIG_FILE" -nt "$ENV_CACHE" ]; then
       local old_theme="$BASH_THEME"
-
       python3 "$CONFIG_MANAGER" load-env > "$ENV_CACHE"
       source "$ENV_CACHE"
 
-      # Dynamically repaint colors if the theme variable changed
+      # SAFE IF STATEMENT: Prevents set -e from crashing the shell
       if [ "$old_theme" != "$BASH_THEME" ]; then
         source "$HOME/.bash.d/00-core/00-colors.sh"
       fi
@@ -33,10 +28,7 @@ __reload_config_if_modified() {
   fi
 }
 
-# Attach to PROMPT_COMMAND to run securely before each new prompt line
 PROMPT_COMMAND="__reload_config_if_modified; ${PROMPT_COMMAND:-}"
-
-# Execute once manually on initialization to ensure variables are present immediately
 __reload_config_if_modified
 
 if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
@@ -50,221 +42,150 @@ if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CL
 fi
 
 #######################################
-# Adds a Gemini API key to the local YAML configuration.
+# Prints the current Gemini API model version and extended reasoning mode toggle.
 # Globals:
-#   CONFIG_MANAGER
-#   CONFIG_FILE
-# Arguments:
-#   $1 - The raw API key string.
+#   GEMINI_VERSION
+#   GEMINI_EXTENDED
 # Outputs:
-#   Writes status messages to STDOUT.
-# Returns:
-#   0 on success, 1 if no key is provided.
+#   Writes the configuration status to STDOUT.
 #######################################
-add-gemini-key() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+get-gemini-status() { # => Config: Print the active Gemini version and extended mode status
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
-  [ -z "$1" ] && {
+  fi
+
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+  echo -e "${CB_BLUE}                 GEMINI CONFIGURATION                     ${C_RESET}"
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+  echo -e " ${CB_CYAN}GEMINI_VERSION    ${C_RESET}: ${GEMINI_VERSION:-Not Set}"
+  echo -e " ${CB_CYAN}GEMINI_EXTENDED   ${C_RESET}: ${GEMINI_EXTENDED:-false}"
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+}
+
+add-gemini-key() { # => Config: Add Gemini API key to config.yaml [Usage: add-gemini-key "key"]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [ -z "$1" ]; then
     echo "Usage: add-gemini-key <key>"
     return 1
-  }
-
-  python3 "$CONFIG_MANAGER" update "gemini" "api_key" "$1"
+  fi
+  python3 "$CONFIG_MANAGER" update "ai.gemini" "api_key" "$1"
   export GEMINI_API_KEY="$1"
   echo "✅ Gemini API Key added to $CONFIG_FILE."
 }
 
-#######################################
-# Sets the default Gemini model version in configuration.
-# Globals:
-#   CONFIG_MANAGER
-# Arguments:
-#   $1 - The target model version (e.g., gemini-1.5-pro).
-# Outputs:
-#   Writes status messages to STDOUT.
-# Returns:
-#   0 on success, 1 if no version is provided.
-#######################################
-set-gemini-version() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+set-gemini-version() { # => Config: Set Gemini model version [Usage: set-gemini-version "gemini-1.5-pro"]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
-  [ -z "$1" ] && {
+  fi
+  if [ -z "$1" ]; then
     echo "Usage: set-gemini-version <version>"
     return 1
-  }
-
-  python3 "$CONFIG_MANAGER" update "gemini" "version" "$1"
+  fi
+  python3 "$CONFIG_MANAGER" update "ai.gemini" "version" "$1"
   export GEMINI_VERSION="$1"
   echo "✅ Gemini version set to $1."
 }
 
-#######################################
-# Toggles the Gemini extended reasoning mode flag.
-# Globals:
-#   CONFIG_MANAGER
-#   GEMINI_EXTENDED
-# Outputs:
-#   Writes status messages to STDOUT.
-#######################################
-toggle-gemini-extended() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+toggle-gemini-extended() { # => Config: Toggle Gemini extended mode true/false
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
+  fi
   local new_val="true"
   [ "$GEMINI_EXTENDED" = "true" ] && new_val="false"
-
-  python3 "$CONFIG_MANAGER" update "gemini" "extended" "$new_val"
+  python3 "$CONFIG_MANAGER" update "ai.gemini" "extended" "$new_val"
   export GEMINI_EXTENDED="$new_val"
   echo "✅ Gemini extended mode set to $new_val."
 }
 
-#######################################
-# Adds a Claude API key to the local YAML configuration.
-# Globals:
-#   CONFIG_MANAGER
-#   CONFIG_FILE
-# Arguments:
-#   $1 - The raw API key string.
-# Outputs:
-#   Writes status messages to STDOUT.
-# Returns:
-#   0 on success, 1 if no key is provided.
-#######################################
-add-claude-key() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+add-claude-key() { # => Config: Add Claude API key to config.yaml [Usage: add-claude-key "key"]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
-  [ -z "$1" ] && {
+  fi
+  if [ -z "$1" ]; then
     echo "Usage: add-claude-key <key>"
     return 1
-  }
-
-  python3 "$CONFIG_MANAGER" update "claude" "api_key" "$1"
+  fi
+  python3 "$CONFIG_MANAGER" update "ai.claude" "api_key" "$1"
   export CLAUDE_API_KEY="$1"
   echo "✅ Claude API Key added to $CONFIG_FILE."
 }
 
-#######################################
-# Sets the default Claude model version in configuration.
-# Globals:
-#   CONFIG_MANAGER
-# Arguments:
-#   $1 - The target model version.
-# Outputs:
-#   Writes status messages to STDOUT.
-# Returns:
-#   0 on success, 1 if no version is provided.
-#######################################
-set-claude-version() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+set-claude-version() { # => Config: Set Claude model version [Usage: set-claude-version "claude-3-7-sonnet-latest"]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
-  [ -z "$1" ] && {
+  fi
+  if [ -z "$1" ]; then
     echo "Usage: set-claude-version <version>"
     return 1
-  }
-
-  python3 "$CONFIG_MANAGER" update "claude" "version" "$1"
+  fi
+  python3 "$CONFIG_MANAGER" update "ai.claude" "version" "$1"
   export CLAUDE_VERSION="$1"
   echo "✅ Claude version set to $1."
 }
 
-#######################################
-# Configures the remote git URL for the bash profile synchronization tool.
-# Globals:
-#   CONFIG_MANAGER
-#   CONFIG_FILE
-# Arguments:
-#   $1 - The remote repository URL.
-# Outputs:
-#   Writes status messages to STDOUT.
-# Returns:
-#   0 on success, 1 if no URL is provided.
-#######################################
-add-sync-url() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+add-sync-url() { # => Config: Add remote repository URL for bash sync [Usage: add-sync-url "url"]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
-  [ -z "$1" ] && {
+  fi
+  if [ -z "$1" ]; then
     echo "Usage: add-sync-url <url>"
     return 1
-  }
-
+  fi
   python3 "$CONFIG_MANAGER" update "git" "sync_repo_url" "$1"
   export SYNC_REPO_URL="$1"
   echo "✅ Sync URL added to $CONFIG_FILE."
 }
 
-#######################################
-# Sets the default local IDE for launch commands.
-# Globals:
-#   CONFIG_MANAGER
-# Arguments:
-#   $1 - "vscode" or "intellij".
-# Outputs:
-#   Writes status messages to STDOUT.
-# Returns:
-#   0 on success, 1 if an invalid IDE string is provided.
-#######################################
-set-default-ide() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+set-default-ide() { # => Config: Set default IDE [Usage: set-default-ide "vscode|intellij"]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
-  [[ "$1" != "vscode" && "$1" != "intellij" ]] && {
+  fi
+  if [[ "$1" != "vscode" && "$1" != "intellij" ]]; then
     echo "Usage: set-default-ide <vscode|intellij>"
     return 1
-  }
-
+  fi
   python3 "$CONFIG_MANAGER" update "system" "default_ide" "$1"
   export DEFAULT_IDE="$1"
   echo "✅ Default IDE set to $1."
 }
 
-#######################################
-# Sets the default LLM provider for the 'ai' command suite.
-# Globals:
-#   CONFIG_MANAGER
-# Arguments:
-#   $1 - "gemini" or "claude".
-# Outputs:
-#   Writes status messages to STDOUT.
-# Returns:
-#   0 on success, 1 if an invalid AI string is provided.
-#######################################
-set-default-ai() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+set-default-ai() { # => Config: Set default AI model [Usage: set-default-ai "gemini|claude"]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
-  [[ "$1" != "gemini" && "$1" != "claude" ]] && {
+  fi
+  if [[ "$1" != "gemini" && "$1" != "claude" ]]; then
     echo "Usage: set-default-ai <gemini|claude>"
     return 1
-  }
-
-  python3 "$CONFIG_MANAGER" update "system" "default_ai" "$1"
+  fi
+  python3 "$CONFIG_MANAGER" update "ai" "default_provider" "$1"
   export DEFAULT_AI="$1"
   echo "✅ Default AI set to $1."
 }
 
-#######################################
-# Opens the bash.d configuration directory directly in the configured IDE.
-# Globals:
-#   DEFAULT_IDE
-# Arguments:
-#   -ide <name> Override the default IDE selection.
-# Outputs:
-#   Launches the requested IDE application.
-#######################################
-open-bashd-config() {
+toggle-ai() { # => Config: Toggle global AI prompt and integration true/false
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local new_val="true"
+  [ "${AI_ENABLED:-true}" = "true" ] && new_val="false"
+  python3 "$CONFIG_MANAGER" update "ai" "enabled" "$new_val"
+  export AI_ENABLED="$new_val"
+  echo "✅ AI integration set to $new_val."
+}
+
+open-bashd-config() { # => Config: Open bash.d directory and config.yaml in IDE [Usage: open-bashd-config [-ide vscode|intellij]]
   local selected_ide="${DEFAULT_IDE:-vscode}"
   local args=()
 
@@ -295,29 +216,16 @@ open-bashd-config() {
   fi
 
   echo "🚀 Opening bash config in $selected_ide..."
-
   [ "$selected_ide" = "intellij" ] &&
     { idea "$config_dir" "$config_file" &> /dev/null || idea.exe "$config_dir" "$config_file" &> /dev/null || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' or 'idea.exe' is in your PATH."; } ||
     code "$config_dir" "$config_file"
 }
 
-#######################################
-# Sets the active terminal color theme and reloads the color profile.
-# Globals:
-#   CONFIG_MANAGER
-#   THEMES_DIR
-# Arguments:
-#   $1 - The theme name (matches the filename in themes/).
-# Outputs:
-#   Writes status messages to STDOUT.
-# Returns:
-#   0 on success, 1 if the theme file does not exist.
-#######################################
-set-theme() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+set-theme() { # => Config: Set terminal color theme [Usage: set-theme "theme_name"]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
+  fi
   local theme="${1:-default}"
 
   [ ! -f "$THEMES_DIR/$theme.sh" ] && {
@@ -339,20 +247,11 @@ _set_theme_completions() {
 }
 complete -F _set_theme_completions set-theme
 
-#######################################
-# Opens an interactive fuzzy-finder menu to select and apply a theme.
-# Globals:
-#   THEMES_DIR
-# Outputs:
-#   Launches the fzf menu.
-# Returns:
-#   0 on success, 1 if the themes directory is missing.
-#######################################
-mt-theme() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+mt-theme() { # => Config: Interactive menu to select and apply a theme [Usage: mt-theme]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
+  fi
   [ ! -d "${THEMES_DIR}" ] && {
     echo "🚨 Error: THEMES_DIR not found at ${THEMES_DIR}"
     return 1
@@ -363,124 +262,30 @@ mt-theme() {
   [ -n "$selected_theme" ] && set-theme "$selected_theme" || echo "Theme selection cancelled."
 }
 
-#######################################
-# Toggles the background execution of the export cleanup script.
-# Globals:
-#   CONFIG_MANAGER
-#   AUTO_CLEANUP_EXPORTS
-# Outputs:
-#   Writes status messages to STDOUT.
-#######################################
-toggle-auto-cleanup() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+toggle-auto-cleanup() { # => Config: Toggle export file background cleanup script [Usage: toggle-auto-cleanup]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
+  fi
   local new_val="true"
   [ "$AUTO_CLEANUP_EXPORTS" = "true" ] && new_val="false"
 
-  python3 "$CONFIG_MANAGER" update "system" "auto_cleanup_exports" "$new_val"
+  python3 "$CONFIG_MANAGER" update "exports" "auto_cleanup" "$new_val"
   export AUTO_CLEANUP_EXPORTS="$new_val"
   echo "✅ Auto-cleanup set to $new_val."
 }
 
-#######################################
-# Modifies the threshold in days before exports are automatically deleted.
-# Globals:
-#   CONFIG_MANAGER
-# Arguments:
-#   $1 - Numeric threshold in days.
-# Outputs:
-#   Writes status messages to STDOUT.
-# Returns:
-#   0 on success, 1 if a non-numeric argument is supplied.
-#######################################
-set-auto-cleanup-days() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+set-auto-cleanup-days() { # => Config: Modifies the threshold in days before exports are automatically deleted [Usage: set-auto-cleanup-days 7]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
+  fi
   [[ ! "$1" =~ ^[0-9]+$ ]] && {
     echo "Usage: set-auto-cleanup-days <number>"
     return 1
   }
 
-  python3 "$CONFIG_MANAGER" update "system" "auto_cleanup_days" "$1"
+  python3 "$CONFIG_MANAGER" update "exports" "auto_cleanup_days" "$1"
   export AUTO_CLEANUP_DAYS="$1"
   echo "✅ Auto-cleanup threshold set to $1 days."
-}
-
-#######################################
-# Formats Python and Shell scripts according to Google Style Guides.
-# Uses yapf for Python and shfmt for Shell scripts.
-# Outputs:
-#   Writes formatting progress and status updates to STDOUT.
-# Returns:
-#   0 on successful execution.
-#######################################
-google-fmt() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-
-  echo "🎨 Formatting Python scripts (Google Python Style)..."
-  if command -v yapf > /dev/null 2>&1; then
-    yapf -r -i --style="{based_on_style: google, column_limit: 88, spaces_before_comment: 2}" .
-    echo "✅ Python formatting complete."
-  else
-    echo "⚠️ 'yapf' not found. Run 'bootstrap' to install it."
-  fi
-
-  echo "🎨 Formatting Shell scripts (Google Shell Style - 2-space indent)..."
-  if command -v shfmt > /dev/null 2>&1; then
-    # Google Shell Style Guide mandates 2-space indents, -ci for switch cases, and -sr for spaces after redirects
-    shfmt -i 2 -ci -sr -w .
-    echo "✅ Shell script formatting complete."
-  else
-    echo "⚠️ 'shfmt' not found."
-  fi
-}
-
-#######################################
-# Prints the current Gemini API model version and extended reasoning mode toggle.
-# Globals:
-#   GEMINI_VERSION
-#   GEMINI_EXTENDED
-# Outputs:
-#   Writes the configuration status to STDOUT.
-#######################################
-get-gemini-status() { # => Config: Print the active Gemini version and extended mode status
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-
-  echo -e "${CB_BLUE}==========================================================${C_RESET}"
-  echo -e "${CB_BLUE}                 GEMINI CONFIGURATION                     ${C_RESET}"
-  echo -e "${CB_BLUE}==========================================================${C_RESET}"
-  echo -e " ${CB_CYAN}GEMINI_VERSION    ${C_RESET}: ${GEMINI_VERSION:-Not Set}"
-  echo -e " ${CB_CYAN}GEMINI_EXTENDED   ${C_RESET}: ${GEMINI_EXTENDED:-false}"
-  echo -e "${CB_BLUE}==========================================================${C_RESET}"
-}
-
-#######################################
-# Toggles the global AI integration flag and prompt display.
-# Globals:
-#   CONFIG_MANAGER
-#   AI_ENABLED
-# Outputs:
-#   Writes status messages to STDOUT.
-#######################################
-toggle-ai() { # => Config: Toggle global AI prompt and integration true/false
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local new_val="true"
-  [ "${AI_ENABLED:-true}" = "true" ] && new_val="false"
-
-  python3 "$CONFIG_MANAGER" update "system" "ai_enabled" "$new_val"
-  export AI_ENABLED="$new_val"
-  echo "✅ AI integration set to $new_val."
 }
