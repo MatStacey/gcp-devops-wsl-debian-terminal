@@ -2,6 +2,7 @@ system:
   default_ide: vscode
   theme: default
   default_ai: gemini
+  ai_enabled: true
   auto_cleanup_exports: true
   auto_cleanup_days: 7
   update_check_ttl_sec: 43200
