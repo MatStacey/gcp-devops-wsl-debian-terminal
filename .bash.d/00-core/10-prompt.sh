@@ -84,6 +84,7 @@ __cloud_ps1() {
 
   local out=""
 
+  # 1. Format GCP Segment
   if [ -n "$__prompt_gcp_proj" ]; then
     local gcp_text="GCP: ${__prompt_gcp_proj}"
     [ -n "$__prompt_gcp_acct" ] && gcp_text="${gcp_text} (${__prompt_gcp_acct})"
@@ -96,11 +97,26 @@ __cloud_ps1() {
     out="${np_start}${__prompt_gcp_color}${np_end}GCP: (${__prompt_gcp_acct})${color_reset}"
   fi
 
-  if [ -n "$__prompt_k8s_ctx" ]; then
+  # 2. Format Kubernetes Segment (Filtering out literal quotes)
+  if [ -n "$__prompt_k8s_ctx" ] && [ "$__prompt_k8s_ctx" != '""' ] && [ "$__prompt_k8s_ctx" != "''" ] && [ "$__prompt_k8s_ctx" != "null" ]; then
     [ -n "$out" ] && out="${out} | "
     out="${out}K8s: ${__prompt_k8s_ctx}"
   fi
 
+  # 3. Format AI Configuration Segment
+  if [ "${AI_ENABLED:-true}" = "true" ]; then
+    [ -n "$out" ] && out="${out} | "
+    local provider="${DEFAULT_AI:-gemini}"
+    local ai_text=""
+    if [ "$provider" = "gemini" ]; then
+      ai_text="AI: Gemini (${GEMINI_VERSION#gemini-})"
+    elif [ "$provider" = "claude" ]; then
+      ai_text="AI: Claude (${CLAUDE_VERSION#claude-})"
+    fi
+    out="${out}${np_start}${CB_CYAN}${np_end}${ai_text}${color_reset}"
+  fi
+
+  # 4. Format Git Segment
   if [ -n "$__prompt_git_branch" ]; then
     [ -n "$out" ] && out="${out} | "
     local git_text="Git: ${__prompt_git_branch}"
