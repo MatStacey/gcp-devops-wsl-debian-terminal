@@ -107,7 +107,6 @@ else: print(text)
       local files_staged=0
 
       while read -r file_path; do
-        # Check if the file actually exists or is tracked to prevent hallucinated git errors
         if [ -e "$repo_dir/$file_path" ] || git -C "$repo_dir" ls-files --error-unmatch "$file_path" > /dev/null 2>&1; then
           git -C "$repo_dir" add "$file_path"
           files_staged=1
@@ -144,7 +143,6 @@ vcs-sync-profile() {
     return 0
   }
 
-  # Automatically format local bash scripts and python files to Google Style before syncing
   if command -v google-fmt > /dev/null 2>&1; then
     echo "🧹 Running Google Style code formatting before profile sync..."
     google-fmt
@@ -193,24 +191,35 @@ vcs-sync-profile() {
 }
 
 #######################################
-# Git: Add all files, commit with message, and push
-# Arguments:
-#   $1 - Commit message string.
-# Returns:
-#   0 on success, 1 on empty argument input.
+# Git: Add all files, intelligently group via AI, and push [Usage: git-ai-pc [optional message]]
 #######################################
-git-acp() {
+git-ai-pc() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
   }
-  [ -z "$1" ] && {
-    echo -e "🚨 Error: Commit message cannot be empty.\nUsage: git-acp \"Your commit message\""
-    return 1
-  }
 
   git add .
-  git commit -m "$1"
+
+  if git diff --staged --quiet; then
+    echo "✅ No changes staged to commit."
+    return 0
+  fi
+
+  local user_msg="${1:-}"
+
+  if [ -n "$user_msg" ]; then
+    echo "📦 Committing staged changes with provided message..."
+    git commit -m "$user_msg"
+  else
+    echo "🤖 AI enabled: Generating feature-grouped commits..."
+    if ! __git_sync_ai_commit "."; then
+      echo "⚠️ AI commit generation skipped or failed. Falling back to default batch commit..."
+      git commit -m "chore: automated changes"
+    fi
+  fi
+
+  echo "🚀 Pushing changes to remote..."
   git push
 }
 
