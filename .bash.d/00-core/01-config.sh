@@ -13,12 +13,31 @@ if [ ! -s "$CONFIG_FILE" ]; then
   [ -f "$YAML_TEMPLATE" ] && cp "$YAML_TEMPLATE" "$CONFIG_FILE" || touch "$CONFIG_FILE"
 fi
 
-if [ -f "$CONFIG_MANAGER" ]; then
-  if [ ! -f "$ENV_CACHE" ] || [ "$CONFIG_FILE" -nt "$ENV_CACHE" ]; then
-    python3 "$CONFIG_MANAGER" load-env > "$ENV_CACHE"
+#######################################
+# Auto-reload configuration on prompt if modified
+# Uses native 0ms Bash mtime comparison
+#######################################
+__reload_config_if_modified() {
+  if [ -f "$CONFIG_MANAGER" ]; then
+    if [ ! -f "$ENV_CACHE" ] || [ "$CONFIG_FILE" -nt "$ENV_CACHE" ]; then
+      local old_theme="$BASH_THEME"
+
+      python3 "$CONFIG_MANAGER" load-env > "$ENV_CACHE"
+      source "$ENV_CACHE"
+
+      # Dynamically repaint colors if the theme variable changed
+      if [ "$old_theme" != "$BASH_THEME" ]; then
+        source "$HOME/.bash.d/00-core/00-colors.sh"
+      fi
+    fi
   fi
-  source "$ENV_CACHE"
-fi
+}
+
+# Attach to PROMPT_COMMAND to run securely before each new prompt line
+PROMPT_COMMAND="__reload_config_if_modified; ${PROMPT_COMMAND:-}"
+
+# Execute once manually on initialization to ensure variables are present immediately
+__reload_config_if_modified
 
 if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
   unset GEMINI_API_KEY

@@ -1,7 +1,7 @@
 # ~/.bash.d/30-ai/60-ai.sh
 
-readonly URI_GEMINI_MODELS="https://generativelanguage.googleapis.com/v1beta/models"
-readonly URI_CLAUDE_MESSAGES="https://api.anthropic.com/v1/messages"
+if [[ -z "${URI_GEMINI_MODELS:-}" ]]; then readonly URI_GEMINI_MODELS="https://generativelanguage.googleapis.com/v1beta/models"; fi
+if [[ -z "${URI_CLAUDE_MESSAGES:-}" ]]; then readonly URI_CLAUDE_MESSAGES="https://api.anthropic.com/v1/messages"; fi
 
 #######################################
 # Calculates the next available minor patch version for a generated file.
