@@ -441,3 +441,46 @@ google-fmt() {
     echo "⚠️ 'shfmt' not found."
   fi
 }
+
+#######################################
+# Prints the current Gemini API model version and extended reasoning mode toggle.
+# Globals:
+#   GEMINI_VERSION
+#   GEMINI_EXTENDED
+# Outputs:
+#   Writes the configuration status to STDOUT.
+#######################################
+get-gemini-status() { # => Config: Print the active Gemini version and extended mode status
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+  echo -e "${CB_BLUE}                 GEMINI CONFIGURATION                     ${C_RESET}"
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+  echo -e " ${CB_CYAN}GEMINI_VERSION    ${C_RESET}: ${GEMINI_VERSION:-Not Set}"
+  echo -e " ${CB_CYAN}GEMINI_EXTENDED   ${C_RESET}: ${GEMINI_EXTENDED:-false}"
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+}
+
+#######################################
+# Toggles the global AI integration flag and prompt display.
+# Globals:
+#   CONFIG_MANAGER
+#   AI_ENABLED
+# Outputs:
+#   Writes status messages to STDOUT.
+#######################################
+toggle-ai() { # => Config: Toggle global AI prompt and integration true/false
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local new_val="true"
+  [ "${AI_ENABLED:-true}" = "true" ] && new_val="false"
+
+  python3 "$CONFIG_MANAGER" update "system" "ai_enabled" "$new_val"
+  export AI_ENABLED="$new_val"
+  echo "✅ AI integration set to $new_val."
+}
