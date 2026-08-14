@@ -235,6 +235,121 @@ __ai_save_output() {
 }
 
 #######################################
+# AI: Parses standard single JSON object response and saves if needed.
+# Arguments:
+#   $1 - Content string
+#   $2 - Provider name
+#   $3 - Original Title
+#   $4 - Explicit Out File
+#######################################
+__ai_parse_response() {
+  local content="$1" provider="$2" title="$3" explicit_out_file="$4"
+
+  local clean_content
+  clean_content=$(echo "$content" | python3 -c '
+import sys, re
+text = sys.stdin.read()
+match = re.search(r"\{.*\}", text, re.DOTALL)
+if match: print(match.group(0))
+else: print(text)
+' 2> /dev/null)
+
+  local category lang ext code msg gen_title
+  category=$(echo "$clean_content" | jq -r '.category // empty')
+  lang=$(echo "$clean_content" | jq -r '.language // empty')
+  ext=$(echo "$clean_content" | jq -r '.extension // empty')
+  code=$(echo "$clean_content" | jq -r '.code // empty')
+  msg=$(echo "$clean_content" | jq -r '.message // empty')
+  gen_title=$(echo "$clean_content" | jq -r '.title // empty')
+
+  local final_title="${title:-$gen_title}"
+  final_title="${final_title:-untitled}"
+
+  if [[ -z "$category" || "$category" == "chat" || "$category" == "null" ]]; then
+    [[ "$msg" == "No IAM implementations required"* ]] &&
+      echo -e "\e[38;5;208m${provider^}:\e[0m No IAM implementations required" ||
+      echo -e "\e[38;5;208m${provider^}:\e[0m ${msg:-$content}"
+    return 0
+  fi
+
+  local saved_path
+  saved_path=$(__ai_save_output "$explicit_out_file" "$category" "$lang" "$ext" "$final_title" "$code")
+
+  echo -e "\e[38;5;208m${provider^}:\e[0m $msg"
+  echo -e "\e[32mSaved to:\e[0m $saved_path"
+}
+
+#######################################
+# AI: Extracts a JSON array from raw LLM output text
+# Arguments:
+#   $1 - Raw LLM text payload
+# Outputs:
+#   Writes parsed JSON array string to STDOUT.
+#######################################
+__ai_extract_json_array() {
+  echo "$1" | python3 -c '
+import sys, json, re, ast
+
+text = sys.stdin.read().strip()
+
+def try_parse(val):
+    if isinstance(val, list):
+        return val
+    if isinstance(val, str):
+        val_clean = val.strip()
+        try:
+            res = json.loads(val_clean)
+            if isinstance(res, list): return res
+        except:
+            pass
+        try:
+            res = ast.literal_eval(val_clean)
+            if isinstance(res, list): return res
+        except:
+            pass
+    return None
+
+try:
+    data = json.loads(text)
+    if isinstance(data, dict):
+        if "message" in data:
+            parsed = try_parse(data["message"])
+            if parsed is not None:
+                print(json.dumps(parsed))
+                sys.exit(0)
+        if "code" in data:
+            parsed = try_parse(data["code"])
+            if parsed is not None:
+                print(json.dumps(parsed))
+                sys.exit(0)
+    elif isinstance(data, list):
+        print(json.dumps(data))
+        sys.exit(0)
+except:
+    pass
+
+match = re.search(r"(\[.*?\])", text, re.DOTALL)
+if match:
+    try:
+        res = json.loads(match.group(1))
+        if isinstance(res, list):
+            print(json.dumps(res))
+            sys.exit(0)
+    except:
+        pass
+    try:
+        res = ast.literal_eval(match.group(1))
+        if isinstance(res, list):
+            print(json.dumps(res))
+            sys.exit(0)
+    except:
+        pass
+
+print("[]")
+' 2> /dev/null
+}
+
+#######################################
 # Consult universal AI
 # Arguments:
 #   -m <model>   gemini or claude
@@ -299,43 +414,7 @@ ai() {
 
   [ -f "$context_file" ] && rm -f "$context_file"
 
-  local clean_content
-  clean_content=$(echo "$content" | python3 -c '
-import sys, re
-text = sys.stdin.read()
-match = re.search(r"\{.*\}", text, re.DOTALL)
-if match: print(match.group(0))
-else: print(text)
-' 2> /dev/null)
-
-  local category
-  category=$(echo "$clean_content" | jq -r '.category // empty')
-  local lang
-  lang=$(echo "$clean_content" | jq -r '.language // empty')
-  local ext
-  ext=$(echo "$clean_content" | jq -r '.extension // empty')
-  local code
-  code=$(echo "$clean_content" | jq -r '.code // empty')
-  local msg
-  msg=$(echo "$clean_content" | jq -r '.message // empty')
-  local gen_title
-  gen_title=$(echo "$clean_content" | jq -r '.title // empty')
-
-  local final_title="${title:-$gen_title}"
-  final_title="${final_title:-untitled}"
-
-  if [[ -z "$category" || "$category" == "chat" || "$category" == "null" ]]; then
-    [[ "$msg" == "No IAM implementations required"* ]] &&
-      echo -e "\e[38;5;208m${provider^}:\e[0m No IAM implementations required" ||
-      echo -e "\e[38;5;208m${provider^}:\e[0m ${msg:-$content}"
-    return 0
-  fi
-
-  local saved_path
-  saved_path=$(__ai_save_output "$explicit_out_file" "$category" "$lang" "$ext" "$final_title" "$code")
-
-  echo -e "\e[38;5;208m${provider^}:\e[0m $msg"
-  echo -e "\e[32mSaved to:\e[0m $saved_path"
+  __ai_parse_response "$content" "$provider" "$title" "$explicit_out_file"
 }
 
 #######################################

@@ -118,71 +118,9 @@ __git_sync_ai_commit() {
     return 1
   fi
 
-  # Extract JSON Array, handling schema wrapping, escaped string lists, and raw formats robustly
+  # Extract JSON Array using modular AI helper
   local generated_json
-  generated_json=$(echo "$response" | python3 -c '
-import sys, json, re, ast
-
-text = sys.stdin.read().strip()
-
-def try_parse(val):
-    if isinstance(val, list):
-        return val
-    if isinstance(val, str):
-        val_clean = val.strip()
-        try:
-            res = json.loads(val_clean)
-            if isinstance(res, list): return res
-        except:
-            pass
-        try:
-            res = ast.literal_eval(val_clean)
-            if isinstance(res, list): return res
-        except:
-            pass
-    return None
-
-try:
-    data = json.loads(text)
-    if isinstance(data, dict):
-        # Check message field
-        if "message" in data:
-            parsed = try_parse(data["message"])
-            if parsed is not None:
-                print(json.dumps(parsed))
-                sys.exit(0)
-        # Check code field if message was null/text
-        if "code" in data:
-            parsed = try_parse(data["code"])
-            if parsed is not None:
-                print(json.dumps(parsed))
-                sys.exit(0)
-    elif isinstance(data, list):
-        print(json.dumps(data))
-        sys.exit(0)
-except:
-    pass
-
-# Fallback: Regex search for any bracketed list structure in the text
-match = re.search(r"(\[.*?\])", text, re.DOTALL)
-if match:
-    try:
-        res = json.loads(match.group(1))
-        if isinstance(res, list):
-            print(json.dumps(res))
-            sys.exit(0)
-    except:
-        pass
-    try:
-        res = ast.literal_eval(match.group(1))
-        if isinstance(res, list):
-            print(json.dumps(res))
-            sys.exit(0)
-    except:
-        pass
-
-print("[]")
-' 2> /dev/null)
+  generated_json=$(__ai_extract_json_array "$response")
 
   if [ -n "$generated_json" ] && echo "$generated_json" | jq -e . > /dev/null 2>&1; then
     # Reset the staging area so we can stage groups individually
@@ -601,6 +539,50 @@ mt-get-update() {
     echo -e "${CB_RED}🚨 Error: install.sh missing from repository root.${C_RESET}"
     return 1
   fi
+}
+
+#######################################
+# Git: Preflight safety checks for AI file generation
+# Arguments:
+#   $1 - The target filename (e.g., .gitignore, README.md)
+#######################################
+__git_ai_preflight_check() {
+  local target_file="$1"
+
+  if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    echo -e "${CB_RED}🚨 Error: Not inside a Git repository.${C_RESET}" >&2
+    return 1
+  fi
+
+  if [[ "$PWD" == "$HOME" || "$PWD" == "/" || "$PWD" == "$VCS_ROOT" ]]; then
+    echo -e "${CB_RED}🚨 Error: Refusing to generate $target_file in a root/home directory.${C_RESET}" >&2
+    return 1
+  fi
+
+  local file_count
+  file_count=$(find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" 2> /dev/null | head -n 1000 | wc -l)
+  if [ "$file_count" -ge 1000 ]; then
+    # Direct read from /dev/tty ensures the prompt works even if stdin is piped
+    echo -e "${CB_YELLOW}⚠️  Warning: This directory contains 1000+ files. AI context may exceed limits.${C_RESET}" >&2
+    read -p "Proceed anyway? [y/N] " -n 1 -r < /dev/tty
+    echo > /dev/tty
+    [[ ! $REPLY =~ ^[Yy]$ ]] && {
+      echo "🛑 Aborted." >&2
+      return 1
+    }
+  fi
+
+  if [ -f "$target_file" ]; then
+    echo -e "${CB_YELLOW}⚠️  A $target_file file already exists.${C_RESET}" >&2
+    read -p "Do you want to overwrite it? [y/N] " -n 1 -r < /dev/tty
+    echo > /dev/tty
+    [[ ! $REPLY =~ ^[Yy]$ ]] && {
+      echo "🛑 Aborted." >&2
+      return 1
+    }
+  fi
+
+  return 0
 }
 
 #######################################
