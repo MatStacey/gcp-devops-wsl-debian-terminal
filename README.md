@@ -23,7 +23,7 @@ Before installing this terminal environment, ensure your local workstation meets
 * **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment[cite: 5].
 * **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-theme`)[cite: 5].
 * **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT/Homebrew packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`, `zoxide`)[cite: 5].
-* **Native AI Integration:** Consult universal AI via the `ai` command with model selection, extended reasoning flags (`-x`), targeted file context parsing (`-f`), and automated version-controlled payload exports into a unified workspace. Automatically secures API keys via hidden inputs and strict `chmod 600` permissions[cite: 5].
+* **Multi-Provider AI Architecture:** Consult universal AI via the `ai` command with support for **Gemini**, **Claude**, and **Local LLMs** (via Ollama or any OpenAI-compatible endpoint). Background workflows like `git-ai-pc` dynamically respect your active `DEFAULT_AI` setting[cite: 5].
 * **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` with configurable thread limits to concurrently validate and run Checkov security scans across all Terraform modules.
 
 ---
@@ -75,15 +75,19 @@ reload
 
 ```
 
-Finally, securely inject your preferred LLM API key to enable the universal `ai` command suite (input is hidden from the screen and shell history):
+Finally, securely inject your preferred LLM API key, or configure your local LLM provider:
 
 ```bash
+# For Gemini
 add-gemini-key
-# OR
+
+# For Claude
 add-claude-key
 
-```
+# Or switch to a local LLM (Ollama)
+set-default-ai local
 
+```
 
 ---
 
@@ -93,12 +97,12 @@ The configuration abandons a monolithic `~/.bashrc` in favor of a logical `.bash
 
 | Module | Description |
 | --- | --- |
-| `00-core/` | Core configuration, centralized dynamic color themes, cross-platform OS helpers, mytools engine, and bootstrapping utilities.|
+| `00-core/` | Core configuration, centralized dynamic color themes, cross-platform OS helpers, mytools engine, and bootstrapping utilities. |
 | `10-infra/` | GCP authentication/project switchers, concurrent Terraform validation, and comprehensive Kubectl aliases. |
 | `20-vcs/` | Git wrappers, AI-assisted feature-grouped commit automation (`git-ai-pc`), profile syncing, and web launching. |
-| `30-ai/` | API integrations for interacting with Google Gemini and Anthropic Claude via the universal `ai` command. |
-| `config/` | JSON/YAML files, secure `.env` caching, and modular theme definitions (`config/themes/`).|
-| `lib/` | AWK parsers (`mytools.awk`), configuration templates, and standalone Python utility scripts (`config_manager.py`).|
+| `30-ai/` | API integrations for interacting with Google Gemini, Anthropic Claude, and local OpenAI-compatible endpoints. |
+| `config/` | JSON/YAML files, secure `.env` caching, and modular theme definitions (`config/themes/`). |
+| `lib/` | AWK parsers (`mytools.awk`), configuration templates, and standalone Python utility scripts (`config_manager.py`). |
 
 ---
 
@@ -119,19 +123,19 @@ The following commands are automatically parsed and indexed from codebase docume
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `bootstrap` | Function | System: Bootstrap missing dependencies for bash aliases (Debian/WSL via APT, macOS via Homebrew).|
+| `bootstrap` | Function | System: Bootstrap missing dependencies for bash aliases (Debian/WSL via APT, macOS via Homebrew). |
 
 #### Configuration Management
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `add-claude-key` | Function | Adds a Claude API key to the local YAML configuration.|
-| `add-gemini-key` | Function | Adds a Gemini API key to the local YAML configuration.|
+| `add-claude-key` | Function | Adds a Claude API key to the local YAML configuration. |
+| `add-gemini-key` | Function | Adds a Gemini API key to the local YAML configuration. |
 | `add-sync-url` | Function | Configures the remote git URL for the bash profile synchronization tool. |
 | `open-bashd-config` | Function | Opens the bash.d configuration directory directly in the configured IDE. |
 | `set-auto-cleanup-days` | Function | Modifies the threshold in days before exports are automatically deleted. |
 | `set-claude-version` | Function | Sets the default Claude model version in configuration. |
-| `set-default-ai` | Function | Sets the default LLM provider for the 'ai' command suite. |
+| `set-default-ai` | Function | Sets the default LLM provider for the 'ai' command suite (`gemini|claude|local`). |
 | `set-default-ide` | Function | Sets the default local IDE for launch commands. |
 | `set-gemini-version` | Function | Sets the default Gemini model version in configuration. |
 | `toggle-auto-cleanup` | Function | Toggles the background execution of the export cleanup script. |
@@ -141,7 +145,7 @@ The following commands are automatically parsed and indexed from codebase docume
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `mt-theme` | Function | Opens an interactive fuzzy-finder menu to select and apply a theme.|
+| `mt-theme` | Function | Opens an interactive fuzzy-finder menu to select and apply a theme. |
 | `set-theme` | Function | Sets the active terminal color theme and reloads the color profile. |
 
 #### System & Navigation
@@ -151,13 +155,13 @@ The following commands are automatically parsed and indexed from codebase docume
 | `cdbashd` | Alias | Change directory to ~/.bash.d. |
 | `cdvcs` | Alias | Change directory to ~/vcs. |
 | `cdvcsp` | Alias | Change directory to ~/vcs/personal. |
-| `clip` | Function | Pipe output to the system clipboard (`clip.exe` / `pbcopy` / `xclip`).|
+| `clip` | Function | Pipe output to the system clipboard (`clip.exe` / `pbcopy` / `xclip`). |
 | `mt` | Alias | Print all aliases and functions. |
 | `reload` | Alias | Reload Bash profile. |
 | `rld` | Alias | Reload Bash profile. |
-| `sys-install` | Function | System: Updates system packages (APT/Homebrew) and clears pending marker.|
+| `sys-install` | Function | System: Updates system packages (APT/Homebrew) and clears pending marker. |
 | `sys-install-reload` | Alias | Update, Upgrade, Boostrap, Reload. |
-| `sys-update` | Function | System: Updates system packages (APT/Homebrew).|
+| `sys-update` | Function | System: Updates system packages (APT/Homebrew). |
 
 #### Path & URL Launchers (Config-Driven)
 
@@ -165,13 +169,14 @@ The following commands are automatically parsed and indexed from codebase docume
 | --- | --- | --- |
 | `cd-ai` | Function | Config: Change directory to unified AI workspace. |
 | `cd-sync` | Function | Config: Change directory to sync repository root. |
+| `ide` | Function | Config: Open current directory in the default IDE (VSCode/IntelliJ). |
 | `web-view-profile-homepage` | Function | Config: Open sync repository remote URL in default web browser. |
-| `win` | Function | Open current directory in the platform's native file manager.|
-| `win-ai` | Function | Config: Open unified AI workspace in the platform's native file manager.|
-| `win-docker` | Function | Config: Open Docker root directory in the platform's native file manager.|
-| `win-export` | Function | Open ~/vcs/personal/exports in the platform's native file manager.|
-| `win-sync` | Function | Config: Open sync repository in the platform's native file manager.|
-| `win-vcs` | Function | Open ~/vcs in the platform's native file manager.|
+| `win` | Function | Open current directory in the platform's native file manager. |
+| `win-ai` | Function | Config: Open unified AI workspace in the platform's native file manager. |
+| `win-docker` | Function | Config: Open Docker root directory in the platform's native file manager. |
+| `win-export` | Function | Open ~/vcs/personal/exports in the platform's native file manager. |
+| `win-sync` | Function | Config: Open sync repository in the platform's native file manager. |
+| `win-vcs` | Function | Open ~/vcs in the platform's native file manager. |
 
 ---
 
@@ -264,14 +269,14 @@ The following commands are automatically parsed and indexed from codebase docume
 | Command | Type | Description |
 | --- | --- | --- |
 | `git` | Function | Wrapper to force 'clone' into `~/vcs/` from anywhere. |
-| `git-ai-pc` | Function | Add all files, intelligently group via AI, and push. |
+| `git-ai-pc` | Function | Add all files, intelligently group via AI (respecting active provider), and push. |
 | `git-cleanup` | Function | Safely delete all local branches that have been merged into the default branch. |
 | `git-feature` | Function | Create and checkout a new feature branch using the configured prefix. |
 | `git-ide` | Function | Clone a repository into `~/vcs/`, `cd` into it, and open in IDE. |
 | `git-lg` | Function | Print a beautiful, color-coded, single-line graph log. |
 | `git-nuke` | Function | Hard reset and wipe all untracked files on the current branch (includes safety prompt). |
 | `git-update` | Function | Fetch upstream and rebase the current branch onto the default branch. |
-| `git-web` | Function | Open the current repository in the default Windows web browser. |
+| `git-web` | Function | Open the current repository in the default web browser. |
 | `pull-profile-update` | Function | Pull latest remote profile changes and safely apply them to the local terminal workspace. |
 | `push-profile-update` | Function | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |
 
@@ -316,6 +321,7 @@ The following commands are automatically parsed and indexed from codebase docume
 | `_ai_get_next_version` | Function | Calculates the next available minor patch version for a generated file. |
 | `__ai_query_claude` | Function | Formats payload and queries the Anthropic Claude API. |
 | `__ai_query_gemini` | Function | Formats payload and queries the Google Gemini API. |
+| `__ai_query_local` | Function | Formats payload and queries a local LLM endpoint (OpenAI-compatible). |
 | `__ai_save_output` | Function | Formats and saves the generated code from LLMs into standard directories. |
 | `cleanup-exports` | Function | LLM: Clean up export files. |
 | `export-all` | Function | LLM: Exports all text/code files. |
