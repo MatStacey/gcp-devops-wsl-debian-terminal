@@ -118,41 +118,70 @@ __git_sync_ai_commit() {
     return 1
   fi
 
-  # Extract JSON Array, handling both raw arrays and universal schema objects where the array is inside .message
+  # Extract JSON Array, handling schema wrapping, escaped string lists, and raw formats robustly
   local generated_json
   generated_json=$(echo "$response" | python3 -c '
-import sys, json, re
+import sys, json, re, ast
 
 text = sys.stdin.read().strip()
+
+def try_parse(val):
+    if isinstance(val, list):
+        return val
+    if isinstance(val, str):
+        val_clean = val.strip()
+        try:
+            res = json.loads(val_clean)
+            if isinstance(res, list): return res
+        except:
+            pass
+        try:
+            res = ast.literal_eval(val_clean)
+            if isinstance(res, list): return res
+        except:
+            pass
+    return None
+
 try:
     data = json.loads(text)
-    if isinstance(data, dict) and "message" in data:
-        msg = data["message"]
-        if isinstance(msg, list):
-            print(json.dumps(msg))
-            sys.exit(0)
-        elif isinstance(msg, str):
-            try:
-                inner = json.loads(msg)
-                if isinstance(inner, list):
-                    print(json.dumps(inner))
-                    sys.exit(0)
-            except:
-                pass
-            print(msg)
-            sys.exit(0)
+    if isinstance(data, dict):
+        # Check message field
+        if "message" in data:
+            parsed = try_parse(data["message"])
+            if parsed is not None:
+                print(json.dumps(parsed))
+                sys.exit(0)
+        # Check code field if message was null/text
+        if "code" in data:
+            parsed = try_parse(data["code"])
+            if parsed is not None:
+                print(json.dumps(parsed))
+                sys.exit(0)
     elif isinstance(data, list):
         print(json.dumps(data))
         sys.exit(0)
 except:
     pass
 
-# Fallback to regex array search
-match = re.search(r"\[.*\]", text, re.DOTALL)
+# Fallback: Regex search for any bracketed list structure in the text
+match = re.search(r"(\[.*?\])", text, re.DOTALL)
 if match:
-    print(match.group(0))
-else:
-    print(text)
+    try:
+        res = json.loads(match.group(1))
+        if isinstance(res, list):
+            print(json.dumps(res))
+            sys.exit(0)
+    except:
+        pass
+    try:
+        res = ast.literal_eval(match.group(1))
+        if isinstance(res, list):
+            print(json.dumps(res))
+            sys.exit(0)
+    except:
+        pass
+
+print(text)
 ' 2> /dev/null)
 
   if [ -n "$generated_json" ] && echo "$generated_json" | jq -e . > /dev/null 2>&1; then
