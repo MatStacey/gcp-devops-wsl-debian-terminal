@@ -56,15 +56,10 @@ def load_env():
     export("MAX_PARALLEL_THREADS", sys_cfg.get('max_parallel_threads', 8))
 
     # AI
-    export("AI_ENABLED",
-           ai_cfg.get('enabled', sys_cfg.get('ai_enabled', True)),
-           to_lower=True)
-    export("DEFAULT_AI",
-           ai_cfg.get('default_provider', sys_cfg.get('default_ai', 'gemini')),
-           to_lower=True)
-    export("AI_SYSTEM_PROMPT",
-           ai_cfg.get('system_prompt', gem_cfg.get('system_prompt', '')))
-
+    export("AI_ENABLED", ai_cfg.get('enabled', sys_cfg.get('ai_enabled', True)), to_lower=True)
+    export("DEFAULT_AI", ai_cfg.get('default_provider', sys_cfg.get('default_ai', 'gemini')), to_lower=True)
+    export("AI_SYSTEM_PROMPT", ai_cfg.get('system_prompt', gem_cfg.get('system_prompt', '')))
+    
     export("GEMINI_API_KEY", gem_cfg.get('api_key', ''))
     export("GEMINI_VERSION", gem_cfg.get('version', 'gemini-3.6-flash'))
     export("GEMINI_EXTENDED", gem_cfg.get('extended', False), to_lower=True)
@@ -73,20 +68,16 @@ def load_env():
     export("CLAUDE_VERSION", cla_cfg.get('version', 'claude-3-7-sonnet-latest'))
 
     # Exports
-    export("AUTO_CLEANUP_EXPORTS",
-           exp_cfg.get('auto_cleanup', sys_cfg.get('auto_cleanup_exports', True)),
-           to_lower=True)
-    export("AUTO_CLEANUP_DAYS",
-           exp_cfg.get('auto_cleanup_days', sys_cfg.get('auto_cleanup_days', 7)))
-
+    export("AUTO_CLEANUP_EXPORTS", exp_cfg.get('auto_cleanup', sys_cfg.get('auto_cleanup_exports', True)), to_lower=True)
+    export("AUTO_CLEANUP_DAYS", exp_cfg.get('auto_cleanup_days', sys_cfg.get('auto_cleanup_days', 7)))
+    
     default_blocklist = (
         r"(secret|token|credential|password|passwd|id_rsa|id_ed25519|"
         r"\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|"
         r"service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)?$|"
-        r"(^|/)\.env(\..+)?$|lock\.hcl|__pycache__)")
-    export(
-        "EXPORT_BLOCKLIST",
-        exp_cfg.get('blocklist', paths_cfg.get('export_blocklist', default_blocklist)))
+        r"(^|/)\.env(\..+)?$|lock\.hcl|__pycache__)"
+    )
+    export("EXPORT_BLOCKLIST", exp_cfg.get('blocklist', paths_cfg.get('export_blocklist', default_blocklist)))
 
     # Git
     export("SYNC_REPO_URL", git_cfg.get('sync_repo_url', ''))
@@ -95,22 +86,12 @@ def load_env():
 
     # Paths
     export("VCS_ROOT", paths_cfg.get('vcs_root', '~/vcs'), resolve_home=True)
-    export("VCS_PERSONAL",
-           paths_cfg.get('vcs_personal', '~/vcs/personal'),
-           resolve_home=True)
-    export("VCS_EXPORTS",
-           paths_cfg.get('vcs_exports', '~/vcs/personal/exports'),
-           resolve_home=True)
-    export("SYNC_REPO_DIR",
-           paths_cfg.get('sync_repo', '~/vcs/personal/gcp-devops-wsl-debian-terminal'),
-           resolve_home=True)
-    export("AI_WORKSPACE_DIR",
-           paths_cfg.get('ai_workspace', '~/vcs/ai-workspace'),
-           resolve_home=True)
-    export("SCRIPTS_IAM_DIR",
+    export("VCS_PERSONAL", paths_cfg.get('vcs_personal', '~/vcs/personal'), resolve_home=True)
+    export("VCS_EXPORTS", paths_cfg.get('vcs_exports', '~/vcs/personal/exports'), resolve_home=True)
+    export("SYNC_REPO_DIR", paths_cfg.get('sync_repo', '~/vcs/personal/gcp-devops-wsl-debian-terminal'), resolve_home=True)
+    export("AI_WORKSPACE_DIR", paths_cfg.get('ai_workspace', '~/vcs/ai-workspace'), resolve_home=True)
+    export("SCRIPTS_IAM_DIR", paths_cfg.get('scripts_iam', '~/vcs/scripts/iam'), resolve_home=True)
     export("DOCKER_ROOT_DIR", paths_cfg.get('docker_root', '~/.docker'), resolve_home=True)
-           paths_cfg.get('scripts_iam', '~/vcs/scripts/iam'),
-           resolve_home=True)
     export("THEMES_DIR", f"{home}/.bash.d/config/themes")
 
     # Docker
