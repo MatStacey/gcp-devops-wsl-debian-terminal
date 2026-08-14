@@ -400,6 +400,7 @@ git-web() {
   fi
 
   web_url="${web_url%.git}"
+  web_url=$(echo "$web_url" | sed -E 's#([^:])//+#\1/#g')
   echo "🌐 Opening $web_url in browser..."
   __open_url "$web_url"
 }

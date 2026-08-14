@@ -50,7 +50,8 @@ web-view-profile-homepage() {
     web_url="${web_url/:/\/}"    # Swap the domain colon to a slash
     web_url="https://${web_url}" # Prepend the protocol
   fi
-  web_url="${web_url%.git}" # Strip the trailing .git
+  web_url="${web_url%.git}"
+  web_url=$(echo "$web_url" | sed -E 's#([^:])//+#\1/#g') # Strip the trailing .git
 
   echo "🌐 Opening $web_url in browser..."
   __open_url "$web_url"
