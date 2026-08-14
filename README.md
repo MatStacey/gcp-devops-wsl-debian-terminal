@@ -28,21 +28,62 @@ Before installing this terminal environment, ensure your local workstation meets
 
 ---
 
-## 🛠️ Setup & Bootstrapping
+## 🛠️ Setup & Installation
 
-1. **Clone the repository** to your local machine.
-2. **Run the installation script** to automatically back up existing profiles, scaffold configurations, and sync files:
+This environment is designed to work out-of-the-box on a fresh WSL2 Debian/Ubuntu instance or macOS machine. 
+
+### 1. Download and Extract
+Download the latest compiled release and extract it into a permanent directory. The installation script will automatically bind this location as your synchronized workspace.
+
+```bash
+# Create a dedicated directory
+mkdir -p ~/vcs/personal/gcp-devops-terminal
+cd ~/vcs/personal/gcp-devops-terminal
+
+# Download and extract the latest release (check the Releases page for the latest version)
+wget [https://github.com/MatStacey/gcp-devops-wsl-debian-terminal/releases/latest/download/gcp-devops-terminal-v1.0.0.zip](https://github.com/MatStacey/gcp-devops-wsl-debian-terminal/releases/latest/download/gcp-devops-terminal-v1.0.0.zip)
+unzip gcp-devops-terminal-v1.0.0.zip
+
+```
+
+### 2. Run the Installer
+
+Execute the installation script. This safely backs up your default `.bashrc`, copies over the modular `.bash.d/` structure, and dynamically scaffolds your local configurations.
+
 ```bash
 ./install.sh
 
 ```
 
-3. **Bootstrap system dependencies:** Run the included utility to automatically install required packages and detect missing infrastructure binaries:
+### 3. Automated Bootstrapping
+
+At the end of the installation, you will be prompted to bootstrap system dependencies:
+`🔍 Would you like to run 'bootstrap' to install system dependencies (jq, fzf, PyYAML, terraform, etc.) now? [Y/n]`
+
+Press **Enter** (or `Y`). The system will automatically:
+
+* Update `apt` / `brew` and install core binaries (`jq`, `fzf`, `batcat`, `zoxide`, etc.).
+* Detect the missing Python environment and dynamically install `python3-pip` and `pipx`.
+* Use `pipx` to safely install Python linters (`ruff`, `checkov`, `yapf`) in isolated environments, bypassing standard PEP 668 environment restrictions.
+
+### 4. Reload & Authenticate
+
+Initialize the dynamic prompt and custom themes by reloading your profile:
 
 ```bash
-bootstrap
+reload
 
 ```
+
+Finally, securely inject your preferred LLM API key to enable the universal `ai` command suite (input is hidden from the screen and shell history):
+
+```bash
+add-gemini-key
+# OR
+add-claude-key
+
+```
+
 
 ---
 
