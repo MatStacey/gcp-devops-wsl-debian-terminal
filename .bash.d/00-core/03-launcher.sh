@@ -43,15 +43,15 @@ web-view-profile-homepage() {
     echo "🚨 Error: No sync repository URL configured."
     return 1
   fi
-  
+
   local web_url="$SYNC_REPO_URL"
   if [[ "$web_url" == git@* ]]; then
-    web_url="${web_url#git@}"      # Strip git@
-    web_url="${web_url/:/\/}"      # Swap the domain colon to a slash
-    web_url="https://${web_url}"   # Prepend the protocol
+    web_url="${web_url#git@}"    # Strip git@
+    web_url="${web_url/:/\/}"    # Swap the domain colon to a slash
+    web_url="https://${web_url}" # Prepend the protocol
   fi
-  web_url="${web_url%.git}"        # Strip the trailing .git
-  
+  web_url="${web_url%.git}" # Strip the trailing .git
+
   echo "🌐 Opening $web_url in browser..."
   __open_url "$web_url"
 }
@@ -93,4 +93,25 @@ win-docker() {
     return 0
   fi
   __open_path_gui "$DOCKER_ROOT_DIR"
+}
+
+#######################################
+# Config: Open current directory in the default IDE (VSCode/IntelliJ)
+# Arguments:
+#   ide
+#######################################
+ide() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local selected_ide="${DEFAULT_IDE:-vscode}"
+  echo -e "${CB_GREEN}🚀 Opening current directory in ${selected_ide}...${C_RESET}"
+
+  if [ "$selected_ide" = "intellij" ]; then
+    __launch_intellij . || echo -e "${CB_RED}⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS.${C_RESET}"
+  else
+    code .
+  fi
 }
