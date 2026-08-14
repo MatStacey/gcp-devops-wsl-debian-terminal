@@ -67,6 +67,13 @@ The following commands are automatically parsed and indexed from codebase docume
 
 ### ⚙️ Core System & Environment
 
+#### Base64 Encoding & Decoding Utilities
+
+| Command | Type | Description |
+| --- | --- | --- |
+| `base64-dec` | Function | Base64: Decode a Base64 string, file, or stream. |
+| `base64-enc` | Function | Base64: Encode a string, file, or stream to Base64. |
+
 #### System & Environment Bootstrap
 
 | Command | Type | Description |
