@@ -1,4 +1,7 @@
-import sys, json, re, ast
+import ast
+import json
+import re
+import sys
 
 text = sys.stdin.read().strip()
 

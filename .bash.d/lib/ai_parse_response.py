@@ -1,4 +1,5 @@
-import sys, re
+import re
+import sys
 
 text = sys.stdin.read()
 match = re.search(r"\{.*\}", text, re.DOTALL)

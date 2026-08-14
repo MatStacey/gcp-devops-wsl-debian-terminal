@@ -50,38 +50,48 @@ def load_env():
     docker_cfg = d.get("docker") or {}
 
     # System
-    export("DEFAULT_IDE", sys_cfg.get('default_ide', 'vscode'), to_lower=True)
-    export("BASH_THEME", sys_cfg.get('theme', 'default'), to_lower=True)
-    export("UPDATE_CHECK_TTL_SEC", sys_cfg.get('update_check_ttl_sec', 43200))
-    export("MAX_PARALLEL_THREADS", sys_cfg.get('max_parallel_threads', 8))
+    export("DEFAULT_IDE", sys_cfg.get("default_ide", "vscode"), to_lower=True)
+    export("BASH_THEME", sys_cfg.get("theme", "default"), to_lower=True)
+    export("UPDATE_CHECK_TTL_SEC", sys_cfg.get("update_check_ttl_sec", 43200))
+    export("MAX_PARALLEL_THREADS", sys_cfg.get("max_parallel_threads", 8))
 
     # AI
-    export("AI_ENABLED",
-           ai_cfg.get('enabled', sys_cfg.get('ai_enabled', True)),
-           to_lower=True)
+    export(
+        "AI_ENABLED",
+        ai_cfg.get("enabled", sys_cfg.get("ai_enabled", True)),
+        to_lower=True,
+    )
     local_cfg = ai_cfg.get("local") or {}
-    export("LOCAL_AI_BASE_URL", local_cfg.get('base_url', 'http://localhost:11434/v1'))
-    export("LOCAL_AI_MODEL", local_cfg.get('model', 'llama3.2'))
-    export("LOCAL_AI_API_KEY", local_cfg.get('api_key', 'ollama'))
-    export("DEFAULT_AI",
-           ai_cfg.get('default_provider', sys_cfg.get('default_ai', 'gemini')),
-           to_lower=True)
-    export("AI_SYSTEM_PROMPT",
-           ai_cfg.get('system_prompt', gem_cfg.get('system_prompt', '')))
+    export("LOCAL_AI_BASE_URL", local_cfg.get("base_url", "http://localhost:11434/v1"))
+    export("LOCAL_AI_MODEL", local_cfg.get("model", "llama3.2"))
+    export("LOCAL_AI_API_KEY", local_cfg.get("api_key", "ollama"))
+    export(
+        "DEFAULT_AI",
+        ai_cfg.get("default_provider", sys_cfg.get("default_ai", "gemini")),
+        to_lower=True,
+    )
+    export(
+        "AI_SYSTEM_PROMPT",
+        ai_cfg.get("system_prompt", gem_cfg.get("system_prompt", "")),
+    )
 
-    export("GEMINI_API_KEY", gem_cfg.get('api_key', ''))
-    export("GEMINI_VERSION", gem_cfg.get('version', 'gemini-3.6-flash'))
-    export("GEMINI_EXTENDED", gem_cfg.get('extended', False), to_lower=True)
+    export("GEMINI_API_KEY", gem_cfg.get("api_key", ""))
+    export("GEMINI_VERSION", gem_cfg.get("version", "gemini-3.6-flash"))
+    export("GEMINI_EXTENDED", gem_cfg.get("extended", False), to_lower=True)
 
-    export("CLAUDE_API_KEY", cla_cfg.get('api_key', ''))
-    export("CLAUDE_VERSION", cla_cfg.get('version', 'claude-3-7-sonnet-latest'))
+    export("CLAUDE_API_KEY", cla_cfg.get("api_key", ""))
+    export("CLAUDE_VERSION", cla_cfg.get("version", "claude-3-7-sonnet-latest"))
 
     # Exports
-    export("AUTO_CLEANUP_EXPORTS",
-           exp_cfg.get('auto_cleanup', sys_cfg.get('auto_cleanup_exports', True)),
-           to_lower=True)
-    export("AUTO_CLEANUP_DAYS",
-           exp_cfg.get('auto_cleanup_days', sys_cfg.get('auto_cleanup_days', 7)))
+    export(
+        "AUTO_CLEANUP_EXPORTS",
+        exp_cfg.get("auto_cleanup", sys_cfg.get("auto_cleanup_exports", True)),
+        to_lower=True,
+    )
+    export(
+        "AUTO_CLEANUP_DAYS",
+        exp_cfg.get("auto_cleanup_days", sys_cfg.get("auto_cleanup_days", 7)),
+    )
 
     default_blocklist = (
         r"(secret|token|credential|password|passwd|id_rsa|id_ed25519|"
@@ -90,37 +100,48 @@ def load_env():
         r"(^|/)\.env(\..+)?$|lock\.hcl|__pycache__)")
     export(
         "EXPORT_BLOCKLIST",
-        exp_cfg.get('blocklist', paths_cfg.get('export_blocklist', default_blocklist)))
+        exp_cfg.get("blocklist", paths_cfg.get("export_blocklist", default_blocklist)),
+    )
 
     # Git
-    export("SYNC_REPO_URL", git_cfg.get('sync_repo_url', ''))
-    export("GIT_FEATURE_PREFIX", git_cfg.get('feature_prefix', 'feature/'))
-    export("AI_MAX_DIFF_BYTES", git_cfg.get('ai_max_diff_bytes', 4000))
+    export("SYNC_REPO_URL", git_cfg.get("sync_repo_url", ""))
+    export("GIT_FEATURE_PREFIX", git_cfg.get("feature_prefix", "feature/"))
+    export("AI_MAX_DIFF_BYTES", git_cfg.get("ai_max_diff_bytes", 4000))
 
     # Paths
-    export("VCS_ROOT", paths_cfg.get('vcs_root', '~/vcs'), resolve_home=True)
-    export("VCS_PERSONAL",
-           paths_cfg.get('vcs_personal', '~/vcs/personal'),
-           resolve_home=True)
-    export("VCS_EXPORTS",
-           paths_cfg.get('vcs_exports', '~/vcs/personal/exports'),
-           resolve_home=True)
-    export("SYNC_REPO_DIR",
-           paths_cfg.get('sync_repo', '~/vcs/personal/gcp-devops-wsl-debian-terminal'),
-           resolve_home=True)
-    export("AI_WORKSPACE_DIR",
-           paths_cfg.get('ai_workspace', '~/vcs/ai-workspace'),
-           resolve_home=True)
-    export("SCRIPTS_IAM_DIR",
-           paths_cfg.get('scripts_iam', '~/vcs/scripts/iam'),
-           resolve_home=True)
+    export("VCS_ROOT", paths_cfg.get("vcs_root", "~/vcs"), resolve_home=True)
+    export(
+        "VCS_PERSONAL",
+        paths_cfg.get("vcs_personal", "~/vcs/personal"),
+        resolve_home=True,
+    )
+    export(
+        "VCS_EXPORTS",
+        paths_cfg.get("vcs_exports", "~/vcs/personal/exports"),
+        resolve_home=True,
+    )
+    export(
+        "SYNC_REPO_DIR",
+        paths_cfg.get("sync_repo", "~/vcs/personal/gcp-devops-wsl-debian-terminal"),
+        resolve_home=True,
+    )
+    export(
+        "AI_WORKSPACE_DIR",
+        paths_cfg.get("ai_workspace", "~/vcs/ai-workspace"),
+        resolve_home=True,
+    )
+    export(
+        "SCRIPTS_IAM_DIR",
+        paths_cfg.get("scripts_iam", "~/vcs/scripts/iam"),
+        resolve_home=True,
+    )
     export("DOCKER_ROOT_DIR",
-           paths_cfg.get('docker_root', '~/.docker'),
+           paths_cfg.get("docker_root", "~/.docker"),
            resolve_home=True)
     export("THEMES_DIR", f"{home}/.bash.d/config/themes")
 
     # Docker
-    export("DOCKER_BLOCKLIST", docker_cfg.get('restart_blocklist', ''))
+    export("DOCKER_BLOCKLIST", docker_cfg.get("restart_blocklist", ""))
 
 
 def update_yaml(cat_path, key, val):
