@@ -181,7 +181,7 @@ if match:
     except:
         pass
 
-print(text)
+print("[]")
 ' 2> /dev/null)
 
   if [ -n "$generated_json" ] && echo "$generated_json" | jq -e . > /dev/null 2>&1; then
