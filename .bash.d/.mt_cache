@@ -58,11 +58,11 @@
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mtf-val-all              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Recursively validate and scan all Terraform directories[0m
 
   [1;38;2;241;250;140m[LLM Code Export Utilities][0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports all text/code files[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports all text/code files [Usage: mt-export [-d subdir]][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export-cleanup       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Clean up export files[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export-cloudrun      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports Python GCF codebase[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export-shell         [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports local .sh files[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export-terraform     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports local TF codebase[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export-cloudrun      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports Python GCF codebase [Usage: mt-export-cloudrun [-d subdir]][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export-shell         [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports local .sh files [Usage: mt-export-shell [-d subdir]][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export-terraform     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports local TF codebase [Usage: mt-export-terraform [-d subdir]][0m
 
   [1;38;2;241;250;140m[MyTools Documentation & Runner][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__bashd_latest_mod      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPrints the most recent mtime across all .bash.d/*.sh files, used to[0m
@@ -118,11 +118,11 @@
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-web                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Open the current repository in the default web browser[0m
 
   [1;38;2;241;250;140m[Version Control (Git) - AI Workflows][0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ai-gitignore        [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Ask AI to generate a comprehensive .gitignore for the current project[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ai-pc               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Add all files, intelligently group via AI, and push [Usage: git-ai-pc [optional message]][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__git_ai_preflight_check[0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Preflight safety checks for AI file generation[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ai-readme           [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Ask AI to generate a comprehensive README.md for the current project[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__git_sync_ai_commit    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mAnalyzes git diffs and calls the Gemini API to systematically generate[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-ai-gitignore         [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Ask AI to generate a comprehensive .gitignore for the current project[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-ai-readme            [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Ask AI to generate a comprehensive README.md for the current project[0m
 
   [1;38;2;241;250;140m[Version Control (Git) - Profile Synchronization][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__git_sync_copy_files   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mSynchronizes the active bash config files over to the tracked git directory.[0m
