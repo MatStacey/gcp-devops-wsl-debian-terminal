@@ -47,16 +47,9 @@ __git_sync_copy_files() {
   # Exclude root files and folders from the subfolder mirror so they do not duplicate
   rsync -a --exclude "config/config.yaml" --exclude "config/.env.cache" --exclude "README.md" --exclude ".bashrc" --exclude "install.sh" --exclude ".gitignore" --exclude ".github" --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
-  # Explicitly copy individual root files to the repository root for GitHub
-  for f in README.md .bashrc install.sh .gitignore; do
-    if [ -f "$HOME/.bash.d/$f" ]; then
-      cp "$HOME/.bash.d/$f" "$repo_dir/$f"
-    fi
-  done
-
-  # Explicitly copy root directories to the repository root
-  if [ -d "$HOME/.bash.d/.github" ]; then
-    cp -r "$HOME/.bash.d/.github" "$repo_dir/"
+  # Explicitly sync the root .bashrc file
+  if [ -f "$HOME/.bashrc" ]; then
+    cp "$HOME/.bashrc" "$repo_dir/.bashrc"
   fi
 
   (
@@ -99,7 +92,7 @@ mt-push-update() {
     echo -e "The \033[1mpush-profile-update\033[0m feature automatically versions and pushes your terminal configuration to a remote Git repository."
     echo "If you downloaded this profile as a standalone ZIP and do not wish to sync it, you can safely ignore this command."
     echo -e "\nTo enable syncing, link an empty remote Git repository by running:"
-    echo -e "  \033[1;36madd-sync-url \"git@github.com:username/my-terminal-repo.git\"\033[0m\n"
+    echo -e "  \033[1;36mmt-add-sync-url \"git@github.com:username/my-terminal-repo.git\"\033[0m\n"
     return 1
   fi
 
@@ -158,7 +151,7 @@ mt-get-update() {
   if [ -z "$repo_dir" ] || [ ! -d "$repo_dir/.git" ]; then
     echo -e "\n\033[1;33m⚠️  Profile Sync Not Configured\033[0m"
     echo "Your environment is currently running as a standalone local installation."
-    echo -e "To pull updates from a remote repository, you must first configure a sync URL using \033[1madd-sync-url\033[0m and push your initial commit.\n"
+    echo -e "To pull updates from a remote repository, you must first configure a sync URL using \033[1mmt-add-sync-url\033[0m and push your initial commit.\n"
     return 1
   fi
 

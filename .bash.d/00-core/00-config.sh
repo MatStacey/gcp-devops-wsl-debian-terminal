@@ -45,12 +45,12 @@ fi
 
 if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
   unset GEMINI_API_KEY
-  echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-gemini-key \"your-api-key\"\e[0m"
+  echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:\n    ${C_RESET}mt-add-gemini-key \"your-api-key\"\e[0m"
 fi
 
 if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "null" ]]; then
   unset CLAUDE_API_KEY
-  echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:\n    ${C_RESET}add-claude-key \"your-api-key\"\e[0m"
+  echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:\n    ${C_RESET}mt-add-claude-key \"your-api-key\"\e[0m"
 fi
 #######################################
 # Prints the current Gemini API model version and extended reasoning mode toggle.
@@ -87,7 +87,7 @@ mt-add-gemini-key() { # => Config: Add Gemini API key to config.yaml [Usage: mt-
     echo
   fi
   if [ -z "$key" ]; then
-    echo "Usage: add-gemini-key [<key>]"
+    echo "Usage: mt-add-gemini-key [<key>]"
     return 1
   fi
   python3 "$CONFIG_MANAGER" update "ai.gemini" "api_key" "$key"
@@ -101,7 +101,7 @@ mt-set-gemini-version() { # => Config: Set Gemini model version [Usage: mt-set-g
     return 0
   fi
   if [ -z "$1" ]; then
-    echo "Usage: set-gemini-version <version>"
+    echo "Usage: mt-set-gemini-version <version>"
     return 1
   fi
   python3 "$CONFIG_MANAGER" update "ai.gemini" "version" "$1"
@@ -134,7 +134,7 @@ mt-add-claude-key() { # => Config: Add Claude API key to config.yaml [Usage: mt-
     echo
   fi
   if [ -z "$key" ]; then
-    echo "Usage: add-claude-key [<key>]"
+    echo "Usage: mt-add-claude-key [<key>]"
     return 1
   fi
   python3 "$CONFIG_MANAGER" update "ai.claude" "api_key" "$key"
@@ -148,7 +148,7 @@ mt-set-claude-version() { # => Config: Set Claude model version [Usage: smt-set-
     return 0
   fi
   if [ -z "$1" ]; then
-    echo "Usage: set-claude-version <version>"
+    echo "Usage: mt-set-claude-version <version>"
     return 1
   fi
   python3 "$CONFIG_MANAGER" update "ai.claude" "version" "$1"
@@ -162,7 +162,7 @@ mt-add-sync-url() { # => Config: Add remote repository URL for bash sync [Usage:
     return 0
   fi
   if [ -z "$1" ]; then
-    echo "Usage: add-sync-url <url>"
+    echo "Usage: mt-add-sync-url <url>"
     return 1
   fi
   python3 "$CONFIG_MANAGER" update "git" "sync_repo_url" "$1"
@@ -176,7 +176,7 @@ mt-set-default-ide() { # => Config: Set default IDE [Usage: mt-set-default-ide "
     return 0
   fi
   if [[ "$1" != "vscode" && "$1" != "intellij" ]]; then
-    echo "Usage: set-default-ide <vscode|intellij>"
+    echo "Usage: mt-set-default-ide <vscode|intellij>"
     return 1
   fi
   python3 "$CONFIG_MANAGER" update "system" "default_ide" "$1"
@@ -190,7 +190,7 @@ mt-set-default-ai() { # => Config: Set default AI model [Usage: mt-set-default-a
     return 0
   fi
   if [[ "$1" != "gemini" && "$1" != "claude" && "$1" != "local" ]]; then
-    echo "Usage: set-default-ai <gemini|claude|local>"
+    echo "Usage: mt-set-default-ai <gemini|claude|local>"
     return 1
   fi
   python3 "$CONFIG_MANAGER" update "ai" "default_provider" "$1"
@@ -308,7 +308,7 @@ mt-set-auto-cleanup-days() { # => Config: Modifies the threshold in days before 
     return 0
   fi
   [[ ! "$1" =~ ^[0-9]+$ ]] && {
-    echo "Usage: set-auto-cleanup-days <number>"
+    echo "Usage: mt-set-auto-cleanup-days <number>"
     return 1
   }
 
