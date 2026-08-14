@@ -55,3 +55,58 @@ __check_updates() {
 }
 
 __check_updates
+
+#######################################
+# System: Asynchronously check for profile updates from the remote repository
+#######################################
+__check_profile_updates() {
+  if [[ $- != *i* ]]; then return; fi
+
+  local pending_file="$HOME/.bash.d/.profile_update_pending"
+  local cache_file="$HOME/.bash.d/.profile_update_cache"
+  local current_time
+  current_time=$(date +%s)
+
+  # If a background check found an update, display the prompt
+  if [ -f "$pending_file" ]; then
+    local new_version
+    new_version=$(command cat "$pending_file")
+    local current_version="Local"
+    if [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
+      current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "Local")
+    fi
+
+    echo -e "\n\e[33m🚀 Terminal profile update available! (\e[1m${current_version}\e[22m -> \e[1m${new_version}\e[22m)\e[0m"
+    echo -e "\e[33m   Run \e[1mmt-get-update\e[22m to apply the latest changes.\e[0m\n"
+    return
+  fi
+
+  local last_check=0
+  if [ -f "$cache_file" ]; then
+    last_check=$(command cat "$cache_file")
+  fi
+
+  local ttl="${UPDATE_CHECK_TTL_SEC:-43200}"
+
+  if ((current_time - last_check >= ttl)); then
+    # Fire the profile update check asynchronously in a background subshell
+    (
+      if [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
+        local current_version
+        current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "")
+
+        local remote_version
+        remote_version=$(git -C "$SYNC_REPO_DIR" ls-remote --tags --sort=v:refname origin 2> /dev/null | grep -v "\^{}" | tail -n1 | sed 's/.*\///')
+
+        if [ -n "$remote_version" ] && [ "$current_version" != "$remote_version" ]; then
+          echo "$remote_version" > "$pending_file"
+        else
+          date +%s > "$cache_file"
+        fi
+      fi
+    ) &
+    disown
+  fi
+}
+
+__check_profile_updates

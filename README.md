@@ -8,7 +8,7 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 Before installing this terminal environment, ensure your local workstation meets the following baseline requirements:
 
-*   **Operating System:** Officially supports WSL2 (Debian/Ubuntu), macOS (via Homebrew), and native Linux[cite: 5].
+*   **Operating System:** Officially supports WSL2 (Debian/Ubuntu), macOS (via Homebrew), and native Linux.
 *   **Visual Studio Code:** Required for seamless IDE integration. Ensure the **WSL Extension** is installed if running on Windows.
 *   **VSCode Extension Pack:** It is highly recommended to install the standardized extension pack to ensure all linting, formatting, and infrastructure integrations (like Terraform and Checkov) function perfectly alongside this terminal environment. You can install it from the dedicated repository here: [MatStacey/vscode-ext-pack](https://github.com/MatStacey/vscode-ext-pack).
 *   **Git:** Required to clone the initial repository and handle ongoing AI-assisted profile synchronization.
@@ -17,14 +17,14 @@ Before installing this terminal environment, ensure your local workstation meets
 
 ## 🚀 Key Features
 
-* **Cross-Platform Compatibility:** Native OS detection dynamically maps clipboard (`pbcopy`, `clip.exe`), file explorer (`open`, `explorer.exe`), and package manager (`brew`, `apt`) utilities based on your host architecture[cite: 5].
-* **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking optimized for minimal latency by prioritizing native file reads over subshells where possible. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
-* **Asynchronous Update Checks:** Silently checks for system package updates in the background on a configurable TTL timer without blocking terminal initialization, prompting only when updates are ready[cite: 5].
-* **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment[cite: 5].
-* **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-theme`)[cite: 5].
-* **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT/Homebrew packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`, `zoxide`)[cite: 5].
-* **Multi-Provider AI Architecture:** Consult universal AI via the `ai` command with support for **Gemini**, **Claude**, and **Local LLMs** (via Ollama or any OpenAI-compatible endpoint). Background workflows like `git-ai-pc` dynamically respect your active `DEFAULT_AI` setting[cite: 5].
-* **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` with configurable thread limits to concurrently validate and run Checkov security scans across all Terraform modules.
+*   **Cross-Platform Compatibility:** Native OS detection dynamically maps clipboard (`pbcopy`, `clip.exe`), file explorer (`open`, `explorer.exe`), and package manager (`brew`, `apt`) utilities based on your host architecture.
+*   **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking optimized for minimal latency by prioritizing native file reads over subshells where possible. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
+*   **Asynchronous Update Checks:** Silently checks for system package updates in the background on a configurable TTL timer without blocking terminal initialization, prompting only when updates are ready.
+*   **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment.
+*   **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-select-theme`).
+*   **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT/Homebrew packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`, `zoxide`).
+*   **Multi-Provider AI Architecture:** Consult universal AI via the `ai` command with support for **Gemini**, **Claude**, and **Local LLMs** (via Ollama or any OpenAI-compatible endpoint). Background workflows like `git-ai-pc` dynamically respect your active `DEFAULT_AI` setting.
+*   **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` with configurable thread limits to concurrently validate and run Checkov security scans across all Terraform modules.
 
 ---
 
@@ -79,15 +79,26 @@ Finally, securely inject your preferred LLM API key, or configure your local LLM
 
 ```bash
 # For Gemini
-add-gemini-key
+mt-add-gemini-key
 
 # For Claude
-add-claude-key
+mt-add-claude-key
 
 # Or switch to a local LLM (Ollama)
-set-default-ai local
+mt-set-default-ai local
 
 ```
+
+### 5. Keeping Your Profile Updated
+
+If you have linked your environment to a remote Git repository, you can easily pull the latest configuration changes across multiple workstations. Simply run:
+
+```bash
+mt-get-update
+
+```
+
+This command securely fetches your upstream commits and safely synchronizes them into your local `~/.bash.d/` workspace.
 
 ---
 
@@ -132,14 +143,16 @@ The following commands are automatically parsed and indexed from codebase docume
 | `mt-add-claude-key` | Function | Adds a Claude API key to the local YAML configuration. |
 | `mt-add-gemini-key` | Function | Adds a Gemini API key to the local YAML configuration. |
 | `mt-add-sync-url` | Function | Configures the remote git URL for the bash profile synchronization tool. |
+| `mt-get-gemini-status` | Function | Prints the current Gemini API model version and extended reasoning mode toggle. |
 | `mt-open-config` | Function | Opens the bash.d configuration directory directly in the configured IDE. |
 | `mt-set-auto-cleanup-days` | Function | Modifies the threshold in days before exports are automatically deleted. |
 | `mt-set-claude-version` | Function | Sets the default Claude model version in configuration. |
-| `mt-set-default-ai` | Function | Sets the default LLM provider for the 'ai' command suite (`gemini|claude|local`). |
+| `mt-set-default-ai` | Function | Sets the default LLM provider for the 'ai' command suite (`gemini |
 | `mt-set-default-ide` | Function | Sets the default local IDE for launch commands. |
 | `mt-set-gemini-version` | Function | Sets the default Gemini model version in configuration. |
-| `mt-toggle-gemini-extended` | Function | Toggles the Gemini extended reasoning mode flag. |
 | `mt-toggle-auto-cleanup` | Function | Toggles the background execution of the export cleanup script. |
+| `mt-toggle-ai` | Function | Toggle global AI prompt and integration true/false. |
+| `mt-toggle-gemini-extended` | Function | Toggles the Gemini extended reasoning mode flag. |
 
 #### Centralized Theme & Colors
 
@@ -147,6 +160,12 @@ The following commands are automatically parsed and indexed from codebase docume
 | --- | --- | --- |
 | `mt-select-theme` | Function | Opens an interactive fuzzy-finder menu to select and apply a theme. |
 | `mt-set-theme` | Function | Sets the active terminal color theme and reloads the color profile. |
+
+#### MyTools Documentation & Runner
+
+| Command | Type | Description |
+| --- | --- | --- |
+| `mt-refresh-caches` | Function | Forcefully clears and rebuilds all background caches (.env, mytools, updates). |
 
 #### System & Navigation
 
@@ -156,7 +175,7 @@ The following commands are automatically parsed and indexed from codebase docume
 | `cdvcs` | Alias | Change directory to ~/vcs. |
 | `cdvcsp` | Alias | Change directory to ~/vcs/personal. |
 | `clip` | Function | Pipe output to the system clipboard (`clip.exe` / `pbcopy` / `xclip`). |
-| `mt-help` | Alias | Print all aliases and functions. |
+| `mt` | Alias | Print all aliases and functions. |
 | `reload` | Alias | Reload Bash profile. |
 | `rld` | Alias | Reload Bash profile. |
 | `sys-install` | Function | System: Updates system packages (APT/Homebrew) and clears pending marker. |
@@ -228,11 +247,15 @@ The following commands are automatically parsed and indexed from codebase docume
 | `terraform` | Function | Terraform wrapper (preserves args). |
 | `tf` | Alias | Terraform: Base command. |
 | `tfa` | Alias | Terraform: Apply deployment. |
+| `tf-clean` | Function | Terraform: Aggressively clean local caching (.terraform, locks, plans). |
 | `tfd` | Alias | Terraform: Destroy resources. |
 | `tff` | Alias | Terraform: Format all TF files recursively. |
+| `tf-iam` | Function | Terraform: Ask AI to list required Service Accounts and least-privilege roles. |
 | `tfp` | Alias | Terraform: Plan deployment. |
+| `tf-replace` | Function | Terraform: Replace a specific resource (Modern alternative to taint). |
 | `tf-scan` | Alias | Checkov: Scan local terraform directory (./terraform). |
 | `tf-val-all` | Function | Terraform: Recursively validate and scan all Terraform directories. |
+| `tf-yaml` | Function | Terraform: Wrapper to execute Terraform using a YAML config file for variables. |
 
 #### Container Management (Docker)
 
@@ -269,7 +292,7 @@ The following commands are automatically parsed and indexed from codebase docume
 | Command | Type | Description |
 | --- | --- | --- |
 | `git` | Function | Wrapper to force 'clone' into `~/vcs/` from anywhere. |
-| `git-ai-push` | Function | Add all files, intelligently group via AI (respecting active provider), and push. |
+| `git-ai-pc` | Function | Add all files, intelligently group via AI (respecting active provider), and push. |
 | `git-cleanup` | Function | Safely delete all local branches that have been merged into the default branch. |
 | `git-feature` | Function | Create and checkout a new feature branch using the configured prefix. |
 | `git-ide` | Function | Clone a repository into `~/vcs/`, `cd` into it, and open in IDE. |
@@ -329,5 +352,38 @@ The following commands are automatically parsed and indexed from codebase docume
 | `mt-export-cloudrun` | Function | LLM: Exports Python GCF codebase. |
 | `mt-export-terraform` | Function | LLM: Exports local TF codebase. |
 
-mt-get-gemini-status
-mt-toggle-ai
+---
+
+## 🐛 Troubleshooting & Debugging
+
+If you encounter missing commands, broken aliases, or stale environment variables, use the following built-in tools to resolve issues quickly:
+
+* **`reload` / `rld`:** Instantly re-sources your `~/.bashrc` without needing to restart your terminal session.
+
+
+* **`mt-refresh-caches`:** Forcefully clears and rebuilds all background caches, including `.env.cache`, `mytools` indexes, and system update markers. Use this if your `mt` menu is missing newly added tools.
+
+
+* **`bootstrap`:** Re-scans your host machine for missing dependencies (like `jq`, `fzf`, or Python linters) and installs them via `apt` or `brew`.
+
+
+* **`sys-install`:** Installs all pending system OS updates and clears the pending-update marker from your prompt.
+
+
+* **`sys-update`:** Manually triggers a standard OS package update check (`apt` or `brew` based on your OS).
+
+
+
+---
+
+## ❓ FAQ
+
+**Q: Why didn't my new configuration variable apply immediately?**
+**A:** The environment uses a high-performance cache to ensure zero-lag loading. If you manually edited `config.yaml` outside of the `mt-` configuration functions, run `mt-refresh-caches` or `reload` to regenerate the environment cache.
+
+**Q: How do I backup my custom profile modifications?**
+**A:** First, ensure you have linked a remote repository using `mt-add-sync-url`. Then, run `mt-push-update`. This uses AI (if enabled) to group your changes into systematic commits and pushes them to your remote repository.
+
+**Q: I am getting an "Argument list too long" error when using the AI tools.**
+**A:** This issue was resolved by utilizing temporary payload files. If you are experiencing this on an older version, run `mt-get-update` to automatically pull down the latest codebase fixes.
+

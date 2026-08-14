@@ -589,6 +589,10 @@ mt-get-update() {
   echo -e "\n${CB_YELLOW}🔄 Applying updates to local ~/.bash.d workspace...${C_RESET}"
   if [ -f "$repo_dir/install.sh" ]; then
     bash "$repo_dir/install.sh"
+
+    # Clear the update marker so the prompt goes away
+    rm -f "$HOME/.bash.d/.profile_update_pending"
+
     # Note: install.sh advises the user to run 'reload'.
     # We will automatically trigger it here for a seamless experience.
     source "$HOME/.bashrc"

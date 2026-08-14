@@ -287,6 +287,7 @@ mt-refresh-caches() {
   rm -f "$HOME/.bash.d/config/.env.cache"
   rm -f "$HOME/.bash.d/.mt_cache" "$HOME/.bash.d/.mt_cache.time" "$HOME/.bash.d/.mt_data.tsv"
   rm -f "$HOME/.bash.d/.update_check_cache" "$HOME/.bash.d/.update_pending"
+  rm -f "$HOME/.bash.d/.profile_update_cache" "$HOME/.bash.d/.profile_update_pending"
 
   echo -e "${CB_BLUE}🔄 Rebuilding configurations and tool indexes...${C_RESET}"
   if [ -f "$HOME/.bash.d/lib/config_manager.py" ]; then
