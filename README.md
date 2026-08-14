@@ -19,7 +19,7 @@ Before installing this terminal environment, ensure your local workstation meets
 
 *   **Cross-Platform Compatibility:** Native OS detection dynamically maps clipboard (`pbcopy`, `clip.exe`), file explorer (`open`, `explorer.exe`), and package manager (`brew`, `apt`) utilities based on your host architecture.
 *   **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking optimized for minimal latency by prioritizing native file reads over subshells where possible. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
-*   **Asynchronous Update Checks:** Silently checks for system package updates in the background on a configurable TTL timer without blocking terminal initialization, prompting only when updates are ready.
+*   **Asynchronous Update Checks:** Silently checks for system package updates, as well as upstream terminal profile updates, in the background on a configurable TTL timer without blocking terminal initialization.
 *   **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment.
 *   **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-select-theme`).
 *   **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT/Homebrew packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`, `zoxide`).
@@ -40,7 +40,7 @@ Download the latest compiled release and extract it into a permanent directory. 
 mkdir -p ~/vcs/personal/gcp-devops-terminal
 cd ~/vcs/personal/gcp-devops-terminal
 
-# Download and extract the latest release (check the Releases page for the latest version)
+# Download and extract the latest release
 wget [https://github.com/MatStacey/gcp-devops-wsl-debian-terminal/releases/latest/download/gcp-devops-terminal-v1.0.0.zip](https://github.com/MatStacey/gcp-devops-wsl-debian-terminal/releases/latest/download/gcp-devops-terminal-v1.0.0.zip)
 unzip gcp-devops-terminal-v1.0.0.zip
 
@@ -60,11 +60,7 @@ Execute the installation script. This safely backs up your default `.bashrc`, co
 At the end of the installation, you will be prompted to bootstrap system dependencies:
 `🔍 Would you like to run 'bootstrap' to install system dependencies (jq, fzf, PyYAML, terraform, etc.) now? [Y/n]`
 
-Press **Enter** (or `Y`). The system will automatically:
-
-* Update `apt` / `brew` and install core binaries (`jq`, `fzf`, `batcat`, `zoxide`, etc.).
-* Detect the missing Python environment and dynamically install `python3-pip` and `pipx`.
-* Use `pipx` to safely install Python linters (`ruff`, `checkov`, `yapf`) in isolated environments, bypassing standard PEP 668 environment restrictions.
+Press **Enter** (or `Y`). The system will automatically update your package manager, install core binaries, and configure isolated Python linters via `pipx`.
 
 ### 4. Reload & Authenticate
 
@@ -75,7 +71,7 @@ reload
 
 ```
 
-Finally, securely inject your preferred LLM API key, or configure your local LLM provider:
+Securely inject your preferred LLM API key, or configure your local LLM provider:
 
 ```bash
 # For Gemini
@@ -104,8 +100,6 @@ This command securely fetches your upstream commits and safely synchronizes them
 
 ## 📂 Directory Structure
 
-The configuration abandons a monolithic `~/.bashrc` in favor of a logical `.bash.d/` directory structure.
-
 | Module | Description |
 | --- | --- |
 | `00-core/` | Core configuration, centralized dynamic color themes, cross-platform OS helpers, mytools engine, and bootstrapping utilities. |
@@ -117,171 +111,103 @@ The configuration abandons a monolithic `~/.bashrc` in favor of a logical `.bash
 
 ---
 
-## 🧰 Command Reference (MyTools)
+## 🧰 Command Reference
 
-The following commands are automatically parsed and indexed from codebase documentation blocks.
+### 🔧 Bespoke Profile Utilities (`mt-*`)
 
-### ⚙️ Core System & Environment
+These utilities are exclusive to this profile and control environment configuration, synchronization, and exports.
 
-#### Base64 Encoding & Decoding Utilities
+| Command | Description |
+| --- | --- |
+| `mt` / `mt-help` | Print all custom aliases and functions dynamically indexed from the codebase. |
+| `mt-refresh-caches` | Forcefully clears and rebuilds all background caches (.env, mytools index, system updates). |
+| `mt-get-update` | Pull latest remote profile changes and safely apply them to the local terminal workspace. |
+| `mt-push-update` | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |
+| `mt-open-config` | Opens the bash.d configuration directory directly in the configured IDE. |
+| `mt-select-theme` | Opens an interactive fuzzy-finder menu to select and apply a terminal theme. |
+| `mt-set-theme` | Sets the active terminal color theme and reloads the color profile. |
+| `mt-add-sync-url` | Configures the remote git URL for the bash profile synchronization tool. |
+| `mt-open-homepage` | Open the sync repository's remote URL in the default web browser. |
+| `mt-set-default-ide` | Sets the default local IDE for launch commands (`vscode` | `intellij`). |
+| `mt-set-default-ai` | Sets the default LLM provider for the 'ai' command suite (`gemini` | `claude` | `local`). |
+| `mt-toggle-ai` | Toggles global AI prompt and integration flags. |
+| `mt-get-gemini-status` | Prints the current Gemini API model version and extended reasoning mode toggle. |
+| `mt-toggle-gemini-extended` | Toggles the Gemini extended reasoning mode flag. |
+| `mt-export` | Compiles and exports all local text/code files for LLM context injection. |
+| `mt-export-terraform` | Compiles and exports local Terraform codebase. |
+| `mt-export-shell` | Compiles and exports local Bash/Shell codebase. |
+| `mt-export-cloudrun` | Compiles and exports local Python Cloud Run/Function codebase. |
+| `mt-export-cleanup` | Cleans up and prunes old export files. |
+| `mt-toggle-auto-cleanup` | Toggles the background execution of the export cleanup script. |
+| `mt-set-auto-cleanup-days` | Modifies the threshold in days before exports are automatically deleted. |
 
-| Command | Type | Description |
-| --- | --- | --- |
-| `base64-dec` | Function | Base64: Decode a Base64 string, file, or stream. |
-| `base64-enc` | Function | Base64: Encode a string, file, or stream to Base64. |
+---
 
-#### System & Environment Bootstrap
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `bootstrap` | Function | System: Bootstrap missing dependencies for bash aliases (Debian/WSL via APT, macOS via Homebrew). |
-
-#### Configuration Management
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `mt-add-claude-key` | Function | Adds a Claude API key to the local YAML configuration. |
-| `mt-add-gemini-key` | Function | Adds a Gemini API key to the local YAML configuration. |
-| `mt-add-sync-url` | Function | Configures the remote git URL for the bash profile synchronization tool. |
-| `mt-get-gemini-status` | Function | Prints the current Gemini API model version and extended reasoning mode toggle. |
-| `mt-open-config` | Function | Opens the bash.d configuration directory directly in the configured IDE. |
-| `mt-set-auto-cleanup-days` | Function | Modifies the threshold in days before exports are automatically deleted. |
-| `mt-set-claude-version` | Function | Sets the default Claude model version in configuration. |
-| `mt-set-default-ai` | Function | Sets the default LLM provider for the 'ai' command suite (`gemini |
-| `mt-set-default-ide` | Function | Sets the default local IDE for launch commands. |
-| `mt-set-gemini-version` | Function | Sets the default Gemini model version in configuration. |
-| `mt-toggle-auto-cleanup` | Function | Toggles the background execution of the export cleanup script. |
-| `mt-toggle-ai` | Function | Toggle global AI prompt and integration true/false. |
-| `mt-toggle-gemini-extended` | Function | Toggles the Gemini extended reasoning mode flag. |
-
-#### Centralized Theme & Colors
+### ⚙️ Core System & Navigation
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `mt-select-theme` | Function | Opens an interactive fuzzy-finder menu to select and apply a theme. |
-| `mt-set-theme` | Function | Sets the active terminal color theme and reloads the color profile. |
-
-#### MyTools Documentation & Runner
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `mt-refresh-caches` | Function | Forcefully clears and rebuilds all background caches (.env, mytools, updates). |
-
-#### System & Navigation
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `cdbashd` | Alias | Change directory to ~/.bash.d. |
-| `cdvcs` | Alias | Change directory to ~/vcs. |
-| `cdvcsp` | Alias | Change directory to ~/vcs/personal. |
+| `bootstrap` | Function | Install missing dependencies for bash aliases (Debian/WSL via APT, macOS via Homebrew). |
+| `sys-install` | Function | Updates system packages and clears the pending-update marker. |
+| `sys-update` | Function | Updates system packages without clearing prompt markers. |
+| `sys-install-reload` | Alias | Update, Upgrade, Bootstrap, Reload. |
+| `reload` | Alias | Re-sources the Bash profile for instant lightweight updates. |
+| `cdbashd` / `cdvcs` | Aliases | Change directory to `~/.bash.d` or `~/vcs`. |
+| `cd-ai` / `cd-sync` | Functions | Config-driven directory changes to unified AI or sync repos. |
 | `clip` | Function | Pipe output to the system clipboard (`clip.exe` / `pbcopy` / `xclip`). |
-| `mt` | Alias | Print all aliases and functions. |
-| `reload` | Alias | Reload Bash profile. |
-| `rld` | Alias | Reload Bash profile. |
-| `sys-install` | Function | System: Updates system packages (APT/Homebrew) and clears pending marker. |
-| `sys-install-reload` | Alias | Update, Upgrade, Boostrap, Reload. |
-| `sys-update` | Function | System: Updates system packages (APT/Homebrew). |
-
-#### Path & URL Launchers (Config-Driven)
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `cd-ai` | Function | Config: Change directory to unified AI workspace. |
-| `cd-sync` | Function | Config: Change directory to sync repository root. |
-| `ide` | Function | Config: Open current directory in the default IDE (VSCode/IntelliJ). |
-| `mt-open-homepage` | Function | Config: Open sync repository remote URL in default web browser. |
-| `win` | Function | Open current directory in the platform's native file manager. |
-| `win-ai` | Function | Config: Open unified AI workspace in the platform's native file manager. |
-| `win-docker` | Function | Config: Open Docker root directory in the platform's native file manager. |
-| `win-export` | Function | Open ~/vcs/personal/exports in the platform's native file manager. |
-| `win-sync` | Function | Config: Open sync repository in the platform's native file manager. |
-| `win-vcs` | Function | Open ~/vcs in the platform's native file manager. |
+| `ide` | Function | Open current directory in the default IDE (VSCode/IntelliJ). |
+| `win` / `win-vcs` | Functions | Open specific directories in the platform's native file manager. |
+| `base64-enc` / `base64-dec` | Functions | Encode or decode strings, files, or streams to/from Base64. |
 
 ---
 
 ### ☁️ Cloud & Infrastructure
 
-#### GCP: Configuration & Authentication
+#### Google Cloud Platform (GCP)
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `gcl-config` | Function | GCP: List active configuration properties. |
-| `gcl-export-vars` | Function | GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell. |
-| `gcl-get-project` | Function | GCP: Print active project ID. |
-| `gcl-get-project-number` | Function | GCP: Print active project Number (API call required). |
-| `gcl-get-region` | Function | GCP: Print active compute region. |
-| `gcl-get-user` | Function | GCP: Print active user account. |
-| `gcl-get-zone` | Function | GCP: Print active compute zone. |
-| `gcl-org-policies` | Function | GCP: List org policies for active project. |
-| `gcl-update` | Function | GCP: Update Google Cloud CLI tools. |
-| `gcp-login` | Function | GCP: Login to user & application default. |
-| `gcp-login-adc` | Function | GCP: Login to application default only. |
-| `gcpp` | Alias | GCP: Legacy shortcut to set project. |
-| `gcp-set-project` | Function | GCP: Switch active project. |
-
-#### GCP: Resources & Services
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `bq-ls` | Alias | BigQuery: List datasets in project. |
-| `bq-query` | Function | BigQuery: Run standard SQL query. |
-| `gce-ls` | Alias | Compute: List all VM instances. |
-| `gce-ssh` | Alias | Compute: SSH into an instance. |
-| `gcl-as-json` | Function | Run gcloud command and output as formatted JSON. |
-| `gcl-gar-ls` | Alias | Artifacts: List Artifact Registry repos. |
-| `gcl-iam-ls` | Alias | IAM: List service accounts in active project. |
-| `gcl-ps-subs` | Alias | PubSub: List subscriptions. |
-| `gcl-ps-topics` | Alias | PubSub: List topics. |
-| `gcp-crf-logs` | Function | Functions: Tail logs of a function. |
-| `gcp-crf-ls` | Alias | Functions: List Cloud Run Functions. |
-| `gcp-gar-docker` | Function | Artifacts: Configure Docker auth. |
-| `gcp-get-secret` | Function | Secrets: Read latest payload of a secret. |
-| `gcp-iam-show` | Function | IAM: View IAM policy for active project. |
-| `gcp-ps-pull` | Function | PubSub: Pull and auto-ack one message. |
-| `gcs-ls` | Alias | GCS: List buckets or contents. |
+| `gcp-set-project` | Function | Switch active project interactively or explicitly. |
+| `gcp-login` | Function | Login to user & application default. |
+| `gcl-export-vars` | Function | Export `PROJECT_ID` and `PROJECT_NUMBER` env vars to the shell. |
+| `gcl-config` | Function | List active configuration properties. |
+| `gcl-get-project` | Function | Print active project ID. |
+| `gcl-update` | Function | Update Google Cloud CLI tools. |
+| `gcp-iam-show` | Function | View IAM policy for the active project. |
+| `gcp-get-secret` | Function | Read the latest payload of a Secret Manager secret. |
+| `gcp-crf-logs` | Function | Tail logs of a Cloud Run Function. |
+| `gce-ls` / `gce-ssh` | Aliases | List Compute VMs or SSH into an instance. |
+| `bq-query` / `bq-ls` | Func/Alias | Run standard SQL queries or list BigQuery datasets. |
 
 #### Infrastructure as Code (Terraform)
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `terraform` | Function | Terraform wrapper (preserves args). |
-| `tf` | Alias | Terraform: Base command. |
-| `tfa` | Alias | Terraform: Apply deployment. |
-| `tf-clean` | Function | Terraform: Aggressively clean local caching (.terraform, locks, plans). |
-| `tfd` | Alias | Terraform: Destroy resources. |
-| `tff` | Alias | Terraform: Format all TF files recursively. |
-| `tf-iam` | Function | Terraform: Ask AI to list required Service Accounts and least-privilege roles. |
-| `tfp` | Alias | Terraform: Plan deployment. |
-| `tf-replace` | Function | Terraform: Replace a specific resource (Modern alternative to taint). |
-| `tf-scan` | Alias | Checkov: Scan local terraform directory (./terraform). |
-| `tf-val-all` | Function | Terraform: Recursively validate and scan all Terraform directories. |
-| `tf-yaml` | Function | Terraform: Wrapper to execute Terraform using a YAML config file for variables. |
+| `terraform` | Function | Terraform wrapper (preserves args and binary). |
+| `tf` / `tfa` / `tfd` | Aliases | Base command, Apply deployment, Destroy resources. |
+| `tff` | Alias | Format all TF files recursively. |
+| `tf-val-all` | Function | Recursively validate and scan all Terraform directories concurrently. |
+| `tf-scan` | Alias | Checkov: Scan local terraform directory. |
+| `tf-clean` | Function | Aggressively clean local caching (`.terraform`, locks, plans). |
+| `tf-replace` | Function | Replace a specific resource (Modern alternative to taint). |
+| `tf-yaml` | Function | Wrapper to execute Terraform using a YAML config file for variables. |
+| `tf-iam` | Function | Ask AI to list required Service Accounts and least-privilege roles. |
 
-#### Container Management (Docker)
+#### Container Orchestration (Docker & Kubernetes)
 
 | Command | Type | Description |
 | --- | --- | --- |
 | `docker-ls` | Function | Lists all running Docker containers in a clean, readable table format. |
-| `docker-nuke` | Function | Aggressively cleans up your local Docker environment by pruning all stopped containers, dangling images, unused networks, and orphaned volumes to reclaim disk space. |
-| `docker-reboot-all` | Function | Gracefully restarts running Docker containers, respecting the persistent `docker.restart_blocklist` defined in `config.yaml`. |
-| `docker-sandbox` | Function | Instantly spins up a temporary, throwaway container that automatically deletes itself (`--rm`) the moment you exit the shell. |
-| `docker-shell` | Function | Launches an interactive fuzzy-finder (`fzf`) menu to instantly drop you into a bash/sh terminal inside the selected container. |
-| `docker-tail` | Function | Multi-select (`TAB`) several containers via `fzf` to concurrently tail their logs. Streams are prefixed with color-coded container names for easy real-time reading. |
-
-#### Container Orchestration (Kubernetes)
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `k` | Alias | `kubectl` |
-| `ka` / `kak` | Aliases | `kubectl apply -f` and `kubectl apply -k` |
-| `krm` / `krmf` | Aliases | `kubectl delete` and `kubectl delete -f` |
-| `kg*` | Aliases | Get resources (`kgpo`, `kgdep`, `kgsvc`, `kging`, `kgcm`, `kgsec`, `kgno`, `kgns`, `kgall`) |
-| `kd*` | Aliases | Describe resources (`kdpo`, `kddep`, `kdsvc`, `kding`, `kdcm`, `kdsec`, `kdno`) |
-| `klo` / `klop` | Aliases | Tail logs (`kubectl logs -f`) / tail previous container (`-p`) |
-| `kex` | Alias | Exec interactively (`kubectl exec -i -t`) |
-| `kpf` | Alias | Port forward (`kubectl port-forward`) |
-| `ksys` | Alias | Execute command explicitly in `kube-system` namespace |
-| `kns` | Function | View or interactively set (`TAB` completion) the default namespace context |
+| `docker-nuke` | Function | Aggressive cleanup of all unused containers, dangling images, and volumes. |
+| `docker-reboot-all` | Function | Gracefully restarts running containers, respecting the `restart_blocklist`. |
+| `docker-sandbox` | Function | Instantly spins up a temporary container sandbox (`--rm`). |
+| `docker-shell` | Function | Interactive fuzzy-finder to instantly `exec` into a running container. |
+| `docker-tail` | Function | Multi-select (`TAB`) several containers via `fzf` to concurrently tail logs. |
+| `k` | Alias | `kubectl` wrapper |
+| `ka` / `kak` / `krm` | Aliases | Apply (`-f`, `-k`) or Delete resources. |
+| `kns` | Function | View or interactively set (`TAB` completion) the default namespace context. |
+| `kg*` / `kd*` | Aliases | Get or Describe resources (`kgpo`, `kgdep`, `kgsvc`, `kdcm`, `kdsec`, etc.). |
+| `klo` / `kex` / `kpf` | Aliases | Tail logs, Exec interactively, or Port forward. |
 
 ---
 
@@ -293,64 +219,27 @@ The following commands are automatically parsed and indexed from codebase docume
 | --- | --- | --- |
 | `git` | Function | Wrapper to force 'clone' into `~/vcs/` from anywhere. |
 | `git-ai-pc` | Function | Add all files, intelligently group via AI (respecting active provider), and push. |
-| `git-cleanup` | Function | Safely delete all local branches that have been merged into the default branch. |
 | `git-feature` | Function | Create and checkout a new feature branch using the configured prefix. |
+| `git-cleanup` | Function | Safely delete all local branches merged into the default branch. |
+| `git-update` | Function | Fetch upstream and rebase the current branch onto the default branch. |
+| `git-nuke` | Function | Hard reset and wipe all untracked files on the current branch. |
 | `git-ide` | Function | Clone a repository into `~/vcs/`, `cd` into it, and open in IDE. |
 | `git-lg` | Function | Print a beautiful, color-coded, single-line graph log. |
-| `git-nuke` | Function | Hard reset and wipe all untracked files on the current branch (includes safety prompt). |
-| `git-update` | Function | Fetch upstream and rebase the current branch onto the default branch. |
 | `git-web` | Function | Open the current repository in the default web browser. |
-| `mt-get-update` | Function | Pull latest remote profile changes and safely apply them to the local terminal workspace. |
-| `mt-push-update` | Function | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |
 
-#### Development & Build Tools
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `boot-run` | Alias | Spring Boot: Run application. |
-| `mci` | Alias | Maven: Clean and Install. |
-| `pip-load` | Alias | Install pip requirements. |
-| `pip-save` | Alias | Save pip requirements. |
-| `venv-make` | Alias | Create & active Python venv. |
-| `venv-up` | Alias | Activate existing Python venv. |
-
-#### Code Formatting
+#### Code Formatting & CLI Replacements
 
 | Command | Type | Description |
 | --- | --- | --- |
 | `google-fmt` | Function | Formats Python and Shell scripts according to Google Style Guides. |
 | `ruff-fmt` | Alias | Ruff: Format Python files and imports in current directory (recursive). |
 | `shfmtlw` | Alias | shfmt: Format all shell scripts in current directory (recursive). |
-
-#### Modern CLI Replacements
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `cat` | Alias | bat: Print file contents with syntax highlighting. |
-| `ccat` | Alias | bat: Print file contents with line numbers & Git gutters. |
-| `json-fmt` | Alias | Pretty-print JSON stream. |
-| `ll` | Alias | eza: Detailed list with Git status. |
-| `ls` | Alias | eza: List files with directories first. |
-| `rg` | Alias | rg: Search with smart case, include hidden, ignore .git. |
-| `tree` | Alias | eza: Display directory structure as a tree. |
-| `yaml-fmt` | Alias | Pretty-print YAML stream (requires yq). |
-
-#### Universal AI & LLM Utilities
-
-| Command | Type | Description |
-| --- | --- | --- |
-| `ai` | Function | Consult universal AI. |
-| `__ai_build_context` | Function | Compiles local codebase files into a single context document for LLMs. |
-| `_ai_get_next_version` | Function | Calculates the next available minor patch version for a generated file. |
-| `__ai_query_claude` | Function | Formats payload and queries the Anthropic Claude API. |
-| `__ai_query_gemini` | Function | Formats payload and queries the Google Gemini API. |
-| `__ai_query_local` | Function | Formats payload and queries a local LLM endpoint (OpenAI-compatible). |
-| `__ai_save_output` | Function | Formats and saves the generated code from LLMs into standard directories. |
-| `mt-export-cleanup` | Function | LLM: Clean up export files. |
-| `mt-export` | Function | LLM: Exports all text/code files. |
-| `mt-export-shell` | Function | LLM: Exports local .sh files. |
-| `mt-export-cloudrun` | Function | LLM: Exports Python GCF codebase. |
-| `mt-export-terraform` | Function | LLM: Exports local TF codebase. |
+| `ai` | Function | Consult universal AI directly from the CLI. |
+| `cat` / `ccat` | Aliases | `bat`: Print file contents with syntax highlighting and Git gutters. |
+| `ll` / `ls` | Aliases | `eza`: Detailed file lists with Git status and directories first. |
+| `rg` | Alias | `rg`: Search with smart case, include hidden, ignore `.git`. |
+| `tree` | Alias | `eza`: Display directory structure as a tree. |
+| `json-fmt` / `yaml-fmt` | Aliases | Pretty-print JSON/YAML streams (requires `jq`/`yq`). |
 
 ---
 
@@ -358,32 +247,21 @@ The following commands are automatically parsed and indexed from codebase docume
 
 If you encounter missing commands, broken aliases, or stale environment variables, use the following built-in tools to resolve issues quickly:
 
-* **`reload` / `rld`:** Instantly re-sources your `~/.bashrc` without needing to restart your terminal session.
-
-
-* **`mt-refresh-caches`:** Forcefully clears and rebuilds all background caches, including `.env.cache`, `mytools` indexes, and system update markers. Use this if your `mt` menu is missing newly added tools.
-
-
+* **`reload`:** Instantly re-sources your `~/.bashrc` without needing to restart your terminal session. Perfect for testing quick alias changes.
+* **`mt-refresh-caches`:** Forcefully clears and rebuilds all background caches, including `.env.cache`, `mytools` indexes, and system update markers. Use this if your `mt` menu is missing newly added tools or configuration variables aren't persisting.
 * **`bootstrap`:** Re-scans your host machine for missing dependencies (like `jq`, `fzf`, or Python linters) and installs them via `apt` or `brew`.
-
-
 * **`sys-install`:** Installs all pending system OS updates and clears the pending-update marker from your prompt.
-
-
 * **`sys-update`:** Manually triggers a standard OS package update check (`apt` or `brew` based on your OS).
-
-
 
 ---
 
 ## ❓ FAQ
 
 **Q: Why didn't my new configuration variable apply immediately?**
-**A:** The environment uses a high-performance cache to ensure zero-lag loading. If you manually edited `config.yaml` outside of the `mt-` configuration functions, run `mt-refresh-caches` or `reload` to regenerate the environment cache.
+**A:** The environment uses a high-performance cache to ensure zero-lag loading. If you manually edited `config.yaml` outside of the `mt-` configuration functions, run `mt-refresh-caches` to regenerate the environment cache.
 
 **Q: How do I backup my custom profile modifications?**
 **A:** First, ensure you have linked a remote repository using `mt-add-sync-url`. Then, run `mt-push-update`. This uses AI (if enabled) to group your changes into systematic commits and pushes them to your remote repository.
 
 **Q: I am getting an "Argument list too long" error when using the AI tools.**
 **A:** This issue was resolved by utilizing temporary payload files. If you are experiencing this on an older version, run `mt-get-update` to automatically pull down the latest codebase fixes.
-
