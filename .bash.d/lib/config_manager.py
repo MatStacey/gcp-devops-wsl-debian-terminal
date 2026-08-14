@@ -108,6 +108,7 @@ def load_env():
            paths_cfg.get('ai_workspace', '~/vcs/ai-workspace'),
            resolve_home=True)
     export("SCRIPTS_IAM_DIR",
+    export("DOCKER_ROOT_DIR", paths_cfg.get('docker_root', '~/.docker'), resolve_home=True)
            paths_cfg.get('scripts_iam', '~/vcs/scripts/iam'),
            resolve_home=True)
     export("THEMES_DIR", f"{home}/.bash.d/config/themes")

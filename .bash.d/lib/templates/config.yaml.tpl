@@ -36,6 +36,7 @@ paths:
   sync_repo: ~/vcs/personal/gcp-devops-wsl-debian-terminal
   ai_workspace: ~/vcs/ai-workspace
   scripts_iam: ~/vcs/scripts/iam
+  docker_root: ~/.docker
 
 docker:
   restart_blocklist: "redis,postgres,local-db"

@@ -78,3 +78,16 @@ win-ai() {
   fi
   __open_path_gui "$AI_WORKSPACE_DIR"
 }
+
+#######################################
+# Config: Open Docker root directory in the platform's native file manager
+# Arguments:
+#   win-docker
+#######################################
+win-docker() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  __open_path_gui "$DOCKER_ROOT_DIR"
+}

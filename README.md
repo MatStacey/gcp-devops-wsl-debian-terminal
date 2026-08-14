@@ -168,6 +168,7 @@ The following commands are automatically parsed and indexed from codebase docume
 | `sync-web` | Function | Config: Open sync repository remote URL in default web browser. |
 | `win` | Function | Open current directory in the platform's native file manager.|
 | `win-ai` | Function | Config: Open unified AI workspace in the platform's native file manager.|
+| `win-docker` | Function | Config: Open Docker root directory in the platform's native file manager.|
 | `win-export` | Function | Open ~/vcs/personal/exports in the platform's native file manager.|
 | `win-sync` | Function | Config: Open sync repository in the platform's native file manager.|
 | `win-vcs` | Function | Open ~/vcs in the platform's native file manager.|
