@@ -246,13 +246,7 @@ __ai_parse_response() {
   local content="$1" provider="$2" title="$3" explicit_out_file="$4"
 
   local clean_content
-  clean_content=$(echo "$content" | python3 -c '
-import sys, re
-text = sys.stdin.read()
-match = re.search(r"\{.*\}", text, re.DOTALL)
-if match: print(match.group(0))
-else: print(text)
-' 2> /dev/null)
+  clean_content=$(echo "$content" | python3 "$HOME/.bash.d/lib/ai_parse_response.py" 2> /dev/null)
 
   local category lang ext code msg gen_title
   category=$(echo "$clean_content" | jq -r '.category // empty')
@@ -287,66 +281,7 @@ else: print(text)
 #   Writes parsed JSON array string to STDOUT.
 #######################################
 __ai_extract_json_array() {
-  echo "$1" | python3 -c '
-import sys, json, re, ast
-
-text = sys.stdin.read().strip()
-
-def try_parse(val):
-    if isinstance(val, list):
-        return val
-    if isinstance(val, str):
-        val_clean = val.strip()
-        try:
-            res = json.loads(val_clean)
-            if isinstance(res, list): return res
-        except:
-            pass
-        try:
-            res = ast.literal_eval(val_clean)
-            if isinstance(res, list): return res
-        except:
-            pass
-    return None
-
-try:
-    data = json.loads(text)
-    if isinstance(data, dict):
-        if "message" in data:
-            parsed = try_parse(data["message"])
-            if parsed is not None:
-                print(json.dumps(parsed))
-                sys.exit(0)
-        if "code" in data:
-            parsed = try_parse(data["code"])
-            if parsed is not None:
-                print(json.dumps(parsed))
-                sys.exit(0)
-    elif isinstance(data, list):
-        print(json.dumps(data))
-        sys.exit(0)
-except:
-    pass
-
-match = re.search(r"(\[.*?\])", text, re.DOTALL)
-if match:
-    try:
-        res = json.loads(match.group(1))
-        if isinstance(res, list):
-            print(json.dumps(res))
-            sys.exit(0)
-    except:
-        pass
-    try:
-        res = ast.literal_eval(match.group(1))
-        if isinstance(res, list):
-            print(json.dumps(res))
-            sys.exit(0)
-    except:
-        pass
-
-print("[]")
-' 2> /dev/null
+  echo "$1" | python3 "$HOME/.bash.d/lib/ai_extract_json_array.py" 2> /dev/null
 }
 
 #######################################

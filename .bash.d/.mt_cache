@@ -11,7 +11,9 @@
   [1;38;2;241;250;140m[Centralized Theme & Colors][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mai                      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConsult universal AI[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_build_context      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mCompiles local codebase files into a single context document for LLMs.[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_extract_json_array [0m [38;2;98;114;164m→[0m [38;2;248;248;242mAI: Extracts a JSON array from raw LLM output text[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m_ai_get_next_version    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mCalculates the next available minor patch version for a generated file.[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_parse_response     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mAI: Parses standard single JSON object response and saves if needed.[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_query_claude       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats payload and queries the Anthropic Claude API.[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_query_gemini       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats payload and queries the Google Gemini API.[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_query_local        [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats payload and queries a local LLM endpoint (OpenAI-compatible).[0m
@@ -105,10 +107,11 @@
   [1;38;2;241;250;140m[Terraform & Kubernetes Wrappers][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mterraform               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform wrapper (preserves args)[0m
 
-  [1;38;2;241;250;140m[Version Control (Git)][0m
+  [1;38;2;241;250;140m[Version Control (Git) - AI Workflows][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Wrapper to force 'clone' into ~/vcs/ from anywhere[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ai-gitignore        [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Ask AI to generate a comprehensive .gitignore for the current project[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ai-pc               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Add all files, intelligently group via AI, and push [Usage: git-ai-pc [optional message]][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__git_ai_preflight_check[0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Preflight safety checks for AI file generation[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ai-readme           [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Ask AI to generate a comprehensive README.md for the current project[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-cleanup             [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Safely delete all local branches that have been merged into the default branch[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-feature             [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Create and checkout a new feature branch[0m

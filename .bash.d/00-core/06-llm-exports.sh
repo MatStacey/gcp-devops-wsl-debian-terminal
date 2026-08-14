@@ -14,23 +14,7 @@ __win_explorer_focus() {
       local target_path
       target_path=$(wslpath -m "$1")
 
-      local ps_script="
-	\$path = '${target_path}'.TrimEnd([char]47);
-	\$shell = New-Object -ComObject Shell.Application;
-	\$win = @(\$shell.Windows() | Where-Object {
-		\$null -ne \$_.Document -and \$null -ne \$_.Document.Folder -and
-		\$_.Document.Folder.Self.Path.Replace([char]92, [char]47).TrimEnd([char]47) -eq \$path
-	})[0];
-
-	if (\$win) {
-		\$win.Refresh();
-		(New-Object -ComObject WScript.Shell).AppActivate(\$win.Name);
-	} else {
-		\$winPath = \$path.Replace([char]47, [char]92);
-		Invoke-Item -LiteralPath \$winPath;
-	}"
-
-      powershell.exe -NoProfile -Command "$ps_script" > /dev/null 2>&1
+      powershell.exe -ExecutionPolicy Bypass -NoProfile -File "$(wslpath -w "$HOME/.bash.d/lib/win_explorer_focus.ps1")" -TargetPath "$target_path" > /dev/null 2>&1
       ;;
     *)
       # No native window-focus mechanism on plain Linux; best effort only.

@@ -1,4 +1,4 @@
 # shellcheck shell=bash
 # ------------------------------------------
-# Version Control (Git)
+# Version Control (Git) - Profile Synchronization
 # ------------------------------------------
