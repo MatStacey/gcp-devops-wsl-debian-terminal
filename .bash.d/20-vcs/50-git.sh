@@ -45,7 +45,7 @@ __git_sync_copy_files() {
   mkdir -p "$repo_dir/.bash.d"
 
   # Exclude root files and folders from the subfolder mirror so they do not duplicate
-  rsync -a --exclude "config/config.yaml" --exclude "config/.env.cache" --exclude "config/.env.cache" --exclude "README.md" --exclude ".bashrc" --exclude "install.sh" --exclude ".gitignore" --exclude ".github" --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+  rsync -a --exclude "config/config.yaml" --exclude "config/.env.cache" --exclude "README.md" --exclude ".bashrc" --exclude "install.sh" --exclude ".gitignore" --exclude ".github" --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
   # Explicitly copy individual root files to the repository root for GitHub
   for f in README.md .bashrc install.sh .gitignore; do
@@ -170,11 +170,14 @@ vcs-sync-profile() {
   local repo_dir="$SYNC_REPO_DIR"
   local remote_url="${SYNC_REPO_URL:-}"
 
-  [[ -z "$remote_url" || "$remote_url" == "YOUR_SYNC_REPO_URL" || "$remote_url" == "null" ]] &&
-    {
-      echo "🚨 Error: No remote sync repository URL configured. Please run: add-sync-url \"your-git-remote-url\""
-      return 1
-    }
+  if [[ -z "$remote_url" || "$remote_url" == "YOUR_SYNC_REPO_URL" || "$remote_url" == "null" ]]; then
+    echo -e "\n\033[1;33m⚠️  Profile Sync Not Configured\033[0m"
+    echo -e "The \033[1mvcs-sync-profile\033[0m feature automatically versions and pushes your terminal configuration to a remote Git repository."
+    echo "If you downloaded this profile as a standalone ZIP and do not wish to sync it, you can safely ignore this command."
+    echo -e "\nTo enable syncing, link an empty remote Git repository by running:"
+    echo -e "  \033[1;36madd-sync-url \"git@github.com:username/my-terminal-repo.git\"\033[0m\n"
+    return 1
+  fi
 
   echo "🔄 Syncing bash configuration to $repo_dir..."
 
@@ -498,7 +501,9 @@ vcs-pull-profile() {
   local repo_dir="$SYNC_REPO_DIR"
 
   if [ -z "$repo_dir" ] || [ ! -d "$repo_dir/.git" ]; then
-    echo -e "${CB_RED}🚨 Error: Sync repository not found at ${repo_dir:-unknown}.${C_RESET}"
+    echo -e "\n\033[1;33m⚠️  Profile Sync Not Configured\033[0m"
+    echo "Your environment is currently running as a standalone local installation."
+    echo -e "To pull updates from a remote repository, you must first configure a sync URL using \033[1madd-sync-url\033[0m and push your initial commit.\n"
     return 1
   fi
 
