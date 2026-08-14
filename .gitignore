@@ -1,4 +1,2 @@
-.bash.d/.mt_data.tsv
-.bash.d/.*cache*
-.bash.d/.*_pending
+.bash.d/config/.env.cache
 .bash.d/config/config.yaml
