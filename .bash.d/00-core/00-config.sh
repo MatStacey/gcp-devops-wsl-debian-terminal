@@ -316,3 +316,52 @@ mt-set-auto-cleanup-days() { # => Config: Modifies the threshold in days before 
   export AUTO_CLEANUP_DAYS="$1"
   echo "✅ Auto-cleanup threshold set to $1 days."
 }
+
+mt-set-local-ai-url() { # => Config: Set Local AI base URL [Usage: mt-set-local-ai-url "http://localhost:11434/v1"]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [ -z "$1" ]; then
+    echo "Usage: mt-set-local-ai-url <url>"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "ai.local" "base_url" "$1"
+  export LOCAL_AI_BASE_URL="$1"
+  echo "✅ Local AI Base URL set to $1."
+}
+
+mt-set-local-ai-model() { # => Config: Set Local AI model [Usage: mt-set-local-ai-model "llama3.2"]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [ -z "$1" ]; then
+    echo "Usage: mt-set-local-ai-model <model>"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "ai.local" "model" "$1"
+  export LOCAL_AI_MODEL="$1"
+  echo "✅ Local AI model set to $1."
+}
+
+mt-set-local-ai-api-key() { # => Config: Set Local AI API key [Usage: mt-set-local-ai-api-key ["key"]]
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local key="$1"
+  # Passing the key as an argument lands it in shell history. Prefer the
+  # hidden prompt; the positional form still works for scripting.
+  if [ -z "$key" ]; then
+    read -rsp "Enter Local AI API Key (input hidden): " key
+    echo
+  fi
+  if [ -z "$key" ]; then
+    echo "Usage: mt-set-local-ai-api-key [<key>]"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "ai.local" "api_key" "$key"
+  export LOCAL_AI_API_KEY="$key"
+  echo "✅ Local AI API Key added to $CONFIG_FILE."
+}
