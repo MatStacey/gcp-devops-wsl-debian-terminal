@@ -13,6 +13,8 @@ __bootstrap_apt() {
   command -v shfmt > /dev/null 2>&1 || apt_deps+=("shfmt")
   command -v file > /dev/null 2>&1 || apt_deps+=("file")
   command -v zoxide > /dev/null 2>&1 || apt_deps+=("zoxide")
+  command -v pip3 > /dev/null 2>&1 || apt_deps+=("python3-pip")
+  command -v pipx > /dev/null 2>&1 || apt_deps+=("pipx")
   python3 -c "import yaml" 2> /dev/null || apt_deps+=("python3-yaml")
 
   if [ ${#apt_deps[@]} -gt 0 ]; then
@@ -51,6 +53,7 @@ __bootstrap_brew() {
   command -v yq > /dev/null 2>&1 || brew_deps+=("yq")
   command -v eza > /dev/null 2>&1 || brew_deps+=("eza")
   command -v zoxide > /dev/null 2>&1 || brew_deps+=("zoxide")
+  command -v pipx > /dev/null 2>&1 || brew_deps+=("pipx")
   python3 -c "import yaml" 2> /dev/null || brew_deps+=("pyyaml")
 
   if [ ${#brew_deps[@]} -gt 0 ]; then
