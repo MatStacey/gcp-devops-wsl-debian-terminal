@@ -165,7 +165,7 @@ __git_ai_preflight_check() {
 #######################################
 # Git: Ask AI to generate a comprehensive .gitignore for the current project
 #######################################
-git-ai-gitignore() {
+mt-ai-gitignore() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -182,7 +182,7 @@ git-ai-gitignore() {
 #######################################
 # Git: Ask AI to generate a comprehensive README.md for the current project
 #######################################
-git-ai-readme() {
+mt-ai-readme() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0

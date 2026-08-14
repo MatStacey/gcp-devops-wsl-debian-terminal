@@ -145,6 +145,8 @@ These utilities are exclusive to this profile and control environment configurat
 | `mt-export-cleanup` | Cleans up and prunes old export files. |
 | `mt-toggle-auto-cleanup` | Toggles the background execution of the export cleanup script. |
 | `mt-set-auto-cleanup-days` | Modifies the threshold in days before exports are automatically deleted. |
+| `mt-ai-gitignore` | Function | Ask AI to generate a comprehensive `.gitignore` for the current project. |
+| `mt-ai-readme` | Function | Ask AI to generate a comprehensive `README.md` for the current project. |
 
 ---
 
@@ -224,8 +226,6 @@ These utilities are exclusive to this profile and control environment configurat
 | --- | --- | --- |
 | `git` | Function | Wrapper to force 'clone' into `~/vcs/` from anywhere. |
 | `git-ai-pc` | Function | Add all files, intelligently group via AI (respecting active provider), and push. |
-| `git-ai-gitignore` | Function | Ask AI to generate a comprehensive `.gitignore` for the current project. |
-| `git-ai-readme` | Function | Ask AI to generate a comprehensive `README.md` for the current project. |
 | `git-feature` | Function | Create and checkout a new feature branch using the configured prefix. |
 | `git-cleanup` | Function | Safely delete all local branches merged into the default branch. |
 | `git-update` | Function | Fetch upstream and rebase the current branch onto the default branch. |
