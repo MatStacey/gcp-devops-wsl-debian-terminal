@@ -64,6 +64,7 @@
 
   [1;38;2;241;250;140m[MyTools Documentation & Runner][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__bashd_latest_mod      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPrints the most recent mtime across all .bash.d/*.sh files, used to[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-get-version          [0m [38;2;98;114;164m→[0m [38;2;248;248;242mSystem: Print the current local version of the terminal profile[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-refresh-caches       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mSystem: Forcefully clear and rebuild all background caches (.env, mytools, updates)[0m
 
   [1;38;2;241;250;140m[Path & URL Launchers (Config-Driven)][0m

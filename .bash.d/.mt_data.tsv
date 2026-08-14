@@ -37,6 +37,7 @@ func	LLM Code Export Utilities	mt-export-cloudrun	LLM: Exports Python GCF codeba
 func	LLM Code Export Utilities	mt-export-shell	LLM: Exports local .sh files
 func	LLM Code Export Utilities	mt-export-terraform	LLM: Exports local TF codebase
 func	MyTools Documentation & Runner	__bashd_latest_mod	Prints the most recent mtime across all .bash.d/*.sh files, used to
+func	MyTools Documentation & Runner	mt-get-version	System: Print the current local version of the terminal profile
 func	MyTools Documentation & Runner	mt-refresh-caches	System: Forcefully clear and rebuild all background caches (.env, mytools, updates)
 func	Path & URL Launchers (Config-Driven)	cd-ai	Config: Change directory to unified AI workspace
 func	Path & URL Launchers (Config-Driven)	cd-sync	Config: Change directory to sync repository root

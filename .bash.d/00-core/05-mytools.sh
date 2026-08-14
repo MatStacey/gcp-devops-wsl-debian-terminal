@@ -275,6 +275,24 @@ _mt_help_completions() {
 complete -F _mt_help_completions mt-help
 
 #######################################
+# System: Print the current local version of the terminal profile
+#######################################
+mt-get-version() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  if [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
+    local current_version
+    current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "Local")
+    echo -e "${CB_CYAN}Profile Version:${C_RESET} ${current_version}"
+  else
+    echo -e "${CB_CYAN}Profile Version:${C_RESET} Local (Unversioned/Standalone)"
+  fi
+}
+
+#######################################
 # System: Forcefully clear and rebuild all background caches (.env, mytools, updates)
 #######################################
 mt-refresh-caches() {
