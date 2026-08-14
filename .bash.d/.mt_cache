@@ -87,6 +87,7 @@
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mwin-vcs                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mOpen ~/vcs in the platform's native file manager[0m
 
   [1;38;2;241;250;140m[System Update Check][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__check_profile_updates [0m [38;2;98;114;164m→[0m [38;2;248;248;242mSystem: Asynchronously check for profile updates from the remote repository[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mdocker-ls               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mDocker: List all running containers in a clean table format[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mdocker-nuke             [0m [38;2;98;114;164m→[0m [38;2;248;248;242mDocker: Aggressive cleanup of all unused containers, images, and volumes[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mdocker-reboot-all       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mDocker: Restart all currently running Docker containers[0m

@@ -52,6 +52,7 @@ func	System & Navigation	clip	Pipe output to the system clipboard (e.g. cat file
 func	System & Navigation	win	Open current directory in the platform's native file manager
 func	System & Navigation	win-export	Open ~/vcs/personal/exports in the platform's native file manager
 func	System & Navigation	win-vcs	Open ~/vcs in the platform's native file manager
+func	System Update Check	__check_profile_updates	System: Asynchronously check for profile updates from the remote repository
 func	System Update Check	docker-ls	Docker: List all running containers in a clean table format
 func	System Update Check	docker-nuke	Docker: Aggressive cleanup of all unused containers, images, and volumes
 func	System Update Check	docker-reboot-all	Docker: Restart all currently running Docker containers
