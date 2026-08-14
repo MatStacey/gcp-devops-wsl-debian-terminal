@@ -9,35 +9,48 @@ def get_config_path():
         os.environ.get("CONFIG_FILE", "~/.bash.d/config/config.yaml"))
 
 
-def load_env():
-    path = get_config_path()
-    home = os.environ.get("HOME", "")
-    d = {}
+def _export(var_name, value, home_dir, to_lower=False, resolve_home=False):
+    """Helper to dry up all the print/shlex/str boilerplate."""
+    val_str = str(value)
+    if to_lower:
+        val_str = val_str.lower()
+    if resolve_home and val_str.startswith("~/"):
+        val_str = val_str.replace("~", home_dir, 1)
+    print(f"export {var_name}={shlex.quote(val_str)}")
 
+
+def _read_yaml_config(path):
+    """Handles PyYAML imports and safe file loading."""
     try:
         import yaml
     except ImportError:
         print(
             "echo -e '\\033[01;31m🚨 Error: PyYAML is missing. Please run \"bootstrap\" to install it.\\033[0m' >&2"
         )
+        return None
+
+    if not os.path.exists(path):
+        return {}
+
+    try:
+        with open(path, "r") as f:
+            return yaml.safe_load(f) or {}
+    except (yaml.YAMLError, OSError) as e:
+        print(f"echo -e '\\033[01;31m🚨 Error parsing config.yaml: {e}\\033[0m' >&2")
+        return None
+
+
+def load_env():
+    path = get_config_path()
+    home = os.environ.get("HOME", "")
+
+    d = _read_yaml_config(path)
+    if d is None:
         return
 
-    if os.path.exists(path):
-        try:
-            with open(path, "r") as f:
-                d = yaml.safe_load(f) or {}
-        except (yaml.YAMLError, OSError) as e:
-            print(f"echo -e '\\033[01;31m🚨 Error parsing config.yaml: {e}\\033[0m' >&2")
-            return
-
-    # Helper to dry up all the print/shlex/str boilerplate
+    # Helper lambda to avoid passing home repeatedly
     def export(var_name, value, to_lower=False, resolve_home=False):
-        val_str = str(value)
-        if to_lower:
-            val_str = val_str.lower()
-        if resolve_home and val_str.startswith("~/"):
-            val_str = val_str.replace("~", home, 1)
-        print(f"export {var_name}={shlex.quote(val_str)}")
+        _export(var_name, value, home, to_lower, resolve_home)
 
     # Extract Blocks
     sys_cfg = d.get("system") or {}
@@ -135,9 +148,11 @@ def load_env():
         paths_cfg.get("scripts_iam", "~/vcs/scripts/iam"),
         resolve_home=True,
     )
-    export("DOCKER_ROOT_DIR",
-           paths_cfg.get("docker_root", "~/.docker"),
-           resolve_home=True)
+    export(
+        "DOCKER_ROOT_DIR",
+        paths_cfg.get("docker_root", "~/.docker"),
+        resolve_home=True,
+    )
     export("THEMES_DIR", f"{home}/.bash.d/config/themes")
 
     # Docker

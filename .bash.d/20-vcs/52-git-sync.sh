@@ -4,6 +4,15 @@
 # ------------------------------------------
 
 #######################################
+# Clones and initializes a repository into the sync directory.
+# Arguments:
+#   $1 - The target repository directory path.
+#   $2 - The remote origin URL to bind to.
+# Outputs:
+#   Writes clone or init status to STDOUT.
+# Returns:
+#   0 on success.
+#######################################
 __git_sync_init_repo() {
   local repo_dir="$1" remote_url="$2"
 
@@ -22,6 +31,13 @@ __git_sync_init_repo() {
     git -C "$repo_dir" remote set-url origin "$remote_url" 2> /dev/null || git -C "$repo_dir" remote add origin "$remote_url"
 }
 
+#######################################
+# Synchronizes the active bash config files over to the tracked git directory.
+# Strips sensitive yaml keys dynamically via rsync exclusions.
+# Globals:
+#   HOME
+# Arguments:
+#   $1 - The target repository directory path.
 #######################################
 __git_sync_copy_files() {
   local repo_dir="$1"
@@ -52,6 +68,17 @@ __git_sync_copy_files() {
   )
 }
 
+#######################################
+# Git: Sync local bash configs to terminal repo and push (AI-powered systematic commits)
+# Globals:
+#   SYNC_REPO_DIR
+#   SYNC_REPO_URL
+# Arguments:
+#   $1 - Optional string message. If empty, triggers AI systematic feature grouping.
+# Outputs:
+#   Writes sync, diff, and execution state to STDOUT.
+# Returns:
+#   0 on success, 1 on misconfigured URL path.
 #######################################
 mt-push-update() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
@@ -117,6 +144,8 @@ mt-push-update() {
   )
 }
 
+#######################################
+# Git: Pull latest profile changes from remote and sync to local workspace
 #######################################
 mt-get-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then

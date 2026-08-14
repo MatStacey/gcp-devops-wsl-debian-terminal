@@ -4,46 +4,6 @@
 # ------------------------------------------
 
 #######################################
-# Clones and initializes a repository into the sync directory.
-# Arguments:
-#   $1 - The target repository directory path.
-#   $2 - The remote origin URL to bind to.
-# Outputs:
-#   Writes clone or init status to STDOUT.
-# Returns:
-#   0 on success.
-#######################################
-# Synchronizes the active bash config files over to the tracked git directory.
-# Strips sensitive yaml keys dynamically via rsync exclusions.
-# Globals:
-#   HOME
-# Arguments:
-#   $1 - The target repository directory path.
-#######################################
-# Analyzes git diffs and calls the Gemini API to systematically generate
-# separate commits for each logical feature/change.
-# Globals:
-#   GEMINI_API_KEY, AI_MAX_DIFF_BYTES, GEMINI_VERSION
-# Arguments:
-#   $1 - The target repository directory path.
-# Outputs:
-#   Executes git add and git commit commands sequentially.
-# Returns:
-#   0 on success or graceful fallback bypass.
-#######################################
-# Git: Sync local bash configs to terminal repo and push (AI-powered systematic commits)
-# Globals:
-#   SYNC_REPO_DIR
-#   SYNC_REPO_URL
-# Arguments:
-#   $1 - Optional string message. If empty, triggers AI systematic feature grouping.
-# Outputs:
-#   Writes sync, diff, and execution state to STDOUT.
-# Returns:
-#   0 on success, 1 on misconfigured URL path.
-#######################################
-# Git: Add all files, intelligently group via AI, and push [Usage: git-ai-pc [optional message]]
-#######################################
 # Git: Create and checkout a new feature branch
 # Globals:
 #   GIT_FEATURE_PREFIX
@@ -283,14 +243,3 @@ git-nuke() {
     echo "🛑 Aborted."
   fi
 }
-
-#######################################
-# Git: Pull latest profile changes from remote and sync to local workspace
-#######################################
-# Git: Preflight safety checks for AI file generation
-# Arguments:
-#   $1 - The target filename (e.g., .gitignore, README.md)
-#######################################
-# Git: Ask AI to generate a comprehensive .gitignore for the current project
-#######################################
-# Git: Ask AI to generate a comprehensive README.md for the current project
