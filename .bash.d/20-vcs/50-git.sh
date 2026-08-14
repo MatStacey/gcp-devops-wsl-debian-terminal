@@ -208,7 +208,11 @@ push-profile-update() {
 
     if git push origin HEAD; then
       echo "🚀 Successfully pushed updates to remote."
-      git-web
+      read -p "🌐 Open repository in browser? [Y/n] " -n 1 -r
+      echo
+      if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+        git-web
+      fi
     else
       echo "🚨 Error: Failed to push updates to remote." >&2
       return 1
