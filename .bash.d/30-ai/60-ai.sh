@@ -288,6 +288,8 @@ ai() {
     content=$(__ai_query_gemini "$prompt" "$title" "$context_file" "$req_version" "$req_extended")
   elif [ "$provider" = "claude" ]; then
     content=$(__ai_query_claude "$prompt" "$title" "$context_file" "$req_version")
+  elif [ "$provider" = "local" ]; then
+    content=$(__ai_query_local "$prompt" "$title" "$context_file" "$req_version")
   else
     echo "🚨 Error: Invalid provider '$provider'." >&2
     return 1
@@ -334,4 +336,68 @@ else: print(text)
 
   echo -e "\e[38;5;208m${provider^}:\e[0m $msg"
   echo -e "\e[32mSaved to:\e[0m $saved_path"
+}
+
+#######################################
+# Formats payload and queries a local LLM endpoint (OpenAI-compatible).
+# Globals:
+#   LOCAL_AI_BASE_URL, LOCAL_AI_API_KEY, LOCAL_AI_MODEL, AI_SYSTEM_PROMPT
+# Arguments:
+#   $1 - The user prompt string.
+#   $2 - The generated output title context.
+#   $3 - Path to the compiled context file.
+#   $4 - Override model version argument.
+# Outputs:
+#   Writes raw JSON response payload from the local LLM to STDOUT.
+# Returns:
+#   0 on success, 1 on curl failure.
+#######################################
+__ai_query_local() {
+  local prompt="$1" title="$2" context_file="$3" req_version="$4"
+  local base_url="${LOCAL_AI_BASE_URL:-http://localhost:11434/v1}"
+  local api_key="${LOCAL_AI_API_KEY:-ollama}"
+  local final_model="${req_version:-${LOCAL_AI_MODEL:-llama3.2}}"
+
+  local system_prompt="${AI_SYSTEM_PROMPT:-You are a helpful assistant.}"
+  local user_content=""
+
+  if [ -f "$context_file" ]; then
+    local ctx_content
+    ctx_content=$(command cat "$context_file")
+    user_content="${title:+Requested Title: $title\n}Prompt: $prompt\n\n=== LOCAL DIRECTORY CONTEXT ===\n$ctx_content"
+  else
+    user_content="${title:+Requested Title: $title\n}Prompt: $prompt"
+  fi
+
+  local payload_file
+  payload_file=$(mktemp)
+  jq -n \
+    --arg model "$final_model" \
+    --arg sys "$system_prompt" \
+    --arg usr "$user_content" \
+    '{
+      model: $model,
+      messages: [
+        {role: "system", content: $sys},
+        {role: "user", content: $usr}
+      ]
+    }' > "$payload_file"
+
+  echo "⏳ Querying Local LLM ($final_model at $base_url)..." >&2
+  local response
+  response=$(curl -s -X POST "${base_url}/chat/completions" \
+    -H "Authorization: Bearer ${api_key}" \
+    -H "Content-Type: application/json" \
+    -d @"$payload_file")
+
+  rm -f "$payload_file"
+  local content
+  content=$(echo "$response" | jq -r '.choices[0].message.content // empty')
+
+  [ -z "$content" ] && {
+    echo "🚨 Error: Failed to get a valid response from Local LLM." >&2
+    echo "$response" | jq -r '.error.message // "Unknown error"' >&2
+    return 1
+  }
+  echo "$content"
 }

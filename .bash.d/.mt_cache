@@ -14,6 +14,7 @@
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m_ai_get_next_version    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mCalculates the next available minor patch version for a generated file.[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_query_claude       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats payload and queries the Anthropic Claude API.[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_query_gemini       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats payload and queries the Google Gemini API.[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_query_local        [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats payload and queries a local LLM endpoint (OpenAI-compatible).[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_save_output        [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats and saves the generated code from LLMs into standard directories.[0m
 
   [1;38;2;241;250;140m[Configuration Management][0m
@@ -68,6 +69,7 @@
   [1;38;2;241;250;140m[Path & URL Launchers (Config-Driven)][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mcd-ai                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Change directory to unified AI workspace[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mcd-sync                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Change directory to sync repository root[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mide                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open current directory in the default IDE (VSCode/IntelliJ)[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mweb-view-profile-homepage[0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open sync repository remote URL in default web browser[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mwin-ai                  [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open unified AI workspace in the platform's native file manager[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mwin-docker              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open Docker root directory in the platform's native file manager[0m

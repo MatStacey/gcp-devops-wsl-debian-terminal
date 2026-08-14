@@ -189,8 +189,8 @@ set-default-ai() { # => Config: Set default AI model [Usage: set-default-ai "gem
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  if [[ "$1" != "gemini" && "$1" != "claude" ]]; then
-    echo "Usage: set-default-ai <gemini|claude>"
+  if [[ "$1" != "gemini" && "$1" != "claude" && "$1" != "local" ]]; then
+    echo "Usage: set-default-ai <gemini|claude|local>"
     return 1
   fi
   python3 "$CONFIG_MANAGER" update "ai" "default_provider" "$1"

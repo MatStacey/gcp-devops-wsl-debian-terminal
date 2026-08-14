@@ -82,12 +82,19 @@ __git_sync_copy_files() {
 #######################################
 __git_sync_ai_commit() {
   local repo_dir="$1"
+  local provider="${DEFAULT_AI:-gemini}"
 
-  [[ -z "${GEMINI_API_KEY:-}" || "$GEMINI_API_KEY" = "YOUR_GEMINI_API_KEY" ]] &&
-    {
+  if [ "$provider" = "gemini" ]; then
+    [[ -z "${GEMINI_API_KEY:-}" || "$GEMINI_API_KEY" = "YOUR_GEMINI_API_KEY" ]] && {
       echo "ℹ️ AI commit skipped: GEMINI_API_KEY is not set." >&2
       return 1
     }
+  elif [ "$provider" = "claude" ]; then
+    [[ -z "${CLAUDE_API_KEY:-}" || "$CLAUDE_API_KEY" = "YOUR_CLAUDE_API_KEY" ]] && {
+      echo "ℹ️ AI commit skipped: CLAUDE_API_KEY is not set." >&2
+      return 1
+    }
+  fi
 
   local bytes_limit="${AI_MAX_DIFF_BYTES:-4000}"
   local diff_content
@@ -95,20 +102,25 @@ __git_sync_ai_commit() {
 
   [ -z "$diff_content" ] && return 0
 
-  echo "🤖 Analyzing changes to generate systematic feature commits..." >&2
+  echo "🤖 Analyzing changes to generate systematic feature commits using $provider..." >&2
 
   local ai_prompt="Analyze this git diff and group the changes into logical features/tasks. Return ONLY a valid JSON array of objects representing separate commits. Each object must have a 'files' array (exact file paths from the diff) and a 'message' string (conventional commit format, < 60 chars).\n\nExample Output:\n[\n  { \"files\": [\"path/to/file1\"], \"message\": \"feat: added new module\" }\n]\n\nGit Diff:\n\n$diff_content"
 
-  local prompt_json
-  prompt_json=$(jq -n --arg p "$ai_prompt" '{ contents: [{ parts: [{ text: $p }] }] }')
-  local api_url="https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_VERSION:-gemini-3.6-flash}:generateContent"
-
-  local response
-  response=$(curl -s -X POST "$api_url" -H "x-goog-api-key: ${GEMINI_API_KEY}" -H 'Content-Type: application/json' -d "$prompt_json")
+  local response=""
+  if [ "$provider" = "gemini" ]; then
+    response=$(__ai_query_gemini "$ai_prompt" "" "" "" "")
+  elif [ "$provider" = "claude" ]; then
+    response=$(__ai_query_claude "$ai_prompt" "" "" "")
+  elif [ "$provider" = "local" ]; then
+    response=$(__ai_query_local "$ai_prompt" "" "" "")
+  else
+    echo "🚨 Error: Invalid provider '$provider'." >&2
+    return 1
+  fi
 
   # Extract JSON Array, stripping any conversational markdown wrappers
   local generated_json
-  generated_json=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty' | python3 -c '
+  generated_json=$(echo "$response" | python3 -c '
 import sys, re
 text = sys.stdin.read()
 match = re.search(r"\[.*\]", text, re.DOTALL)

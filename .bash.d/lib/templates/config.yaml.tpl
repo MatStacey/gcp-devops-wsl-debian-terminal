@@ -15,6 +15,10 @@ ai:
   claude:
     api_key: YOUR_CLAUDE_API_KEY
     version: claude-3-7-sonnet-latest
+  local:
+    base_url: "http://localhost:11434/v1"
+    model: "llama3.2"
+    api_key: "ollama"
 
 exports:
   auto_cleanup: true

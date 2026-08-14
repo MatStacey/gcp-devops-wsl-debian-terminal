@@ -5,6 +5,7 @@ func	Centralized Theme & Colors	__ai_build_context	Compiles local codebase files
 func	Centralized Theme & Colors	_ai_get_next_version	Calculates the next available minor patch version for a generated file.
 func	Centralized Theme & Colors	__ai_query_claude	Formats payload and queries the Anthropic Claude API.
 func	Centralized Theme & Colors	__ai_query_gemini	Formats payload and queries the Google Gemini API.
+func	Centralized Theme & Colors	__ai_query_local	Formats payload and queries a local LLM endpoint (OpenAI-compatible).
 func	Centralized Theme & Colors	__ai_save_output	Formats and saves the generated code from LLMs into standard directories.
 func	Configuration Management	get-gemini-status	Prints the current Gemini API model version and extended reasoning mode toggle.
 func	Container Orchestration	kubectl	Kubectl wrapper (preserves args)
@@ -39,6 +40,7 @@ func	MyTools Documentation & Runner	__bashd_latest_mod	Prints the most recent mt
 func	MyTools Documentation & Runner	mt-refresh-caches	System: Forcefully clear and rebuild all background caches (.env, mytools, updates)
 func	Path & URL Launchers (Config-Driven)	cd-ai	Config: Change directory to unified AI workspace
 func	Path & URL Launchers (Config-Driven)	cd-sync	Config: Change directory to sync repository root
+func	Path & URL Launchers (Config-Driven)	ide	Config: Open current directory in the default IDE (VSCode/IntelliJ)
 func	Path & URL Launchers (Config-Driven)	web-view-profile-homepage	Config: Open sync repository remote URL in default web browser
 func	Path & URL Launchers (Config-Driven)	win-ai	Config: Open unified AI workspace in the platform's native file manager
 func	Path & URL Launchers (Config-Driven)	win-docker	Config: Open Docker root directory in the platform's native file manager
