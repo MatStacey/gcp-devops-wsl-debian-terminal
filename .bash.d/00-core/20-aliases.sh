@@ -30,9 +30,6 @@ alias mt='mytools'
 #######################################
 alias reload='source ~/.bashrc'
 #######################################
-# Reload Bash profile
-#######################################
-#######################################
 # Update, Upgrade, Boostrap, Reload
 #######################################
 alias sys-install-reload='sys-update;bootstrap;reload'
