@@ -273,3 +273,29 @@ _mt_help_completions() {
   COMPREPLY=($(compgen -W "$tools" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 complete -F _mt_help_completions mt-help
+
+#######################################
+# System: Forcefully clear and rebuild all background caches (.env, mytools, updates)
+#######################################
+mt-refresh-caches() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  echo -e "${CB_YELLOW}🧹 Clearing background caches...${C_RESET}"
+  rm -f "$HOME/.bash.d/config/.env.cache"
+  rm -f "$HOME/.bash.d/.mt_cache" "$HOME/.bash.d/.mt_cache.time" "$HOME/.bash.d/.mt_data.tsv"
+  rm -f "$HOME/.bash.d/.update_check_cache" "$HOME/.bash.d/.update_pending"
+
+  echo -e "${CB_BLUE}🔄 Rebuilding configurations and tool indexes...${C_RESET}"
+  if [ -f "$HOME/.bash.d/lib/config_manager.py" ]; then
+    python3 "$HOME/.bash.d/lib/config_manager.py" load-env > "$HOME/.bash.d/config/.env.cache"
+    chmod 600 "$HOME/.bash.d/config/.env.cache" 2> /dev/null
+  fi
+
+  __rebuild_mytools_cache
+
+  source "$HOME/.bashrc"
+  echo -e "${CB_GREEN}✅ All system caches refreshed successfully.${C_RESET}"
+}
