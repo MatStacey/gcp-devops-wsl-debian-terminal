@@ -8,7 +8,7 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 Before installing this terminal environment, ensure your local workstation meets the following baseline requirements:
 
-*   **Operating System:** Officially supports WSL2 (Debian/Ubuntu), macOS (via Homebrew), and native Linux.
+*   **Operating System:** Officially supports WSL2 (Debian/Ubuntu), macOS (via Homebrew), and native Linux[cite: 8].
 *   **Visual Studio Code:** Required for seamless IDE integration. Ensure the **WSL Extension** is installed if running on Windows.
 *   **VSCode Extension Pack:** It is highly recommended to install the standardized extension pack to ensure all linting, formatting, and infrastructure integrations (like Terraform and Checkov) function perfectly alongside this terminal environment. You can install it from the dedicated repository here: [MatStacey/vscode-ext-pack](https://github.com/MatStacey/vscode-ext-pack).
 *   **Git:** Required to clone the initial repository and handle ongoing AI-assisted profile synchronization.
@@ -17,14 +17,14 @@ Before installing this terminal environment, ensure your local workstation meets
 
 ## 🚀 Key Features
 
-*   **Cross-Platform Compatibility:** Native OS detection dynamically maps clipboard (`pbcopy`, `clip.exe`), file explorer (`open`, `explorer.exe`), and package manager (`brew`, `apt`) utilities based on your host architecture.
+*   **Cross-Platform Compatibility:** Native OS detection dynamically maps clipboard (`pbcopy`, `clip.exe`), file explorer (`open`, `explorer.exe`), and package manager (`brew`, `apt`) utilities based on your host architecture[cite: 8].
 *   **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking optimized for minimal latency by prioritizing native file reads over subshells where possible. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
-*   **Asynchronous Update Checks:** Silently checks for system package updates, as well as upstream terminal profile updates, in the background on a configurable TTL timer without blocking terminal initialization.
-*   **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment.
-*   **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-select-theme`).
-*   **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT/Homebrew packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`, `zoxide`).
-*   **Multi-Provider AI Architecture:** Consult universal AI via the `ai` command with support for **Gemini**, **Claude**, and **Local LLMs** (via Ollama or any OpenAI-compatible endpoint). Background workflows like `git-ai-pc` dynamically respect your active `DEFAULT_AI` setting.
-*   **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` with configurable thread limits to concurrently validate and run Checkov security scans across all Terraform modules.
+*   **Asynchronous Update Checks:** Silently checks for system package updates, as well as upstream terminal profile updates, in the background on a configurable TTL timer without blocking terminal initialization[cite: 8].
+*   **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment[cite: 8].
+*   **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-select-theme`)[cite: 8].
+*   **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT/Homebrew packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`, `zoxide`)[cite: 8].
+*   **Multi-Provider AI Architecture:** Consult universal AI via the `ai` command with support for **Gemini**, **Claude**, and **Local LLMs** (via Ollama or any OpenAI-compatible endpoint). Background workflows like `git-ai-pc` dynamically respect your active `DEFAULT_AI` setting[cite: 8].
+*   **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` with configurable thread limits to concurrently validate and run Checkov security scans across all Terraform modules[cite: 8].
 
 ---
 
@@ -80,8 +80,10 @@ mt-add-gemini-key
 # For Claude
 mt-add-claude-key
 
-# Or switch to a local LLM (Ollama)
+# Or switch to a local LLM (e.g., Ollama)
 mt-set-default-ai local
+mt-set-local-ai-url "http://localhost:11434/v1"
+mt-set-local-ai-model "llama3.2"
 
 ```
 
@@ -130,6 +132,9 @@ These utilities are exclusive to this profile and control environment configurat
 | `mt-open-homepage` | Open the sync repository's remote URL in the default web browser. |
 | `mt-set-default-ide` | Sets the default local IDE for launch commands (`vscode` | `intellij`). |
 | `mt-set-default-ai` | Sets the default LLM provider for the 'ai' command suite (`gemini` | `claude` | `local`). |
+| `mt-set-local-ai-url` | Sets the Local AI base URL (e.g., `http://localhost:11434/v1`). |
+| `mt-set-local-ai-model` | Sets the Local AI model (e.g., `llama3.2`). |
+| `mt-set-local-ai-api-key` | Securely stores the Local AI API key (often unused/dummy for local servers). |
 | `mt-toggle-ai` | Toggles global AI prompt and integration flags. |
 | `mt-get-gemini-status` | Prints the current Gemini API model version and extended reasoning mode toggle. |
 | `mt-toggle-gemini-extended` | Toggles the Gemini extended reasoning mode flag. |
@@ -203,7 +208,7 @@ These utilities are exclusive to this profile and control environment configurat
 | `docker-sandbox` | Function | Instantly spins up a temporary container sandbox (`--rm`). |
 | `docker-shell` | Function | Interactive fuzzy-finder to instantly `exec` into a running container. |
 | `docker-tail` | Function | Multi-select (`TAB`) several containers via `fzf` to concurrently tail logs. |
-| `k` | Alias | `kubectl` wrapper |
+| `k` | Alias | `kubectl` wrappe. |
 | `ka` / `kak` / `krm` | Aliases | Apply (`-f`, `-k`) or Delete resources. |
 | `kns` | Function | View or interactively set (`TAB` completion) the default namespace context. |
 | `kg*` / `kd*` | Aliases | Get or Describe resources (`kgpo`, `kgdep`, `kgsvc`, `kdcm`, `kdsec`, etc.). |
