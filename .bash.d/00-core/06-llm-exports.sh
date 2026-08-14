@@ -27,24 +27,32 @@ __vcs_core_export() {
   local export_prefix="$1"
   local allow_regex="$2"
   local block_regex="$3"
+  local search_dir="${4:-.}"
+
   local root_dir
   root_dir=$(basename "$PWD")
+  if [ "$search_dir" != "." ]; then
+    # Sanitize the sub-directory path to safely append it to the filename
+    local safe_sub
+    safe_sub=$(echo "$search_dir" | sed -e 's/^\.\///' -e 's/[^a-zA-Z0-9]/-/g' -e 's/--*/-/g' -e 's/^-//' -e 's/-$//')
+    [ -n "$safe_sub" ] && root_dir="${root_dir}-${safe_sub}"
+  fi
 
-  local timestamp
-  timestamp=$(date +"%d-%m-%Y_%H-%M-%S")
+  local datetime_str
+  datetime_str=$(date +"%Y-%m-%d_%H-%M-%S")
   local target_dir="${AI_WORKSPACE_DIR}/context-exports/${root_dir}-exports"
   mkdir -p "$target_dir"
 
   local patch=0
-  while [[ -f "${target_dir}/${export_prefix}-${timestamp}-v1.0.${patch}.txt" ]]; do
+  while [[ -f "${target_dir}/${datetime_str}-${root_dir}-${export_prefix}-v1.0.${patch}.txt" ]]; do
     patch=$((patch + 1))
   done
 
-  local export_file="${target_dir}/${export_prefix}-${timestamp}-v1.0.${patch}.txt"
+  local export_file="${target_dir}/${datetime_str}-${root_dir}-${export_prefix}-v1.0.${patch}.txt"
   echo "Compiling codebase into ${export_file}..."
   : > "$export_file"
 
-  find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" -print0 | while IFS= read -r -d '' file; do
+  find "$search_dir" -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" -print0 | while IFS= read -r -d '' file; do
     local clean_file="${file#./}"
     local lower_file="${clean_file,,}"
 
@@ -64,47 +72,115 @@ __vcs_core_export() {
 }
 
 #######################################
-# LLM: Exports all text/code files
+# LLM: Exports all text/code files [Usage: mt-export [-d subdir]]
 #######################################
 mt-export() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __vcs_core_export "all-repo-export" "" "${EXPORT_BLOCKLIST}"
+  local search_dir="."
+  local OPTIND opt
+  while getopts "d:" opt; do
+    case ${opt} in
+      d) search_dir="$OPTARG" ;;
+      \?)
+        echo "Usage: mt-export [-d subdirectory]" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  if [ "$search_dir" != "." ] && [ ! -d "$search_dir" ]; then
+    echo "🚨 Error: Subdirectory '$search_dir' not found." >&2
+    return 1
+  fi
+
+  __vcs_core_export "export" "" "${EXPORT_BLOCKLIST}" "$search_dir"
 }
 
 #######################################
-# LLM: Exports local TF codebase
+# LLM: Exports local TF codebase [Usage: mt-export-terraform [-d subdir]]
 #######################################
 mt-export-terraform() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __vcs_core_export "tf-repo-export" "\.(tf|sh|ya?ml|json|md)$" "${EXPORT_BLOCKLIST}"
+  local search_dir="."
+  local OPTIND opt
+  while getopts "d:" opt; do
+    case ${opt} in
+      d) search_dir="$OPTARG" ;;
+      \?)
+        echo "Usage: mt-export-terraform [-d subdirectory]" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  if [ "$search_dir" != "." ] && [ ! -d "$search_dir" ]; then
+    echo "🚨 Error: Subdirectory '$search_dir' not found." >&2
+    return 1
+  fi
+
+  __vcs_core_export "tf-export" "\.(tf|sh|ya?ml|json|md)$" "${EXPORT_BLOCKLIST}" "$search_dir"
 }
 
 #######################################
-# LLM: Exports local .sh files
+# LLM: Exports local .sh files [Usage: mt-export-shell [-d subdir]]
 #######################################
 mt-export-shell() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __vcs_core_export "bash-export" "\.sh$" "${EXPORT_BLOCKLIST}"
+  local search_dir="."
+  local OPTIND opt
+  while getopts "d:" opt; do
+    case ${opt} in
+      d) search_dir="$OPTARG" ;;
+      \?)
+        echo "Usage: mt-export-shell [-d subdirectory]" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  if [ "$search_dir" != "." ] && [ ! -d "$search_dir" ]; then
+    echo "🚨 Error: Subdirectory '$search_dir' not found." >&2
+    return 1
+  fi
+
+  __vcs_core_export "sh-export" "\.sh$" "${EXPORT_BLOCKLIST}" "$search_dir"
 }
 
 #######################################
-# LLM: Exports Python GCF codebase
+# LLM: Exports Python GCF codebase [Usage: mt-export-cloudrun [-d subdir]]
 #######################################
 mt-export-cloudrun() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __vcs_core_export "gcf-repo-export" "\.(py|tf|sh|ya?ml|json|toml|md|properties|txt)$" "${EXPORT_BLOCKLIST}|(\.egg-info|test-reports|\.pyc$)"
+  local search_dir="."
+  local OPTIND opt
+  while getopts "d:" opt; do
+    case ${opt} in
+      d) search_dir="$OPTARG" ;;
+      \?)
+        echo "Usage: mt-export-cloudrun [-d subdirectory]" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  if [ "$search_dir" != "." ] && [ ! -d "$search_dir" ]; then
+    echo "🚨 Error: Subdirectory '$search_dir' not found." >&2
+    return 1
+  fi
+
+  __vcs_core_export "py-export" "\.(py|tf|sh|ya?ml|json|toml|md|properties|txt)$" "${EXPORT_BLOCKLIST}|(\.egg-info|test-reports|\.pyc$)" "$search_dir"
 }
 
 #######################################

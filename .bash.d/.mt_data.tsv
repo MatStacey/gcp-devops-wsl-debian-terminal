@@ -33,11 +33,11 @@ func	GCP: Resources & Services	gcp-iam-show	IAM: View IAM policy for active proj
 func	GCP: Resources & Services	gcp-ps-pull	PubSub: Pull and auto-ack one message
 func	Google Style Code Formatting	google-fmt	Formats Python and Shell scripts according to Google Style Guides.
 func	Infrastructure as Code	tf-val-all	Terraform: Recursively validate and scan all Terraform directories
-func	LLM Code Export Utilities	mt-export	LLM: Exports all text/code files
+func	LLM Code Export Utilities	mt-export	LLM: Exports all text/code files [Usage: mt-export [-d subdir]]
 func	LLM Code Export Utilities	mt-export-cleanup	LLM: Clean up export files
-func	LLM Code Export Utilities	mt-export-cloudrun	LLM: Exports Python GCF codebase
-func	LLM Code Export Utilities	mt-export-shell	LLM: Exports local .sh files
-func	LLM Code Export Utilities	mt-export-terraform	LLM: Exports local TF codebase
+func	LLM Code Export Utilities	mt-export-cloudrun	LLM: Exports Python GCF codebase [Usage: mt-export-cloudrun [-d subdir]]
+func	LLM Code Export Utilities	mt-export-shell	LLM: Exports local .sh files [Usage: mt-export-shell [-d subdir]]
+func	LLM Code Export Utilities	mt-export-terraform	LLM: Exports local TF codebase [Usage: mt-export-terraform [-d subdir]]
 func	MyTools Documentation & Runner	__bashd_latest_mod	Prints the most recent mtime across all .bash.d/*.sh files, used to
 func	MyTools Documentation & Runner	mt-get-version	System: Print the current local version of the terminal profile
 func	MyTools Documentation & Runner	mt-refresh-caches	System: Forcefully clear and rebuild all background caches (.env, mytools, updates)
@@ -75,11 +75,11 @@ func	Version Control (Git)	git-lg	Git: Print a beautiful, color-coded, single-li
 func	Version Control (Git)	git-nuke	Git: Hard reset and wipe all untracked files on the current branch
 func	Version Control (Git)	git-update	Git: Fetch upstream and rebase the current branch onto the default branch
 func	Version Control (Git)	git-web	Git: Open the current repository in the default web browser
-func	Version Control (Git) - AI Workflows	git-ai-gitignore	Git: Ask AI to generate a comprehensive .gitignore for the current project
 func	Version Control (Git) - AI Workflows	git-ai-pc	Git: Add all files, intelligently group via AI, and push [Usage: git-ai-pc [optional message]]
 func	Version Control (Git) - AI Workflows	__git_ai_preflight_check	Git: Preflight safety checks for AI file generation
-func	Version Control (Git) - AI Workflows	git-ai-readme	Git: Ask AI to generate a comprehensive README.md for the current project
 func	Version Control (Git) - AI Workflows	__git_sync_ai_commit	Analyzes git diffs and calls the Gemini API to systematically generate
+func	Version Control (Git) - AI Workflows	mt-ai-gitignore	Git: Ask AI to generate a comprehensive .gitignore for the current project
+func	Version Control (Git) - AI Workflows	mt-ai-readme	Git: Ask AI to generate a comprehensive README.md for the current project
 func	Version Control (Git) - Profile Synchronization	__git_sync_copy_files	Synchronizes the active bash config files over to the tracked git directory.
 func	Version Control (Git) - Profile Synchronization	__git_sync_init_repo	Clones and initializes a repository into the sync directory.
 func	Version Control (Git) - Profile Synchronization	mt-get-update	Git: Pull latest profile changes from remote and sync to local workspace
