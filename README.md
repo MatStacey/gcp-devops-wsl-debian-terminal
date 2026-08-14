@@ -122,6 +122,7 @@ These utilities are exclusive to this profile and control environment configurat
 | Command | Description |
 | --- | --- |
 | `mt` / `mt-help` | Print all custom aliases and functions dynamically indexed from the codebase. |
+| `mt-get-version` | Prints the current local version of the terminal profile. |
 | `mt-refresh-caches` | Forcefully clears and rebuilds all background caches (.env, mytools index, system updates). |
 | `mt-get-update` | Pull latest remote profile changes and safely apply them to the local terminal workspace. |
 | `mt-push-update` | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |
