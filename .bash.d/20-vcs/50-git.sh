@@ -118,14 +118,41 @@ __git_sync_ai_commit() {
     return 1
   fi
 
-  # Extract JSON Array, stripping any conversational markdown wrappers
+  # Extract JSON Array, handling both raw arrays and universal schema objects where the array is inside .message
   local generated_json
   generated_json=$(echo "$response" | python3 -c '
-import sys, re
-text = sys.stdin.read()
+import sys, json, re
+
+text = sys.stdin.read().strip()
+try:
+    data = json.loads(text)
+    if isinstance(data, dict) and "message" in data:
+        msg = data["message"]
+        if isinstance(msg, list):
+            print(json.dumps(msg))
+            sys.exit(0)
+        elif isinstance(msg, str):
+            try:
+                inner = json.loads(msg)
+                if isinstance(inner, list):
+                    print(json.dumps(inner))
+                    sys.exit(0)
+            except:
+                pass
+            print(msg)
+            sys.exit(0)
+    elif isinstance(data, list):
+        print(json.dumps(data))
+        sys.exit(0)
+except:
+    pass
+
+# Fallback to regex array search
 match = re.search(r"\[.*\]", text, re.DOTALL)
-if match: print(match.group(0))
-else: print(text)
+if match:
+    print(match.group(0))
+else:
+    print(text)
 ' 2> /dev/null)
 
   if [ -n "$generated_json" ] && echo "$generated_json" | jq -e . > /dev/null 2>&1; then
