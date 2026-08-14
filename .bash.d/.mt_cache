@@ -107,7 +107,9 @@
 
   [1;38;2;241;250;140m[Version Control (Git)][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Wrapper to force 'clone' into ~/vcs/ from anywhere[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ai-gitignore        [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Ask AI to generate a comprehensive .gitignore for the current project[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ai-pc               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Add all files, intelligently group via AI, and push [Usage: git-ai-pc [optional message]][0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ai-readme           [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Ask AI to generate a comprehensive README.md for the current project[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-cleanup             [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Safely delete all local branches that have been merged into the default branch[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-feature             [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Create and checkout a new feature branch[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-ide                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Clone a repository into ~/vcs/, cd into it, and open in IDE[0m

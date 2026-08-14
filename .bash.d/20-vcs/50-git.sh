@@ -602,3 +602,105 @@ mt-get-update() {
     return 1
   fi
 }
+
+#######################################
+# Git: Ask AI to generate a comprehensive .gitignore for the current project
+#######################################
+git-ai-gitignore() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  # Safeguard 1: Must be inside a git repository
+  if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    echo -e "${CB_RED}🚨 Error: Not inside a Git repository.${C_RESET}"
+    return 1
+  fi
+
+  # Safeguard 2: Prevent running in high-level/root directories
+  if [[ "$PWD" == "$HOME" || "$PWD" == "/" || "$PWD" == "$VCS_ROOT" ]]; then
+    echo -e "${CB_RED}🚨 Error: Refusing to generate a .gitignore in a root/home directory.${C_RESET}"
+    return 1
+  fi
+
+  # Safeguard 3: Warn if the project is exceptionally large
+  local file_count
+  file_count=$(find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" 2> /dev/null | head -n 1000 | wc -l)
+  if [ "$file_count" -ge 1000 ]; then
+    echo -e "${CB_YELLOW}⚠️  Warning: This directory contains 1000+ files. AI context may exceed limits.${C_RESET}"
+    read -p "Proceed anyway? [y/N] " -n 1 -r
+    echo
+    [[ ! $REPLY =~ ^[Yy]$ ]] && {
+      echo "🛑 Aborted."
+      return 0
+    }
+  fi
+
+  # Safeguard 4: Prevent accidental overwrites
+  if [ -f ".gitignore" ]; then
+    echo -e "${CB_YELLOW}⚠️  A .gitignore file already exists.${C_RESET}"
+    read -p "Do you want to overwrite it? [y/N] " -n 1 -r
+    echo
+    [[ ! $REPLY =~ ^[Yy]$ ]] && {
+      echo "🛑 Aborted."
+      return 0
+    }
+  fi
+
+  local prompt="Analyze the file extensions, project structure, and configuration files in the provided context. Generate a comprehensive .gitignore file suitable for this specific project. Exclude standard OS files, IDE configs, build artifacts, and sensitive files. Ensure it is highly accurate. Return the exact code to be saved."
+
+  echo -e "${CB_BLUE}🤖 Analyzing project structure to generate .gitignore...${C_RESET}"
+  ai -e -o ".gitignore" -t "project-gitignore" "$prompt"
+}
+
+#######################################
+# Git: Ask AI to generate a comprehensive README.md for the current project
+#######################################
+git-ai-readme() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  # Safeguard 1: Must be inside a git repository
+  if ! git rev-parse --is-inside-work-tree > /dev/null 2>&1; then
+    echo -e "${CB_RED}🚨 Error: Not inside a Git repository.${C_RESET}"
+    return 1
+  fi
+
+  # Safeguard 2: Prevent running in high-level/root directories
+  if [[ "$PWD" == "$HOME" || "$PWD" == "/" || "$PWD" == "$VCS_ROOT" ]]; then
+    echo -e "${CB_RED}🚨 Error: Refusing to generate a README in a root/home directory.${C_RESET}"
+    return 1
+  fi
+
+  # Safeguard 3: Warn if the project is exceptionally large
+  local file_count
+  file_count=$(find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" 2> /dev/null | head -n 1000 | wc -l)
+  if [ "$file_count" -ge 1000 ]; then
+    echo -e "${CB_YELLOW}⚠️  Warning: This directory contains 1000+ files. AI context may exceed limits.${C_RESET}"
+    read -p "Proceed anyway? [y/N] " -n 1 -r
+    echo
+    [[ ! $REPLY =~ ^[Yy]$ ]] && {
+      echo "🛑 Aborted."
+      return 0
+    }
+  fi
+
+  # Safeguard 4: Prevent accidental overwrites
+  if [ -f "README.md" ]; then
+    echo -e "${CB_YELLOW}⚠️  A README.md file already exists.${C_RESET}"
+    read -p "Do you want to overwrite it? [y/N] " -n 1 -r
+    echo
+    [[ ! $REPLY =~ ^[Yy]$ ]] && {
+      echo "🛑 Aborted."
+      return 0
+    }
+  fi
+
+  local prompt="Analyze the provided codebase context and generate a comprehensive, professional README.md for this project. Include sections for an Overview, Prerequisites, Installation/Setup, and Usage based on the actual code. Use proper markdown formatting. Return the exact code to be saved."
+
+  echo -e "${CB_BLUE}🤖 Analyzing codebase to generate README.md...${C_RESET}"
+  ai -e -o "README.md" -t "project-readme" "$prompt"
+}

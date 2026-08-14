@@ -220,41 +220,8 @@ mt-help() {
   echo -e "\033[1;34m==========================================================\033[0m"
   echo -e "\033[1;33m 📄 File: \033[0m $(wslpath -m "$file_path" 2> /dev/null || echo "$file_path")"
   echo -e "\033[1;34m----------------------------------------------------------\033[0m"
-
-  awk -v target="$target" '
-		/^#######################################/ { block = $0 "\n"; in_block = 1; next }
-		in_block && /^#/ { block = block $0 "\n"; next }
-		in_block && !/^#/ {
-			if ($0 ~ "^"target"\\(\\) [ \t]*\\{" || $0 ~ "^alias "target"=") {
-				print "\033[36m" block "\033[0m"
-				print "\033[1;32m" $0 "\033[0m"
-				exit
-			}
-			in_block = 0
-			block = ""
-		}
-		!in_block && ($0 ~ "^"target"\\(\\) [ \t]*\\{" || $0 ~ "^alias "target"=") {
-			print "\033[1;32m" $0 "\033[0m"
-			exit
-		}
-	' "$file_path" | "$BAT_BIN" --language=bash --style=plain 2> /dev/null ||
-    awk -v target="$target" '
-		/^#######################################/ { block = $0 "\n"; in_block = 1; next }
-		in_block && /^#/ { block = block $0 "\n"; next }
-		in_block && !/^#/ {
-			if ($0 ~ "^"target"\\(\\) [ \t]*\\{" || $0 ~ "^alias "target"=") {
-				print "\033[36m" block "\033[0m"
-				print "\033[1;32m" $0 "\033[0m"
-				exit
-			}
-			in_block = 0
-			block = ""
-		}
-		!in_block && ($0 ~ "^"target"\\(\\) [ \t]*\\{" || $0 ~ "^alias "target"=") {
-			print "\033[1;32m" $0 "\033[0m"
-			exit
-		}
-	' "$file_path"
+  awk -v target="$target" -f "$HOME/.bash.d/lib/mt_help.awk" "$file_path" | "$BAT_BIN" --language=bash --style=plain 2> /dev/null ||
+    awk -v target="$target" -f "$HOME/.bash.d/lib/mt_help.awk" "$file_path"
 
   echo -e "\033[1;34m==========================================================\033[0m"
 }

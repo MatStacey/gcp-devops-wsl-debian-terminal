@@ -219,6 +219,8 @@ These utilities are exclusive to this profile and control environment configurat
 | --- | --- | --- |
 | `git` | Function | Wrapper to force 'clone' into `~/vcs/` from anywhere. |
 | `git-ai-pc` | Function | Add all files, intelligently group via AI (respecting active provider), and push. |
+| `git-ai-gitignore` | Function | Ask AI to generate a comprehensive `.gitignore` for the current project. |
+| `git-ai-readme` | Function | Ask AI to generate a comprehensive `README.md` for the current project. |
 | `git-feature` | Function | Create and checkout a new feature branch using the configured prefix. |
 | `git-cleanup` | Function | Safely delete all local branches merged into the default branch. |
 | `git-update` | Function | Fetch upstream and rebase the current branch onto the default branch. |
@@ -227,19 +229,49 @@ These utilities are exclusive to this profile and control environment configurat
 | `git-lg` | Function | Print a beautiful, color-coded, single-line graph log. |
 | `git-web` | Function | Open the current repository in the default web browser. |
 
-#### Code Formatting & CLI Replacements
+#### Development & Build Tools
+
+| Command | Type | Description |
+| --- | --- | --- |
+| `boot-run` | Alias | Spring Boot: Run application. |
+| `mci` | Alias | Maven: Clean and Install. |
+| `pip-load` | Alias | Install pip requirements. |
+| `pip-save` | Alias | Save pip requirements. |
+| `venv-make` | Alias | Create & active Python venv. |
+| `venv-up` | Alias | Activate existing Python venv. |
+
+#### Code Formatting
 
 | Command | Type | Description |
 | --- | --- | --- |
 | `google-fmt` | Function | Formats Python and Shell scripts according to Google Style Guides. |
 | `ruff-fmt` | Alias | Ruff: Format Python files and imports in current directory (recursive). |
 | `shfmtlw` | Alias | shfmt: Format all shell scripts in current directory (recursive). |
+
+#### Modern CLI Replacements
+
+| Command | Type | Description |
+| --- | --- | --- |
+| `cat` | Alias | bat: Print file contents with syntax highlighting. |
+| `ccat` | Alias | bat: Print file contents with line numbers & Git gutters. |
+| `json-fmt` | Alias | Pretty-print JSON stream. |
+| `ll` | Alias | eza: Detailed list with Git status. |
+| `ls` | Alias | eza: List files with directories first. |
+| `rg` | Alias | rg: Search with smart case, include hidden, ignore `.git`. |
+| `tree` | Alias | eza: Display directory structure as a tree. |
+| `yaml-fmt` | Alias | Pretty-print YAML stream (requires yq). |
+
+#### Universal AI & LLM Utilities
+
+| Command | Type | Description |
+| --- | --- | --- |
 | `ai` | Function | Consult universal AI directly from the CLI. |
-| `cat` / `ccat` | Aliases | `bat`: Print file contents with syntax highlighting and Git gutters. |
-| `ll` / `ls` | Aliases | `eza`: Detailed file lists with Git status and directories first. |
-| `rg` | Alias | `rg`: Search with smart case, include hidden, ignore `.git`. |
-| `tree` | Alias | `eza`: Display directory structure as a tree. |
-| `json-fmt` / `yaml-fmt` | Aliases | Pretty-print JSON/YAML streams (requires `jq`/`yq`). |
+| `__ai_build_context` | Function | Compiles local codebase files into a single context document for LLMs. |
+| `_ai_get_next_version` | Function | Calculates the next available minor patch version for a generated file. |
+| `__ai_query_claude` | Function | Formats payload and queries the Anthropic Claude API. |
+| `__ai_query_gemini` | Function | Formats payload and queries the Google Gemini API. |
+| `__ai_query_local` | Function | Formats payload and queries a local LLM endpoint (OpenAI-compatible). |
+| `__ai_save_output` | Function | Formats and saves the generated code from LLMs into standard directories. |
 
 ---
 

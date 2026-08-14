@@ -66,7 +66,9 @@ func	Terraform	tf-replace	Terraform: Replace a specific resource (Modern alterna
 func	Terraform	tf-yaml	Terraform: Wrapper to execute Terraform using a YAML config file for variables
 func	Terraform & Kubernetes Wrappers	terraform	Terraform wrapper (preserves args)
 func	Version Control (Git)	git	Git: Wrapper to force 'clone' into ~/vcs/ from anywhere
+func	Version Control (Git)	git-ai-gitignore	Git: Ask AI to generate a comprehensive .gitignore for the current project
 func	Version Control (Git)	git-ai-pc	Git: Add all files, intelligently group via AI, and push [Usage: git-ai-pc [optional message]]
+func	Version Control (Git)	git-ai-readme	Git: Ask AI to generate a comprehensive README.md for the current project
 func	Version Control (Git)	git-cleanup	Git: Safely delete all local branches that have been merged into the default branch
 func	Version Control (Git)	git-feature	Git: Create and checkout a new feature branch
 func	Version Control (Git)	git-ide	Git: Clone a repository into ~/vcs/, cd into it, and open in IDE
