@@ -156,7 +156,7 @@ else: print(text)
 # Returns:
 #   0 on success, 1 on misconfigured URL path.
 #######################################
-vcs-sync-profile() {
+push-profile-update() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -172,7 +172,7 @@ vcs-sync-profile() {
 
   if [[ -z "$remote_url" || "$remote_url" == "YOUR_SYNC_REPO_URL" || "$remote_url" == "null" ]]; then
     echo -e "\n\033[1;33m⚠️  Profile Sync Not Configured\033[0m"
-    echo -e "The \033[1mvcs-sync-profile\033[0m feature automatically versions and pushes your terminal configuration to a remote Git repository."
+    echo -e "The \033[1mpush-profile-update\033[0m feature automatically versions and pushes your terminal configuration to a remote Git repository."
     echo "If you downloaded this profile as a standalone ZIP and do not wish to sync it, you can safely ignore this command."
     echo -e "\nTo enable syncing, link an empty remote Git repository by running:"
     echo -e "  \033[1;36madd-sync-url \"git@github.com:username/my-terminal-repo.git\"\033[0m\n"
@@ -492,7 +492,7 @@ git-nuke() {
 #######################################
 # Git: Pull latest profile changes from remote and sync to local workspace
 #######################################
-vcs-pull-profile() {
+pull-profile-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0

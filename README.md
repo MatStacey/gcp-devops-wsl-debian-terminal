@@ -272,8 +272,8 @@ The following commands are automatically parsed and indexed from codebase docume
 | `git-nuke` | Function | Hard reset and wipe all untracked files on the current branch (includes safety prompt). |
 | `git-update` | Function | Fetch upstream and rebase the current branch onto the default branch. |
 | `git-web` | Function | Open the current repository in the default Windows web browser. |
-| `vcs-pull-profile` | Function | Pull latest remote profile changes and safely apply them to the local terminal workspace. |
-| `vcs-sync-profile` | Function | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |
+| `pull-profile-update` | Function | Pull latest remote profile changes and safely apply them to the local terminal workspace. |
+| `push-profile-update` | Function | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |
 
 #### Development & Build Tools
 
