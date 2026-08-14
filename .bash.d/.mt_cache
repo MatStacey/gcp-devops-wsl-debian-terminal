@@ -162,7 +162,7 @@
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mcdvcsp                  [0m [38;2;98;114;164m→[0m [38;2;248;248;242mChange directory to ~/vcs/personal[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt                      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPrint all aliases and functions[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mreload                  [0m [38;2;98;114;164m→[0m [38;2;248;248;242mReload Bash profile[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253msys-install-reload      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mReload Bash profile[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253msys-install-reload      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mUpdate, Upgrade, Boostrap, Reload[0m
 
   [1;38;2;241;250;140m[Terraform & Kubernetes Wrappers][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mtf-scan                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mCheckov: Scan local terraform directory (./terraform)[0m

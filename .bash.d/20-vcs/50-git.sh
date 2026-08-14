@@ -583,6 +583,7 @@ mt-get-update() {
   echo -e "${CB_BLUE}⬇️ Pulling latest changes from remote repository...${C_RESET}"
   (
     cd "$repo_dir" || exit 1
+    git fetch --tags origin
     git pull origin "$(git rev-parse --abbrev-ref HEAD)"
   )
 

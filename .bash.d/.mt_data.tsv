@@ -109,5 +109,5 @@ alias	System & Navigation	cdvcs	Change directory to ~/vcs
 alias	System & Navigation	cdvcsp	Change directory to ~/vcs/personal
 alias	System & Navigation	mt	Print all aliases and functions
 alias	System & Navigation	reload	Reload Bash profile
-alias	System & Navigation	sys-install-reload	Reload Bash profile
+alias	System & Navigation	sys-install-reload	Update, Upgrade, Boostrap, Reload
 alias	Terraform & Kubernetes Wrappers	tf-scan	Checkov: Scan local terraform directory (./terraform)
