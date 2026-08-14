@@ -32,9 +32,9 @@ win-sync() {
 #######################################
 # Config: Open sync repository remote URL in default web browser
 # Arguments:
-#   sync-web
+#   web-view-profile-homepage
 #######################################
-sync-web() {
+web-view-profile-homepage() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -43,12 +43,15 @@ sync-web() {
     echo "🚨 Error: No sync repository URL configured."
     return 1
   fi
+  
   local web_url="$SYNC_REPO_URL"
   if [[ "$web_url" == git@* ]]; then
-    web_url="https://${web_url#git@}"
-    web_url="${web_url/:/\/}"
+    web_url="${web_url#git@}"      # Strip git@
+    web_url="${web_url/:/\/}"      # Swap the domain colon to a slash
+    web_url="https://${web_url}"   # Prepend the protocol
   fi
-  web_url="${web_url%.git}"
+  web_url="${web_url%.git}"        # Strip the trailing .git
+  
   echo "🌐 Opening $web_url in browser..."
   __open_url "$web_url"
 }

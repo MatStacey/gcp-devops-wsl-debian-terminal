@@ -165,7 +165,7 @@ The following commands are automatically parsed and indexed from codebase docume
 | --- | --- | --- |
 | `cd-ai` | Function | Config: Change directory to unified AI workspace. |
 | `cd-sync` | Function | Config: Change directory to sync repository root. |
-| `sync-web` | Function | Config: Open sync repository remote URL in default web browser. |
+| `web-view-profile-homepage` | Function | Config: Open sync repository remote URL in default web browser. |
 | `win` | Function | Open current directory in the platform's native file manager.|
 | `win-ai` | Function | Config: Open unified AI workspace in the platform's native file manager.|
 | `win-docker` | Function | Config: Open Docker root directory in the platform's native file manager.|
