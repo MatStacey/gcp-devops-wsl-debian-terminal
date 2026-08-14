@@ -35,6 +35,10 @@ if [ ! -s "$CONFIG_FILE" ] && [ -f "$TEMPLATE_FILE" ]; then
   echo "⚙️ Scaffolding initial config.yaml from template..."
   mkdir -p "$(dirname "$CONFIG_FILE")"
   cp "$TEMPLATE_FILE" "$CONFIG_FILE"
+
+  # Automatically bind the SYNC_REPO to the directory where install.sh was executed
+  echo "🔗 Binding sync repository path to extraction directory..."
+  sed -i "s|sync_repo: ~/vcs/personal/gcp-devops-wsl-debian-terminal|sync_repo: $REPO_DIR|g" "$CONFIG_FILE"
 fi
 
 echo "✅ Files successfully synced to home directory."
