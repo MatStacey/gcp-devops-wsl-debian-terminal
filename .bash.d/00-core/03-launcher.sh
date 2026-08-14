@@ -34,7 +34,7 @@ win-sync() {
 # Arguments:
 #   web-view-profile-homepage
 #######################################
-web-view-profile-homepage() {
+mt-open-homepage() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0

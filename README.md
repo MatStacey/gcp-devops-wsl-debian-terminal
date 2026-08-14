@@ -129,24 +129,24 @@ The following commands are automatically parsed and indexed from codebase docume
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `add-claude-key` | Function | Adds a Claude API key to the local YAML configuration. |
-| `add-gemini-key` | Function | Adds a Gemini API key to the local YAML configuration. |
-| `add-sync-url` | Function | Configures the remote git URL for the bash profile synchronization tool. |
-| `open-bashd-config` | Function | Opens the bash.d configuration directory directly in the configured IDE. |
-| `set-auto-cleanup-days` | Function | Modifies the threshold in days before exports are automatically deleted. |
-| `set-claude-version` | Function | Sets the default Claude model version in configuration. |
-| `set-default-ai` | Function | Sets the default LLM provider for the 'ai' command suite (`gemini|claude|local`). |
-| `set-default-ide` | Function | Sets the default local IDE for launch commands. |
-| `set-gemini-version` | Function | Sets the default Gemini model version in configuration. |
-| `toggle-auto-cleanup` | Function | Toggles the background execution of the export cleanup script. |
-| `toggle-gemini-extended` | Function | Toggles the Gemini extended reasoning mode flag. |
+| `mt-add-claude-key` | Function | Adds a Claude API key to the local YAML configuration. |
+| `mt-add-gemini-key` | Function | Adds a Gemini API key to the local YAML configuration. |
+| `mt-add-sync-url` | Function | Configures the remote git URL for the bash profile synchronization tool. |
+| `mt-open-config` | Function | Opens the bash.d configuration directory directly in the configured IDE. |
+| `mt-set-auto-cleanup-days` | Function | Modifies the threshold in days before exports are automatically deleted. |
+| `mt-set-claude-version` | Function | Sets the default Claude model version in configuration. |
+| `mt-set-default-ai` | Function | Sets the default LLM provider for the 'ai' command suite (`gemini|claude|local`). |
+| `mt-set-default-ide` | Function | Sets the default local IDE for launch commands. |
+| `mt-set-gemini-version` | Function | Sets the default Gemini model version in configuration. |
+| `mt-toggle-gemini-extended` | Function | Toggles the Gemini extended reasoning mode flag. |
+| `mt-toggle-auto-cleanup` | Function | Toggles the background execution of the export cleanup script. |
 
 #### Centralized Theme & Colors
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `mt-theme` | Function | Opens an interactive fuzzy-finder menu to select and apply a theme. |
-| `set-theme` | Function | Sets the active terminal color theme and reloads the color profile. |
+| `mt-select-theme` | Function | Opens an interactive fuzzy-finder menu to select and apply a theme. |
+| `mt-set-theme` | Function | Sets the active terminal color theme and reloads the color profile. |
 
 #### System & Navigation
 
@@ -156,7 +156,7 @@ The following commands are automatically parsed and indexed from codebase docume
 | `cdvcs` | Alias | Change directory to ~/vcs. |
 | `cdvcsp` | Alias | Change directory to ~/vcs/personal. |
 | `clip` | Function | Pipe output to the system clipboard (`clip.exe` / `pbcopy` / `xclip`). |
-| `mt` | Alias | Print all aliases and functions. |
+| `mt-help` | Alias | Print all aliases and functions. |
 | `reload` | Alias | Reload Bash profile. |
 | `rld` | Alias | Reload Bash profile. |
 | `sys-install` | Function | System: Updates system packages (APT/Homebrew) and clears pending marker. |
@@ -170,7 +170,7 @@ The following commands are automatically parsed and indexed from codebase docume
 | `cd-ai` | Function | Config: Change directory to unified AI workspace. |
 | `cd-sync` | Function | Config: Change directory to sync repository root. |
 | `ide` | Function | Config: Open current directory in the default IDE (VSCode/IntelliJ). |
-| `web-view-profile-homepage` | Function | Config: Open sync repository remote URL in default web browser. |
+| `mt-open-homepage` | Function | Config: Open sync repository remote URL in default web browser. |
 | `win` | Function | Open current directory in the platform's native file manager. |
 | `win-ai` | Function | Config: Open unified AI workspace in the platform's native file manager. |
 | `win-docker` | Function | Config: Open Docker root directory in the platform's native file manager. |
@@ -269,7 +269,7 @@ The following commands are automatically parsed and indexed from codebase docume
 | Command | Type | Description |
 | --- | --- | --- |
 | `git` | Function | Wrapper to force 'clone' into `~/vcs/` from anywhere. |
-| `git-ai-pc` | Function | Add all files, intelligently group via AI (respecting active provider), and push. |
+| `git-ai-push` | Function | Add all files, intelligently group via AI (respecting active provider), and push. |
 | `git-cleanup` | Function | Safely delete all local branches that have been merged into the default branch. |
 | `git-feature` | Function | Create and checkout a new feature branch using the configured prefix. |
 | `git-ide` | Function | Clone a repository into `~/vcs/`, `cd` into it, and open in IDE. |
@@ -277,8 +277,8 @@ The following commands are automatically parsed and indexed from codebase docume
 | `git-nuke` | Function | Hard reset and wipe all untracked files on the current branch (includes safety prompt). |
 | `git-update` | Function | Fetch upstream and rebase the current branch onto the default branch. |
 | `git-web` | Function | Open the current repository in the default web browser. |
-| `pull-profile-update` | Function | Pull latest remote profile changes and safely apply them to the local terminal workspace. |
-| `push-profile-update` | Function | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |
+| `mt-get-update` | Function | Pull latest remote profile changes and safely apply them to the local terminal workspace. |
+| `mt-push-update` | Function | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |
 
 #### Development & Build Tools
 
@@ -323,8 +323,11 @@ The following commands are automatically parsed and indexed from codebase docume
 | `__ai_query_gemini` | Function | Formats payload and queries the Google Gemini API. |
 | `__ai_query_local` | Function | Formats payload and queries a local LLM endpoint (OpenAI-compatible). |
 | `__ai_save_output` | Function | Formats and saves the generated code from LLMs into standard directories. |
-| `cleanup-exports` | Function | LLM: Clean up export files. |
-| `export-all` | Function | LLM: Exports all text/code files. |
-| `export-bash` | Function | LLM: Exports local .sh files. |
-| `export-crf` | Function | LLM: Exports Python GCF codebase. |
-| `export-tf` | Function | LLM: Exports local TF codebase. |
+| `mt-export-cleanup` | Function | LLM: Clean up export files. |
+| `mt-export` | Function | LLM: Exports all text/code files. |
+| `mt-export-shell` | Function | LLM: Exports local .sh files. |
+| `mt-export-cloudrun` | Function | LLM: Exports Python GCF codebase. |
+| `mt-export-terraform` | Function | LLM: Exports local TF codebase. |
+
+mt-get-gemini-status
+mt-toggle-ai

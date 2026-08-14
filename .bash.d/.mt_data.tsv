@@ -7,7 +7,7 @@ func	Centralized Theme & Colors	__ai_query_claude	Formats payload and queries th
 func	Centralized Theme & Colors	__ai_query_gemini	Formats payload and queries the Google Gemini API.
 func	Centralized Theme & Colors	__ai_query_local	Formats payload and queries a local LLM endpoint (OpenAI-compatible).
 func	Centralized Theme & Colors	__ai_save_output	Formats and saves the generated code from LLMs into standard directories.
-func	Configuration Management	get-gemini-status	Prints the current Gemini API model version and extended reasoning mode toggle.
+func	Configuration Management	mt-get-gemini-status	Prints the current Gemini API model version and extended reasoning mode toggle.
 func	Container Orchestration	kubectl	Kubectl wrapper (preserves args)
 func	Container Orchestration (Kubernetes)	kns	Kubernetes: Get or explicitly set the active namespace in the current context
 func	GCP: Configuration & Authentication	gcl-config	GCP: List active configuration properties
@@ -31,17 +31,17 @@ func	GCP: Resources & Services	gcp-iam-show	IAM: View IAM policy for active proj
 func	GCP: Resources & Services	gcp-ps-pull	PubSub: Pull and auto-ack one message
 func	Google Style Code Formatting	google-fmt	Formats Python and Shell scripts according to Google Style Guides.
 func	Infrastructure as Code	tf-val-all	Terraform: Recursively validate and scan all Terraform directories
-func	LLM Code Export Utilities	cleanup-exports	LLM: Clean up export files
-func	LLM Code Export Utilities	export-all	LLM: Exports all text/code files
-func	LLM Code Export Utilities	export-bash	LLM: Exports local .sh files
-func	LLM Code Export Utilities	export-crf	LLM: Exports Python GCF codebase
-func	LLM Code Export Utilities	export-tf	LLM: Exports local TF codebase
+func	LLM Code Export Utilities	mt-export	LLM: Exports all text/code files
+func	LLM Code Export Utilities	mt-export-cleanup	LLM: Clean up export files
+func	LLM Code Export Utilities	mt-export-cloudrun	LLM: Exports Python GCF codebase
+func	LLM Code Export Utilities	mt-export-shell	LLM: Exports local .sh files
+func	LLM Code Export Utilities	mt-export-terraform	LLM: Exports local TF codebase
 func	MyTools Documentation & Runner	__bashd_latest_mod	Prints the most recent mtime across all .bash.d/*.sh files, used to
 func	MyTools Documentation & Runner	mt-refresh-caches	System: Forcefully clear and rebuild all background caches (.env, mytools, updates)
 func	Path & URL Launchers (Config-Driven)	cd-ai	Config: Change directory to unified AI workspace
 func	Path & URL Launchers (Config-Driven)	cd-sync	Config: Change directory to sync repository root
 func	Path & URL Launchers (Config-Driven)	ide	Config: Open current directory in the default IDE (VSCode/IntelliJ)
-func	Path & URL Launchers (Config-Driven)	web-view-profile-homepage	Config: Open sync repository remote URL in default web browser
+func	Path & URL Launchers (Config-Driven)	mt-open-homepage	Config: Open sync repository remote URL in default web browser
 func	Path & URL Launchers (Config-Driven)	win-ai	Config: Open unified AI workspace in the platform's native file manager
 func	Path & URL Launchers (Config-Driven)	win-docker	Config: Open Docker root directory in the platform's native file manager
 func	Path & URL Launchers (Config-Driven)	win-sync	Config: Open sync repository in the platform's native file manager
@@ -75,8 +75,8 @@ func	Version Control (Git)	__git_sync_copy_files	Synchronizes the active bash co
 func	Version Control (Git)	__git_sync_init_repo	Clones and initializes a repository into the sync directory.
 func	Version Control (Git)	git-update	Git: Fetch upstream and rebase the current branch onto the default branch
 func	Version Control (Git)	git-web	Git: Open the current repository in the default web browser
-func	Version Control (Git)	pull-profile-update	Git: Pull latest profile changes from remote and sync to local workspace
-func	Version Control (Git)	push-profile-update	Git: Sync local bash configs to terminal repo and push (AI-powered systematic commits)
+func	Version Control (Git)	mt-get-update	Git: Pull latest profile changes from remote and sync to local workspace
+func	Version Control (Git)	mt-push-update	Git: Sync local bash configs to terminal repo and push (AI-powered systematic commits)
 alias	Development & Build Tools	boot-run	Spring Boot: Run application
 alias	Development & Build Tools	mci	Maven: Clean and Install
 alias	Development & Build Tools	pip-load	Install pip requirements

@@ -82,7 +82,7 @@ __vcs_core_export() {
 #######################################
 # LLM: Exports all text/code files
 #######################################
-export-all() {
+mt-export() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -93,7 +93,7 @@ export-all() {
 #######################################
 # LLM: Exports local TF codebase
 #######################################
-export-tf() {
+mt-export-terraform() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -104,7 +104,7 @@ export-tf() {
 #######################################
 # LLM: Exports local .sh files
 #######################################
-export-bash() {
+mt-export-shell() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -115,7 +115,7 @@ export-bash() {
 #######################################
 # LLM: Exports Python GCF codebase
 #######################################
-export-crf() {
+mt-export-cloudrun() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -128,7 +128,7 @@ export-crf() {
 # Arguments:
 #   cleanup-exports [-d <repo>
 #######################################
-cleanup-exports() {
+mt-export-cleanup() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0

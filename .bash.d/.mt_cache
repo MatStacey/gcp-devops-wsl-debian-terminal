@@ -18,7 +18,7 @@
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__ai_save_output        [0m [38;2;98;114;164m→[0m [38;2;248;248;242mFormats and saves the generated code from LLMs into standard directories.[0m
 
   [1;38;2;241;250;140m[Configuration Management][0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mget-gemini-status       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPrints the current Gemini API model version and extended reasoning mode toggle.[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-get-gemini-status    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPrints the current Gemini API model version and extended reasoning mode toggle.[0m
 
   [1;38;2;241;250;140m[Container Orchestration][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mkubectl                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mKubectl wrapper (preserves args)[0m
@@ -56,11 +56,11 @@
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mtf-val-all              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mTerraform: Recursively validate and scan all Terraform directories[0m
 
   [1;38;2;241;250;140m[LLM Code Export Utilities][0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mcleanup-exports         [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Clean up export files[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mexport-all              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports all text/code files[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mexport-bash             [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports local .sh files[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mexport-crf              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports Python GCF codebase[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mexport-tf               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports local TF codebase[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export               [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports all text/code files[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export-cleanup       [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Clean up export files[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export-cloudrun      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports Python GCF codebase[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export-shell         [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports local .sh files[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-export-terraform     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mLLM: Exports local TF codebase[0m
 
   [1;38;2;241;250;140m[MyTools Documentation & Runner][0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__bashd_latest_mod      [0m [38;2;98;114;164m→[0m [38;2;248;248;242mPrints the most recent mtime across all .bash.d/*.sh files, used to[0m
@@ -70,7 +70,7 @@
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mcd-ai                   [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Change directory to unified AI workspace[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mcd-sync                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Change directory to sync repository root[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mide                     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open current directory in the default IDE (VSCode/IntelliJ)[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mweb-view-profile-homepage[0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open sync repository remote URL in default web browser[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-open-homepage        [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open sync repository remote URL in default web browser[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mwin-ai                  [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open unified AI workspace in the platform's native file manager[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mwin-docker              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open Docker root directory in the platform's native file manager[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mwin-sync                [0m [38;2;98;114;164m→[0m [38;2;248;248;242mConfig: Open sync repository in the platform's native file manager[0m
@@ -116,8 +116,8 @@
     [38;2;98;114;164m•[0m [1;38;2;139;233;253m__git_sync_init_repo    [0m [38;2;98;114;164m→[0m [38;2;248;248;242mClones and initializes a repository into the sync directory.[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-update              [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Fetch upstream and rebase the current branch onto the default branch[0m
     [38;2;98;114;164m•[0m [1;38;2;139;233;253mgit-web                 [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Open the current repository in the default web browser[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mpull-profile-update     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Pull latest profile changes from remote and sync to local workspace[0m
-    [38;2;98;114;164m•[0m [1;38;2;139;233;253mpush-profile-update     [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Sync local bash configs to terminal repo and push (AI-powered systematic commits)[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-get-update           [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Pull latest profile changes from remote and sync to local workspace[0m
+    [38;2;98;114;164m•[0m [1;38;2;139;233;253mmt-push-update          [0m [38;2;98;114;164m→[0m [38;2;248;248;242mGit: Sync local bash configs to terminal repo and push (AI-powered systematic commits)[0m
 
 [1;38;2;189;147;249m▶ ALIASES[0m
 

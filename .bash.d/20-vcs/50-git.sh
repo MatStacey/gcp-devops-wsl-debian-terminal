@@ -224,7 +224,7 @@ print("[]")
 # Returns:
 #   0 on success, 1 on misconfigured URL path.
 #######################################
-push-profile-update() {
+mt-push-update() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -565,7 +565,7 @@ git-nuke() {
 #######################################
 # Git: Pull latest profile changes from remote and sync to local workspace
 #######################################
-pull-profile-update() {
+mt-get-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
