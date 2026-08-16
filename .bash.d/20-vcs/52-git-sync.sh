@@ -87,24 +87,13 @@ __git_sync_copy_files() {
 
     # 5. Enforce mandatory .gitignore rules safely
     touch .gitignore
-    local required_ignores=(
-      ".bash.d/config/config.yaml"
-      ".bash.d/config/.env.cache"
-      ".bash.d/.mt_cache*"
-      ".bash.d/.update_check_cache"
-      ".bash.d/.profile_update_cache"
-      ".bash.d/.*_pending"
-      ".bash.d/.mt_data.tsv"
-      "__pycache__/"
-      ".ruff_cache/"
-      ".vscode/"
-      ".vsclog"
-      "*.zip"
-      "vsc-extensions.txt"
-    )
-    for pattern in "${required_ignores[@]}"; do
-      grep -qxF "$pattern" .gitignore || echo "$pattern" >> .gitignore
-    done
+    local template_file="$HOME/.bash.d/lib/templates/gitignore.tpl"
+    if [ -f "$template_file" ]; then
+      while IFS= read -r pattern || [ -n "$pattern" ]; do
+        [[ -z "$pattern" || "$pattern" == \#* ]] && continue
+        grep -qxF "$pattern" .gitignore || echo "$pattern" >> .gitignore
+      done < "$template_file"
+    fi
 
     # 6. Purge index and restage to respect new ignore rules
     git rm -r -q --cached . > /dev/null 2>&1

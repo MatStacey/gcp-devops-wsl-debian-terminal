@@ -1,0 +1,14 @@
+# Mandatory profile ignores
+.bash.d/config/config.yaml
+.bash.d/config/.env.cache
+.bash.d/.mt_cache*
+.bash.d/.update_check_cache
+.bash.d/.profile_update_cache
+.bash.d/.*_pending
+.bash.d/.mt_data.tsv
+__pycache__/
+.ruff_cache/
+.vscode/
+.vsclog
+*.zip
+vsc-extensions.txt
