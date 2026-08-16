@@ -95,7 +95,7 @@ __check_profile_updates() {
       if [[ "${SYNC_REPO_URL:-}" =~ github\.com[:/]([^/]+/[^/.]+)(\.git)? ]]; then
         repo_path="${BASH_REMATCH[1]}"
       fi
-      
+
       local remote_version
       remote_version=$(curl -s "https://api.github.com/repos/${repo_path}/releases/latest" | jq -r ".tag_name // empty")
 
