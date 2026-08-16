@@ -84,7 +84,7 @@ __ai_build_context() {
 __ai_query_gemini() {
   local prompt="$1" title="$2" context_file="$3" req_version="$4" req_extended="$5"
   [ -z "${GEMINI_API_KEY}" ] && {
-    echo "🚨 Error: GEMINI_API_KEY is not set. Run 'add-gemini-key'." >&2
+    echo "🚨 Error: GEMINI_API_KEY is not set. Run 'mt-add-gemini-key'." >&2
     return 1
   }
 
@@ -151,7 +151,7 @@ __ai_query_gemini() {
 __ai_query_claude() {
   local prompt="$1" title="$2" context_file="$3" req_version="$4"
   [ -z "${CLAUDE_API_KEY}" ] && {
-    echo "🚨 Error: CLAUDE_API_KEY is not set. Run 'add-claude-key'." >&2
+    echo "🚨 Error: CLAUDE_API_KEY is not set. Run 'mt-add-claude-key'." >&2
     return 1
   }
 

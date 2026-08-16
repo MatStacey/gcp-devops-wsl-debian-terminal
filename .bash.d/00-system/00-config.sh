@@ -271,7 +271,7 @@ _set_theme_completions() {
     COMPREPLY=($(compgen -W "$themes" -- "${COMP_WORDS[COMP_CWORD]}"))
   fi
 }
-complete -F _set_theme_completions set-theme
+complete -F _set_theme_completions mt-set-theme
 
 mt-select-theme() { # => Config: Interactive menu to select and apply a theme [Usage: mt-select-theme]
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -286,7 +286,7 @@ mt-select-theme() { # => Config: Interactive menu to select and apply a theme [U
   local selected_theme
   selected_theme=$(find "${THEMES_DIR}" -maxdepth 1 -name "*.sh" -exec basename {} .sh \; | sort | fzf --prompt="🎨 Select Theme > " --height=~10 --layout=reverse --border)
 
-  [ -n "$selected_theme" ] && set-theme "$selected_theme" || echo "Theme selection cancelled."
+  [ -n "$selected_theme" ] && mt-set-theme "$selected_theme" || echo "Theme selection cancelled."
 }
 
 mt-toggle-auto-cleanup() { # => Config: Toggle export file background cleanup script [Usage: mt-toggle-auto-cleanup]

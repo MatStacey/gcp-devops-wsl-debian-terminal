@@ -52,6 +52,7 @@ if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
   # defining bootstrap — sourcing it wholesale here was a silent no-op
   # that then hit `set -e` on the undefined `bootstrap` call. Source the
   # bootstrap module directly instead.
+  source "$TARGET_BASHD/00-system/00-os.sh"
   source "$TARGET_BASHD/00-system/04-bootstrap.sh"
   bootstrap
 else
