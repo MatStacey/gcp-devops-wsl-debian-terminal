@@ -5,7 +5,7 @@ HOME_DIR="$HOME"
 TARGET_BASHD="$HOME_DIR/.bash.d"
 REPO_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo "🚀 Starting installation of GCP DevOps WSL Debian Terminal..."
+echo "🚀 Starting installation of MT DevOps Framework..."
 
 # 1. Backup existing .bashrc if it exists and isn't a symlink/our file
 if [ -f "$HOME_DIR/.bashrc" ] && [ ! -L "$HOME_DIR/.bashrc" ]; then
@@ -38,7 +38,7 @@ if [ ! -s "$CONFIG_FILE" ] && [ -f "$TEMPLATE_FILE" ]; then
 
   # Automatically bind the SYNC_REPO to the directory where install.sh was executed
   echo "🔗 Binding sync repository path to extraction directory..."
-  sed -i "s|sync_repo: ~/vcs/personal/gcp-devops-wsl-debian-terminal|sync_repo: $REPO_DIR|g" "$CONFIG_FILE"
+  sed -i "s|sync_repo: ~/vcs/personal/mt-devops-framework|sync_repo: $REPO_DIR|g" "$CONFIG_FILE"
 fi
 
 echo "✅ Files successfully synced to home directory."

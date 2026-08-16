@@ -55,7 +55,7 @@ jobs:
 
       - name: Package Repository Zip
         run: |
-          ZIP_NAME="gcp-devops-terminal-${{ steps.tag_version.outputs.new_tag }}.zip"
+          ZIP_NAME="mt-devops-framework-${{ steps.tag_version.outputs.new_tag }}.zip"
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
           # Recursively zip the directory while stripping out VCS, cache, and pipeline folders

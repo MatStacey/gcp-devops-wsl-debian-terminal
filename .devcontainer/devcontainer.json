@@ -1,0 +1,32 @@
+{
+  "name": "MT DevOps Framework",
+  "build": {
+    "dockerfile": "../Dockerfile",
+    "context": ".."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {
+      "version": "latest",
+      "enableNonRootDocker": "true",
+      "moby": "true"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "terraform.languageServer": {
+          "enabled": true,
+          "args": [
+            "serve"
+          ]
+        }
+      },
+      "extensions": [
+        "MatStacey.vscode-ext-pack"
+      ]
+    }
+  },
+  "remoteUser": "devops",
+  "postCreateCommand": "python3 ~/.bash.d/lib/config_manager.py update paths sync_repo \"${containerWorkspaceFolder}\" && mt-refresh-caches"
+}

@@ -1,4 +1,4 @@
-# GCP DevOps Terminal
+# MT DevOps Framework
 
 A high-performance, fully modular Bash environment engineered specifically for Senior Cloud, Platform, and DevOps Engineers. Originally built for Windows Subsystem for Linux (WSL2), it now natively supports macOS (Darwin) and standard Linux distributions.
 
@@ -37,12 +37,12 @@ Download the latest compiled release and extract it into a permanent directory. 
 
 ```bash
 # Create a dedicated directory
-mkdir -p ~/vcs/personal/gcp-devops-terminal
-cd ~/vcs/personal/gcp-devops-terminal
+mkdir -p ~/vcs/personal/mt-devops-framework
+cd ~/vcs/personal/mt-devops-framework
 
 # Download and extract the latest release
-wget [https://github.com/MatStacey/gcp-devops-wsl-debian-terminal/releases/latest/download/gcp-devops-terminal-v1.0.0.zip](https://github.com/MatStacey/gcp-devops-wsl-debian-terminal/releases/latest/download/gcp-devops-terminal-v1.0.0.zip)
-unzip gcp-devops-terminal-v1.0.0.zip
+wget [https://github.com/MatStacey/mt-devops-framework/releases/latest/download/mt-devops-framework-v1.0.0.zip](https://github.com/MatStacey/mt-devops-framework/releases/latest/download/mt-devops-framework-v1.0.0.zip)
+unzip mt-devops-framework-v1.0.0.zip
 
 ```
 
