@@ -75,7 +75,8 @@ __check_profile_updates() {
       current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "Local")
     fi
 
-    echo -e "\n\e[33m🚀 Terminal profile update available! (\e[1m${current_version}\e[22m -> \e[1m${new_version}\e[22m)\e[0m"\n echo -e "\e[33m   Run \e[1mmt-get-update\e[22m to apply the latest changes.\e[0m\n"
+    echo -e "\n\e[33m🚀 Terminal profile update available! (\e[1m${current_version}\e[22m -> \e[1m${new_version}\e[22m)\e[0m"
+    echo -e "\e[33m   Run \e[1mmt-get-update\e[22m to apply the latest changes.\e[0m\n"
     return
   fi
 
