@@ -38,10 +38,9 @@ COPY .bashrc install.sh /tmp/mt-devops-framework/
 COPY .bash.d/ /tmp/mt-devops-framework/.bash.d/
 
 # 6. Install Python tooling and run the profile installer in a single layer
-# hadolint ignore=DL3003,DL3013
-RUN pipx install ruff \
-    && pipx install checkov \
-    && pipx install yapf \
+# hadolint ignore=DL3003,DL3013,SC1091
+RUN source /tmp/mt-devops-framework/.bash.d/config/dependencies.sh \
+    && for dep in "${PYTHON_DEPENDENCIES[@]}"; do pipx install "${dep##*:}"; done \
     && cd /tmp/mt-devops-framework \
     && echo "n" | ./install.sh \
     && rm -rf /tmp/mt-devops-framework \
