@@ -1,14 +1,27 @@
-.bash.d/config/.env.cache
+# ==========================================
+# Mandatory Profile Ignores
+# ==========================================
+
+# Secrets & Configuration
 .bash.d/config/config.yaml
+.bash.d/config/.env.cache
+
+# Framework Caches & State Variables
 .bash.d/.mt_cache*
+.bash.d/.mt_data.tsv
 .bash.d/.update_check_cache
 .bash.d/.profile_update_cache
 .bash.d/.*_pending
-.bash.d/.mt_data.tsv
+.current_version
+
+# Python & Linters
 __pycache__/
 .ruff_cache/
+
+# IDE & Editor
 .vscode/
 .vsclog
+
+# Build Artifacts & Miscellaneous
 *.zip
-vsc-extensions.txt
-.current_version
+.dev
