@@ -49,6 +49,18 @@ __ai_build_context() {
 
   [ "$export_context" != true ] && return 0
 
+  local file_count
+  file_count=$(find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" 2> /dev/null | head -n 1000 | wc -l)
+  if [ "$file_count" -ge 1000 ]; then
+    echo -e "\n\e[33m⚠️  Warning: This directory contains 1000+ files. AI context may exceed limits.\e[0m" >&2
+    read -p "Proceed anyway? [y/N] " -n 1 -r < /dev/tty
+    echo > /dev/tty
+    [[ ! $REPLY =~ ^[Yy]$ ]] && {
+      echo "🛑 Aborted." >&2
+      return 1
+    }
+  fi
+
   echo "📦 Compiling local directory codebase for context..." >&2
   context_file=$(mktemp)
   local blocklist="${EXPORT_BLOCKLIST:-(secret|token|credential|password|passwd|id_rsa|id_ed25519|\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)?$|(^|/)\.env(\..+)?$|lock\.hcl|__pycache__)}"

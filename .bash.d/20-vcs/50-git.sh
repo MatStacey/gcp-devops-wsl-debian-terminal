@@ -235,7 +235,11 @@ git-nuke() {
 
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "💥 Nuking local environment..."
-    git fetch origin
+    git fetch origin > /dev/null 2>&1
+    if ! git ls-remote --exit-code --heads origin "$current_branch" > /dev/null 2>&1; then
+      echo -e "\e[01;31m🚨 Error: Upstream branch 'origin/$current_branch' does not exist. Cannot safely reset.\e[0m"
+      return 1
+    fi
     git reset --hard "origin/$current_branch"
     git clean -fd
     echo -e "${CB_GREEN}✅ Branch reset to upstream state.${C_RESET}"
