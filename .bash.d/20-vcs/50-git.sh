@@ -155,34 +155,189 @@ git-pretty-log() {
 }
 
 #######################################
-# Git: Safely delete all local branches that have been merged into the default branch
+# Git: Delete dead or stale branches that have been merged into the default branch
 #######################################
-git-clean-local() {
+git-clean-merged() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
 
-  # Auto-detect default branch (main or master)
   local default_branch
   default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
   default_branch="${default_branch:-main}"
 
-  echo -e "${CB_BLUE}🧹 Switching to ${default_branch} and pulling latest...${C_RESET}"
+  echo -e "${CB_BLUE}🧹 Fetching latest remote state and pruning tracking branches...${C_RESET}"
+  git fetch origin --prune
+
+  echo -e "${CB_BLUE}🔄 Switching to ${default_branch} and pulling latest...${C_RESET}"
   git checkout "$default_branch"
   git pull origin "$default_branch"
 
-  echo -e "\n${CB_YELLOW}🔍 Scanning for merged local branches...${C_RESET}"
+  echo -e "\n${CB_YELLOW}🔍 Scanning for fully merged local branches...${C_RESET}"
   local merged_branches
-  merged_branches=$(git branch --merged | grep -v "\*" | grep -v -E "^[[:space:]]*${default_branch}$" || true)
+  merged_branches=$(git branch --merged | grep -v "\*" | grep -v -E "^[[:space:]]*${default_branch}$" | tr -d ' ' || true)
 
   if [ -z "$merged_branches" ]; then
-    echo -e "${CB_GREEN}✅ Workspace is clean. No merged branches found.${C_RESET}"
+    echo -e "${CB_GREEN}✅ Workspace is clean. No merged local branches found.${C_RESET}"
+  else
+    echo "$merged_branches" | xargs -n 1 git branch -d
+    echo -e "${CB_GREEN}✅ Local branch cleanup complete.${C_RESET}"
+  fi
+
+  echo -e "\n${CB_YELLOW}🔍 Scanning for fully merged remote branches...${C_RESET}"
+  local remote_merged
+  remote_merged=$(git branch -r --merged origin/"$default_branch" | grep -v "\*" | grep -v HEAD | grep -v -E "origin/${default_branch}$" | sed 's/origin\///' | tr -d ' ' || true)
+
+  if [ -z "$remote_merged" ]; then
+    echo -e "${CB_GREEN}✅ No merged remote branches found on origin.${C_RESET}"
+  else
+    for r_branch in $remote_merged; do
+      read -p "Delete remote branch 'origin/$r_branch'? [y/N] " -n 1 -r
+      echo
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        git push origin --delete "$r_branch"
+      fi
+    done
+    echo -e "${CB_GREEN}✅ Remote cleanup complete.${C_RESET}"
+  fi
+}
+# Backward compatibility alias
+alias git-clean-local='git-clean-merged'
+
+#######################################
+# Git: Push branch and create a Pull Request (GitHub/Bitbucket/GitLab)
+# Arguments:
+#   -b <branch> : Target branch to merge into (defaults to repository default branch)
+#   -t <title>  : PR title (optional)
+#   -m <message>: PR body/description (optional)
+#######################################
+git-raise-pr() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
     return 0
   fi
 
-  echo "$merged_branches" | xargs -n 1 git branch -d
-  echo -e "${CB_GREEN}✅ Local branch cleanup complete.${C_RESET}"
+  local target_branch="" pr_title="" pr_body=""
+
+  local OPTIND opt
+  while getopts "b:t:m:" opt; do
+    case ${opt} in
+      b) target_branch="$OPTARG" ;;
+      t) pr_title="$OPTARG" ;;
+      m) pr_body="$OPTARG" ;;
+      \?)
+        echo "Usage: git-raise-pr [-b <target_branch>] [-t <pr_title>] [-m <pr_body>]" >&2
+        return 1
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
+  local default_branch
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
+  default_branch="${default_branch:-main}"
+  target_branch="${target_branch:-$default_branch}"
+
+  local current_branch
+  current_branch=$(git branch --show-current)
+
+  if [ -z "$current_branch" ]; then
+    echo -e "${CB_RED}🚨 Error: Not currently on any branch.${C_RESET}"
+    return 1
+  fi
+
+  if [ "$current_branch" = "$target_branch" ]; then
+    echo -e "${CB_RED}🚨 Error: You are currently on the target branch ($target_branch). Please checkout a new feature branch first.${C_RESET}"
+    return 1
+  fi
+
+  echo -e "${CB_BLUE}🔄 Fetching latest from origin...${C_RESET}"
+  git fetch origin "$target_branch" > /dev/null 2>&1
+
+  echo -e "${CB_BLUE}🔄 Ensuring ${current_branch} is up to date with origin/${target_branch}...${C_RESET}"
+  if ! git merge "origin/$target_branch" --no-edit > /dev/null 2>&1; then
+    echo -e "${CB_RED}💥 Merge conflict detected with origin/${target_branch}!${C_RESET}"
+    echo -e "${CB_YELLOW}The process has been gracefully aborted to preserve your code. Please resolve the conflicts manually, commit, and run 'git-raise-pr' again.${C_RESET}"
+    git merge --abort > /dev/null 2>&1
+    return 1
+  fi
+  echo -e "${CB_GREEN}✅ Branch is up to date.${C_RESET}"
+
+  local is_github=false
+  local origin_url
+  origin_url=$(git config --get remote.origin.url)
+  [[ "$origin_url" == *"github.com"* ]] && is_github=true
+
+  local pr_state="NONE"
+  if [ "$is_github" = true ] && command -v gh > /dev/null 2>&1; then
+    pr_state=$(gh pr view "$current_branch" --json state -q .state 2> /dev/null || echo "NONE")
+  fi
+
+  if [ "$pr_state" = "OPEN" ]; then
+    echo -e "${CB_GREEN}✅ An open PR already exists for this branch.${C_RESET}"
+    echo -e "${CB_BLUE}🚀 Pushing latest changes to origin...${C_RESET}"
+    git push origin "$current_branch"
+    return 0
+  elif [[ "$pr_state" == "MERGED" || "$pr_state" == "CLOSED" ]]; then
+    echo -e "${CB_YELLOW}⚠️  This branch has a ${pr_state} PR (Dead Branch).${C_RESET}"
+    read -p "Would you like to delete this branch locally and checkout a new one? [Y/n] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+      read -r -p "Enter new branch name: " new_branch
+      if [ -z "$new_branch" ]; then
+        echo -e "${CB_RED}🚨 Aborted.${C_RESET}"
+        return 1
+      fi
+      git checkout "$target_branch"
+      git branch -D "$current_branch"
+      git checkout -b "$new_branch"
+      current_branch="$new_branch"
+    else
+      echo -e "${CB_RED}🚨 Aborted. Cannot raise a new PR on a branch with a closed/merged PR in GitHub without recreating it.${C_RESET}"
+      return 1
+    fi
+  fi
+
+  echo -e "${CB_BLUE}🚀 Pushing ${current_branch} to origin...${C_RESET}"
+  git push -u origin "$current_branch"
+
+  if [ "$is_github" = true ] && command -v gh > /dev/null 2>&1; then
+    echo -e "${CB_BLUE}🛠️  Creating Pull Request via GitHub CLI...${C_RESET}"
+    if [ -n "$pr_title" ]; then
+      gh pr create --base "$target_branch" --title "$pr_title" --body "$pr_body"
+    else
+      gh pr create --base "$target_branch" --fill
+    fi
+    echo -e "${CB_GREEN}✅ Pull Request created successfully!${C_RESET}"
+
+    read -p "🌐 View Pull Request in browser? [Y/n] " -n 1 -r
+    echo
+    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+      local pr_url
+      pr_url=$(gh pr view --json url -q .url)
+      __open_url "$pr_url"
+    fi
+  else
+    echo -e "${CB_YELLOW}⚠️  'gh' CLI not found or using non-GitHub repository. Opening browser to create PR manually...${C_RESET}"
+    local web_url="$origin_url"
+    if [[ "$web_url" == git@* ]]; then
+      web_url="${web_url#git@}"
+      web_url="${web_url/:/\/}"
+      web_url="https://${web_url}"
+    fi
+    web_url="${web_url%.git}"
+
+    if [[ "$web_url" == *"bitbucket.org"* ]]; then
+      web_url="${web_url}/pull-requests/new?source=${current_branch}&dest=${target_branch}"
+    elif [[ "$web_url" == *"gitlab.com"* ]]; then
+      web_url="${web_url}/-/merge_requests/new?merge_request[source_branch]=${current_branch}&merge_request[target_branch]=${target_branch}"
+    elif [[ "$web_url" == *"github.com"* ]]; then
+      web_url="${web_url}/compare/${target_branch}...${current_branch}?expand=1"
+    fi
+
+    __open_url "$web_url"
+  fi
 }
 
 #######################################
