@@ -39,7 +39,9 @@ __git_sync_ai_commit() {
 
   echo "🤖 Analyzing changes to generate systematic feature commits using $provider..." >&2
 
-  local ai_prompt="Analyze this git diff and group the changes into logical features/tasks. Return ONLY a valid JSON array of objects representing separate commits. Each object must have a 'files' array (exact file paths from the diff) and a 'message' string (conventional commit format, < 60 chars).\n\nExample Output:\n[\n  { \"files\": [\"path/to/file1\"], \"message\": \"feat: added new module\" }\n]\n\nGit Diff:\n\n$diff_content"
+  local base_prompt
+  base_prompt=$(__get_prompt "git_commit")
+  local ai_prompt="${base_prompt}\n\n${diff_content}"
 
   local response=""
   if [ "$provider" = "gemini" ]; then
@@ -173,7 +175,8 @@ mt-ai-gitignore() {
 
   __git_ai_preflight_check ".gitignore" || return 0
 
-  local prompt="Analyze the file extensions, project structure, and configuration files in the provided context. Generate a comprehensive .gitignore file suitable for this specific project. Exclude standard OS files, IDE configs, build artifacts, and sensitive files. Ensure it is highly accurate. Return the exact code to be saved."
+  local prompt
+  prompt=$(__get_prompt "git_gitignore")
 
   echo -e "${CB_BLUE}🤖 Analyzing project structure to generate .gitignore...${C_RESET}"
   ai -e -o ".gitignore" -t "project-gitignore" "$prompt"
@@ -190,7 +193,8 @@ mt-ai-readme() {
 
   __git_ai_preflight_check "README.md" || return 0
 
-  local prompt="Analyze the provided codebase context and generate a comprehensive, professional README.md for this project. Include sections for an Overview, Prerequisites, Installation/Setup, and Usage based on the actual code. Use proper markdown formatting. Return the exact code to be saved."
+  local prompt
+  prompt=$(__get_prompt "git_readme")
 
   echo -e "${CB_BLUE}🤖 Analyzing codebase to generate README.md...${C_RESET}"
   ai -e -o "README.md" -t "project-readme" "$prompt"
