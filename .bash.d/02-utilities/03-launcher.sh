@@ -116,3 +116,29 @@ ide() {
     code .
   fi
 }
+
+#######################################
+# Docker: Change to Docker directory (from config.yaml) and open in Windows Explorer
+#######################################
+cd-win-docker() {
+  # Dynamically pull the path from config.yaml
+  local docker_path
+  docker_path=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("paths", {}).get("docker_root", ""))')
+
+  # Evaluate any tildes (~) or variables in the path
+  docker_path=$(eval echo "$docker_path")
+
+  if [ -z "$docker_path" ]; then
+    echo -e "${CB_RED}🚨 Error: docker_root is not defined under paths in config.yaml.${C_RESET}"
+    return 1
+  fi
+
+  if [ -d "$docker_path" ]; then
+    echo -e "${CB_BLUE}📂 Navigating to ${docker_path}...${C_RESET}"
+    cd "$docker_path" || return 1
+    win-docker
+  else
+    echo -e "${CB_RED}🚨 Error: Directory  does not exist on the Linux filesystem.${C_RESET}"
+    return 1
+  fi
+}
