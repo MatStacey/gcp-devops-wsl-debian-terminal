@@ -44,8 +44,26 @@ __git_sync_copy_files() {
 
   mkdir -p "$repo_dir/.bash.d"
 
-  # Exclude root files and folders from the subfolder mirror so they do not duplicate
-  rsync -a --exclude "config/config.yaml" --exclude "config/.env.cache" --exclude "README.md" --exclude ".bashrc" --exclude "install.sh" --exclude ".gitignore" --exclude ".github" --delete "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+  # Exclude root files, folders, and dynamic caches from the subfolder mirror.
+  # --delete-excluded forces rsync to scrub these from the git repo if they were previously synced.
+  rsync -a --delete --delete-excluded \
+    --exclude "config/config.yaml" \
+    --exclude "config/.env.cache" \
+    --exclude ".mt_cache*" \
+    --exclude ".update_check_cache" \
+    --exclude ".profile_update_cache" \
+    --exclude ".*_pending" \
+    --exclude ".mt_data.tsv" \
+    --exclude "__pycache__" \
+    --exclude ".ruff_cache" \
+    --exclude ".vscode" \
+    --exclude ".vsclog" \
+    --exclude "README.md" \
+    --exclude ".bashrc" \
+    --exclude "install.sh" \
+    --exclude ".gitignore" \
+    --exclude ".github" \
+    "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
   # Explicitly sync the root .bashrc file
   if [ -f "$HOME/.bashrc" ]; then
@@ -54,9 +72,32 @@ __git_sync_copy_files() {
 
   (
     cd "$repo_dir" || exit 1
-    [ ! -f ".gitignore" ] || ! grep -q ".bash.d/config/config.yaml" .gitignore 2> /dev/null && sed -i -e '$a\' .gitignore && echo ".bash.d/config/config.yaml" >> .gitignore
-    git ls-files --error-unmatch .bash.d/config/config.yaml > /dev/null 2>&1 && git rm -q --cached .bash.d/config/config.yaml
+    
+    # Safely append required rules to .gitignore without overwriting custom user additions
+    touch .gitignore
+    local required_ignores=(
+      ".bash.d/config/config.yaml"
+      ".bash.d/config/.env.cache"
+      ".bash.d/.mt_cache*"
+      ".bash.d/.update_check_cache"
+      ".bash.d/.profile_update_cache"
+      ".bash.d/.*_pending"
+      ".bash.d/.mt_data.tsv"
+      "__pycache__/"
+      ".ruff_cache/"
+      ".vscode/"
+      ".vsclog"
+    )
+    for pattern in "${required_ignores[@]}"; do
+      grep -qxF "$pattern" .gitignore || echo "$pattern" >> .gitignore
+    done
+
+    # Ensure config.yaml is permanently purged from tracking if it previously leaked
+    if git ls-files --error-unmatch .bash.d/config/config.yaml > /dev/null 2>&1; then
+      git rm -q --cached .bash.d/config/config.yaml
+    fi
     rm -f .bash.d/config/config.yaml
+
     git add --all
   )
 }
