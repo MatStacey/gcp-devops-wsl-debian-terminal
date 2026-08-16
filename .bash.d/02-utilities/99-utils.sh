@@ -189,8 +189,10 @@ docker-tail() {
     local color="${colors[$((i % ${#colors[@]}))]}"
 
     # 2>&1 redirects stderr to stdout (catching error logs).
-    # sed -u forces unbuffered output so logs don't lag behind the live stream.
-    docker logs -f --tail 50 "$container" 2>&1 | sed -u "s/^/${color}[$container]${color_reset} /" &
+    # Apply OS-specific unbuffered flags to sed
+    local sed_buf="-u"
+    [ "$OS_FAMILY" = "macos" ] && sed_buf="-l"
+    docker logs -f --tail 50 "$container" 2>&1 | sed "$sed_buf" "s/^/${color}[$container]${color_reset} /" &
     pids+=($!)
 
     ((i++))
