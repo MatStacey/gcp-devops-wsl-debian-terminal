@@ -10,7 +10,7 @@ def main():
         return
 
     prompt_key = sys.argv[1]
-    prompts_file = os.path.expanduser("~/.bash.d/config/prompts.yaml")
+    prompts_file = os.path.expanduser("~/.bash.d/config/ai/prompts.yaml")
 
     if not os.path.exists(prompts_file):
         return

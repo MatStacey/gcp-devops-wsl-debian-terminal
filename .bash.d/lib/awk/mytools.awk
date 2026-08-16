@@ -1,4 +1,4 @@
-# ~/.bash.d/lib/mytools.awk
+# ~/.bash.d/lib/awk/mytools.awk
 BEGIN {
     cat = "Uncategorized"
     in_doc = 0

@@ -1,4 +1,4 @@
-# ~/.bash.d/lib/mt_help.awk
+# ~/.bash.d/lib/awk/mt_help.awk
 # Extracts and colorizes the documentation block and declaration for a specific target.
 # Requires '-v target="<command_name>"'
 

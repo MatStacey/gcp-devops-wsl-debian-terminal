@@ -28,5 +28,5 @@
     }
   },
   "remoteUser": "devops",
-  "postCreateCommand": "python3 ~/.bash.d/lib/config_manager.py update paths sync_repo \"${containerWorkspaceFolder}\" && mt-refresh-caches"
+  "postCreateCommand": "python3 ~/.bash.d/lib/python/config_manager.py update paths sync_repo \"${containerWorkspaceFolder}\" && mt-refresh-caches"
 }
