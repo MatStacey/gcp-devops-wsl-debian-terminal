@@ -121,6 +121,30 @@ bootstrap() {
   __bootstrap_check_complex
 
   echo -e "\n🎉 Environment bootstrap complete!"
+
+  # Install GitHub CLI (gh)
+  if ! command -v gh > /dev/null 2>&1; then
+    echo -e "${CB_BLUE}📦 Installing GitHub CLI...${C_RESET}"
+    if command -v apt-get > /dev/null 2>&1; then
+      curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | sudo dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg > /dev/null 2>&1
+      sudo chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg
+      echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+      sudo apt-get update > /dev/null 2>&1
+      sudo apt-get install -y gh > /dev/null 2>&1
+    else
+      echo -e "${CB_YELLOW}⚠️ apt-get not found. Please install GitHub CLI manually.${C_RESET}"
+    fi
+  fi
+
+  # Install Claude Code (claude)
+  if ! command -v claude > /dev/null 2>&1; then
+    if command -v npm > /dev/null 2>&1; then
+      echo -e "${CB_BLUE}📦 Installing Claude Code...${C_RESET}"
+      sudo npm install -g @anthropic-ai/claude-code > /dev/null 2>&1
+    else
+      echo -e "${CB_YELLOW}⚠️ npm not found. Skipping Claude Code install. (Please install Node.js first)${C_RESET}"
+    fi
+  fi
 }
 
 __check_missing_deps() {
