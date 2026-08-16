@@ -57,6 +57,8 @@ __git_sync_copy_files() {
     --exclude ".ruff_cache" \
     --exclude ".vscode" \
     --exclude ".vsclog" \
+    --exclude ".github" \
+    --exclude ".devcontainer" \
     "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
   # 2. Explicitly sync the root ~/.bashrc file from the home directory
@@ -65,7 +67,7 @@ __git_sync_copy_files() {
   fi
 
   # 3. Move standard root-level configuration files to the repo root
-  for f in install.sh README.md .gitignore .dockerignore Dockerfile; do
+  for f in install.sh README.md .gitignore .dockerignore Dockerfile .gitleaks.toml; do
     if [ -f "$HOME/.bash.d/$f" ]; then
       cp "$HOME/.bash.d/$f" "$repo_dir/$f"
     elif [ -f "$HOME/$f" ]; then

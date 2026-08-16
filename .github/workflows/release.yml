@@ -8,7 +8,6 @@ on:
     branches:
       - main
 
-# Grant the action permission to write tags and releases to the repo
 permissions:
   contents: write
 
@@ -18,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          fetch-depth: 0 # Required to scan the entire commit history
+          fetch-depth: 0
 
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@e5f9ef6a5a3a7894a82196659fef06df0e21a221 # v2.3.9
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -32,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Install System Dependencies
         run: sudo apt-get update && sudo apt-get install -y shellcheck shfmt yamllint jq
@@ -49,20 +48,20 @@ jobs:
           shfmt -d -i 2 -ci -sr .
 
       - name: Run Ruff Python Linter
-        uses: astral-sh/ruff-action@v1
+        uses: astral-sh/ruff-action@b7351fc86a54fae89cfec9ec6302e1fe851eb33c # v3.1.0
         with:
           args: "check ."
 
       - name: Verify Dockerfile (Hadolint)
-        uses: hadolint/hadolint-action@v3.1.0
+        uses: hadolint/hadolint-action@54c9daabfe82e31417d0283e6177c46d836e5766 # v3.1.0
         with:
           dockerfile: Dockerfile
 
       - name: Validate JSON and YAML Syntax
         run: |
           echo "🔍 Validating JSON files..."
-          find . -name "*.json" -print0 | xargs -0 -I {} jq empty {}
-          
+          find . -name "*.json" -not -path "./.devcontainer/*" -print0 | xargs -0 -I {} jq empty {}
+
           echo "🔍 Validating YAML files..."
           yamllint -d "{extends: relaxed, rules: {line-length: disable}}" .
 
@@ -73,13 +72,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
-          fetch-depth: 0 # Required to fetch all tags and commit history for SemVer calculation
+          fetch-depth: 0
 
       - name: Calculate SemVer and Push Tag
         id: tag_version
-        uses: mathieudutour/github-tag-action@v6.2
+        uses: mathieudutour/github-tag-action@a873ed74d126d83cfcfd4da0666358b27072a39d # v6.2.0
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: patch
@@ -90,11 +89,10 @@ jobs:
           ZIP_NAME="mt-devops-framework-${{ steps.tag_version.outputs.new_tag }}.zip"
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
-          # Recursively zip the directory while stripping out VCS, cache, and pipeline folders
           zip -r "$ZIP_NAME" . -x "*.git*" -x ".github/*" -x "venv/*" -x "*/__pycache__/*" -x ".terraform/*" -x "*.tfstate*"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@c95fecc48a4ad6e8894afc79c934720a4034aa5b # v2.2.0
         with:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
