@@ -24,7 +24,7 @@ __reload_config_if_modified() {
       source "$ENV_CACHE"
 
       if [ "$old_theme" != "$BASH_THEME" ]; then
-        source "$HOME/.bash.d/00-core/01-colors.sh"
+        source "$HOME/.bash.d/01-ui/01-colors.sh"
       fi
     fi
   fi
@@ -39,8 +39,8 @@ if [ -f "$ENV_CACHE" ]; then
 fi
 
 # Ensure color definitions are loaded before running startup checks
-if [ -f "$HOME/.bash.d/00-core/01-colors.sh" ]; then
-  source "$HOME/.bash.d/00-core/01-colors.sh"
+if [ -f "$HOME/.bash.d/01-ui/01-colors.sh" ]; then
+  source "$HOME/.bash.d/01-ui/01-colors.sh"
 fi
 
 if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
@@ -260,7 +260,7 @@ mt-set-theme() { # => Config: Set terminal color theme [Usage: mt-set-theme "the
 
   python3 "$CONFIG_MANAGER" update "system" "theme" "$theme"
   export BASH_THEME="$theme"
-  source "$HOME/.bash.d/00-core/01-colors.sh"
+  source "$HOME/.bash.d/01-ui/01-colors.sh"
   echo -e "${CB_GREEN}✅ Terminal theme set to $theme.${C_RESET}"
 }
 

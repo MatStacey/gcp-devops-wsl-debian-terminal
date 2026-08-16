@@ -104,7 +104,10 @@ This command securely fetches your upstream commits and safely synchronizes them
 
 | Module | Description |
 | --- | --- |
-| `00-core/` | Core configuration, centralized dynamic color themes, cross-platform OS helpers, mytools engine, and bootstrapping utilities. |
+| `00-system/` | OS detection, path definitions, and package management. |
+| `01-ui/` | Color variables and the dynamic terminal prompt. |
+| `02-utilities/` | General purpose aliases, Docker handlers, and path launchers. |
+| `03-mytools/` | The core documentation engine and your LLM context extractors. |
 | `10-infra/` | GCP authentication/project switchers, concurrent Terraform validation, and comprehensive Kubectl aliases. |
 | `20-vcs/` | Git wrappers, AI-assisted feature-grouped commit automation (`git-ai-push-all`), profile syncing, and web launching. |
 | `30-ai/` | API integrations for interacting with Google Gemini, Anthropic Claude, and local OpenAI-compatible endpoints. |
