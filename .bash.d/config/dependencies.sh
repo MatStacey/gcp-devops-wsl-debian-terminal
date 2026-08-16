@@ -15,6 +15,7 @@ export APT_DEPENDENCIES=(
   "zoxide:zoxide"
   "pip3:python3-pip"
   "pipx:pipx"
+  "gh:gh"
   "python_yaml:python3-yaml"
 )
 
@@ -29,6 +30,7 @@ export BREW_DEPENDENCIES=(
   "eza:eza"
   "zoxide:zoxide"
   "pipx:pipx"
+  "gh:gh"
   "python_yaml:pyyaml"
 )
 
@@ -43,4 +45,5 @@ export COMPLEX_DEPENDENCIES=(
   "gcloud:google-cloud-cli"
   "kubectl:kubectl"
   "eza:eza"
+  "gh:gh"
 )
