@@ -17,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@e5f9ef6a5a3a7894a82196659fef06df0e21a221 # v2.3.9
+        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
 
       - name: Install System Dependencies
         run: sudo apt-get update && sudo apt-get install -y shellcheck shfmt yamllint jq
@@ -48,12 +48,12 @@ jobs:
           shfmt -d -i 2 -ci -sr .
 
       - name: Run Ruff Python Linter
-        uses: astral-sh/ruff-action@b7351fc86a54fae89cfec9ec6302e1fe851eb33c # v3.1.0
+        uses: astral-sh/ruff-action@d0a0e814ec17e92d33be7d24dd922b479f1bcd38 # v1
         with:
           args: "check ."
 
       - name: Verify Dockerfile (Hadolint)
-        uses: hadolint/hadolint-action@54c9daabfe82e31417d0283e6177c46d836e5766 # v3.1.0
+        uses: hadolint/hadolint-action@54c9adbab1582c2ef04b2016b760714a4bfde3cf # v3.1.0
         with:
           dockerfile: Dockerfile
 
@@ -72,13 +72,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
         with:
           fetch-depth: 0
 
       - name: Calculate SemVer and Push Tag
         id: tag_version
-        uses: mathieudutour/github-tag-action@a873ed74d126d83cfcfd4da0666358b27072a39d # v6.2.0
+        uses: mathieudutour/github-tag-action@a22cf08638b34d5badda920f9daf6e72c477b07b # v6.2
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: patch
@@ -92,7 +92,7 @@ jobs:
           zip -r "$ZIP_NAME" . -x "*.git*" -x ".github/*" -x "venv/*" -x "*/__pycache__/*" -x ".terraform/*" -x "*.tfstate*"
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@c95fecc48a4ad6e8894afc79c934720a4034aa5b # v2.2.0
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
