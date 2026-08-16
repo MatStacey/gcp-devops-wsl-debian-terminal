@@ -1,3 +1,4 @@
+import contextlib
 import os
 import sys
 
@@ -14,14 +15,13 @@ def main():
     if not os.path.exists(prompts_file):
         return
 
-    try:
+    with contextlib.suppress(OSError, yaml.YAMLError):
         with open(prompts_file, "r") as f:
             prompts = yaml.safe_load(f) or {}
 
         val = prompts.get(prompt_key, "")
-        print(val.strip())
-    except Exception:
-        pass
+        if val:
+            print(val.strip())
 
 
 if __name__ == "__main__":
