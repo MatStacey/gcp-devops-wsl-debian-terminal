@@ -252,3 +252,82 @@ mt-get-update() {
 
   rm -rf "$tmp_dir"
 }
+
+#######################################
+# System: Download a release zip from the remote repository [Usage: mt-download-release [-v version] [-d directory]]
+# Arguments:
+#   -v <version>    Specify a target release version (e.g., v1.1.0). Defaults to latest.
+#   -d <directory>  Specify a destination directory. Defaults to current directory.
+#######################################
+mt-download-release() {
+  local target_version=""
+  local dest_dir="$PWD"
+  local OPTIND opt
+  
+  while getopts "v:d:h" opt; do
+    case ${opt} in
+      v) target_version="$OPTARG" ;;
+      d) dest_dir="$OPTARG" ;;
+      h) mt-help "${FUNCNAME[0]}"; return 0 ;;
+      \?) echo "Usage: mt-download-release [-v <version>] [-d <directory>]" >&2; return 1 ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
+  if [ ! -d "$dest_dir" ]; then
+    echo -e "${CB_YELLOW}⚠️ Directory '${dest_dir}' does not exist. Creating it...${C_RESET}"
+    mkdir -p "$dest_dir" || {
+      echo -e "${CB_RED}🚨 Error: Failed to create directory '${dest_dir}'.${C_RESET}"
+      return 1
+    }
+  fi
+
+  echo -e "${CB_BLUE}⬇️ Fetching release information...${C_RESET}"
+
+  # Fallback to official repo if SYNC_REPO_URL isn't set or parsed
+  local repo_path="MatStacey/mt-devops-framework"
+  if [[ "${SYNC_REPO_URL:-}" =~ github\.com[:/]([^/]+/[^/.]+)(\.git)? ]]; then
+    repo_path="${BASH_REMATCH[1]}"
+  fi
+
+  local api_url="https://api.github.com/repos/${repo_path}/releases/latest"
+  if [ -n "$target_version" ]; then
+    api_url="https://api.github.com/repos/${repo_path}/releases/tags/${target_version}"
+  fi
+
+  local release_data
+  release_data=$(curl -s "$api_url")
+  
+  local download_url
+  download_url=$(echo "$release_data" | jq -r ".assets[0].browser_download_url // empty")
+  local asset_name
+  asset_name=$(echo "$release_data" | jq -r ".assets[0].name // empty")
+  local tag_name
+  tag_name=$(echo "$release_data" | jq -r ".tag_name // empty")
+
+  if [ -z "$download_url" ] || [ "$download_url" == "null" ]; then
+    if [ -n "$target_version" ]; then
+      echo -e "${CB_RED}🚨 Error: Could not find release assets for version ${target_version} in ${repo_path}.${C_RESET}"
+    else
+      echo -e "${CB_RED}🚨 Error: Could not find latest release assets for ${repo_path}.${C_RESET}"
+    fi
+    return 1
+  fi
+
+  # Fallback if asset name wasn't parsed correctly
+  [ -z "$asset_name" ] || [ "$asset_name" == "null" ] && asset_name="mt-devops-framework-${tag_name}.zip"
+
+  local dest_file="${dest_dir}/${asset_name}"
+
+  echo -e "${CB_GREEN}📦 Found release ${tag_name}. Downloading to ${dest_file}...${C_RESET}"
+
+  if curl -L -# --fail "$download_url" -o "$dest_file"; then
+    echo -e "${CB_GREEN}✅ Successfully downloaded release ${tag_name} to ${dest_file}${C_RESET}"
+    if type __win_explorer_focus >/dev/null 2>&1; then
+      __win_explorer_focus "$dest_dir" 2>/dev/null || true
+    fi
+  else
+    echo -e "${CB_RED}🚨 Error: Failed to download release asset from ${download_url}.${C_RESET}"
+    return 1
+  fi
+}

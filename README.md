@@ -126,6 +126,7 @@ These utilities are exclusive to this profile and control environment configurat
 | `mt-refresh-caches` | Forcefully clears and rebuilds all background caches (.env, mytools index, system updates). |
 | `mt-get-update` | Pull latest remote profile changes and safely apply them to the local terminal workspace. |
 | `mt-push-update` | Sync local bash configs to terminal repo and push (AI-powered systematic commits). |
+| `mt-download-release` | Download a release zip from the remote repository. (e.g., `mt-download-release -v v1.0.0 -d ~/downloads`) |
 | `mt-open-config` | Opens the bash.d configuration directory directly in the configured IDE. |
 | `mt-select-theme` | Opens an interactive fuzzy-finder menu to select and apply a terminal theme. |
 | `mt-set-theme` | Sets the active terminal color theme and reloads the color profile. |
