@@ -44,36 +44,22 @@ __git_sync_copy_files() {
 
   mkdir -p "$repo_dir/.bash.d"
 
-  # Exclude root files, folders, and dynamic caches from the subfolder mirror.
-  # --delete-excluded forces rsync to scrub these from the git repo if they were previously synced.
-  rsync -a --delete --delete-excluded \
-    --exclude "config/config.yaml" \
-    --exclude "config/.env.cache" \
-    --exclude ".mt_cache*" \
-    --exclude ".update_check_cache" \
-    --exclude ".profile_update_cache" \
-    --exclude ".*_pending" \
-    --exclude ".mt_data.tsv" \
-    --exclude "__pycache__" \
-    --exclude ".ruff_cache" \
-    --exclude ".vscode" \
-    --exclude ".vsclog" \
-    --exclude "README.md" \
-    --exclude ".bashrc" \
-    --exclude "install.sh" \
-    --exclude ".gitignore" \
-    --exclude ".github" \
-    "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+  # 1. Sync the core directory, aggressively dropping caches at the rsync level
+  rsync -a --delete --delete-excluded     --exclude "config/config.yaml"     --exclude "config/.env.cache"     --exclude ".mt_cache*"     --exclude ".update_check_cache"     --exclude ".profile_update_cache"     --exclude ".*_pending"     --exclude ".mt_data.tsv"     --exclude "__pycache__"     --exclude ".ruff_cache"     --exclude ".vscode"     --exclude ".vsclog"     "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
-  # Explicitly sync the root .bashrc file
-  if [ -f "$HOME/.bashrc" ]; then
-    cp "$HOME/.bashrc" "$repo_dir/.bashrc"
-  fi
+  # 2. Move root-level configuration files to the repo root
+  for f in .bashrc install.sh README.md .gitignore .dockerignore Dockerfile; do
+    if [ -f "$HOME/.bash.d/$f" ]; then
+        cp "$HOME/.bash.d/$f" "$repo_dir/$f"
+    elif [ -f "$HOME/$f" ]; then
+        cp "$HOME/$f" "$repo_dir/$f"
+    fi
+  done
 
   (
     cd "$repo_dir" || exit 1
     
-    # Safely append required rules to .gitignore without overwriting custom user additions
+    # 3. Enforce mandatory .gitignore rules safely
     touch .gitignore
     local required_ignores=(
       ".bash.d/config/config.yaml"
@@ -87,17 +73,16 @@ __git_sync_copy_files() {
       ".ruff_cache/"
       ".vscode/"
       ".vsclog"
+      "*.zip"
+      "vsc-extensions.txt"
     )
     for pattern in "${required_ignores[@]}"; do
       grep -qxF "$pattern" .gitignore || echo "$pattern" >> .gitignore
     done
 
-    # Ensure config.yaml is permanently purged from tracking if it previously leaked
-    if git ls-files --error-unmatch .bash.d/config/config.yaml > /dev/null 2>&1; then
-      git rm -q --cached .bash.d/config/config.yaml
-    fi
-    rm -f .bash.d/config/config.yaml
-
+    # 4. The Nuclear Option: Purge index and restage
+    # This forcefully drops any previously tracked files that are now listed in .gitignore
+    git rm -r -q --cached . > /dev/null 2>&1
     git add --all
   )
 }
@@ -179,42 +164,91 @@ mt-push-update() {
 }
 
 #######################################
-# Git: Pull latest profile changes from remote and sync to local workspace
+# System: Download and install profile updates from GitHub releases [Usage: mt-get-update [-v version]]
+# Arguments:
+#   -v <version>  Specify a target release version (e.g., v1.1.0)
 #######################################
 mt-get-update() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
+  local target_version=""
+  local OPTIND opt
+  while getopts "v:h" opt; do
+    case ${opt} in
+      v) target_version="$OPTARG" ;;
+      h) mt-help "${FUNCNAME[0]}"; return 0 ;;
+      \?) echo "Usage: mt-get-update [-v <version>]" >&2; return 1 ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
+  echo -e "${CB_BLUE}⬇️ Fetching release information...${C_RESET}"
+
+  # Fallback to official repo if SYNC_REPO_URL isn't set or parsed
+  local repo_path="MatStacey/mt-devops-framework"
+  if [[ "${SYNC_REPO_URL:-}" =~ github\.com[:/]([^/]+/[^/.]+)(\.git)? ]]; then
+    repo_path="${BASH_REMATCH[1]}"
   fi
 
-  local repo_dir="$SYNC_REPO_DIR"
+  local api_url="https://api.github.com/repos/${repo_path}/releases/latest"
+  if [ -n "$target_version" ]; then
+    api_url="https://api.github.com/repos/${repo_path}/releases/tags/${target_version}"
+  fi
 
-  if [ -z "$repo_dir" ] || [ ! -d "$repo_dir/.git" ]; then
-    echo -e "\n\033[1;33m⚠️  Profile Sync Not Configured\033[0m"
-    echo "Your environment is currently running as a standalone local installation."
-    echo -e "To pull updates from a remote repository, you must first configure a sync URL using \033[1mmt-add-sync-url\033[0m and push your initial commit.\n"
+  local release_data
+  release_data=$(curl -s "$api_url")
+  
+  local download_url
+  download_url=$(echo "$release_data" | jq -r ".assets[0].browser_download_url // empty")
+  local tag_name
+  tag_name=$(echo "$release_data" | jq -r ".tag_name // empty")
+
+  if [ -z "$download_url" ] || [ "$download_url" == "null" ]; then
+    if [ -n "$target_version" ]; then
+      echo -e "${CB_RED}🚨 Error: Could not find release assets for version ${target_version} in ${repo_path}.${C_RESET}"
+    else
+      echo -e "${CB_RED}🚨 Error: Could not find latest release assets for ${repo_path}.${C_RESET}"
+    fi
     return 1
   fi
 
-  echo -e "${CB_BLUE}⬇️ Pulling latest changes from remote repository...${C_RESET}"
-  (
-    cd "$repo_dir" || exit 1
-    git fetch --tags origin
-    git pull origin "$(git rev-parse --abbrev-ref HEAD)"
-  )
+  echo -e "${CB_GREEN}📦 Found release ${tag_name}. Downloading...${C_RESET}"
+  
+  local tmp_dir
+  tmp_dir=$(mktemp -d)
+  local zip_path="${tmp_dir}/update.zip"
 
-  echo -e "\n${CB_YELLOW}🔄 Applying updates to local ~/.bash.d workspace...${C_RESET}"
-  if [ -f "$repo_dir/install.sh" ]; then
-    bash "$repo_dir/install.sh"
+  if ! curl -L -s --fail "$download_url" -o "$zip_path"; then
+     echo -e "${CB_RED}🚨 Error: Failed to download release asset from ${download_url}.${C_RESET}"
+     rm -rf "$tmp_dir"
+     return 1
+  fi
 
-    # Clear the update marker so the prompt goes away
-    rm -f "$HOME/.bash.d/.profile_update_pending"
+  echo -e "${CB_YELLOW}🔄 Extracting and applying updates...${C_RESET}"
+  unzip -q "$zip_path" -d "$tmp_dir/extracted" > /dev/null 2>&1
 
-    # Note: install.sh advises the user to run 'reload'.
-    # We will automatically trigger it here for a seamless experience.
+  # Locate the root of the extracted zip containing install.sh
+  local ext_root="$tmp_dir/extracted"
+  if [ ! -f "$ext_root/install.sh" ]; then
+      local nested
+      nested=$(find "$ext_root" -name "install.sh" -exec dirname {} \; | head -n 1)
+      if [ -n "$nested" ]; then
+         ext_root="$nested"
+      fi
+  fi
+
+  if [ -f "$ext_root/install.sh" ]; then
+    (
+      cd "$ext_root" || exit 1
+      bash ./install.sh
+    )
+
+    # Clear update markers to reset the terminal prompts
+    rm -f "$HOME/.bash.d/.profile_update_pending" "$HOME/.bash.d/.profile_update_cache"
+    
     source "$HOME/.bashrc"
+    echo -e "${CB_GREEN}✅ Update to ${tag_name} completed successfully.${C_RESET}"
   else
-    echo -e "${CB_RED}🚨 Error: install.sh missing from repository root.${C_RESET}"
-    return 1
+    echo -e "${CB_RED}🚨 Error: install.sh missing from downloaded release.${C_RESET}"
   fi
+
+  rm -rf "$tmp_dir"
 }
