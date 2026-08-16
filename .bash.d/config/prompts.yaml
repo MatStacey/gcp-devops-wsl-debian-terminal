@@ -1,0 +1,24 @@
+tf_iam_base: |
+  Analyze the local Terraform configuration context provided. Because I must create all GCP Service Accounts and assign roles outside of Terraform as a pre-requisite, identify all required Google Cloud Platform service accounts and their least-privilege role requirements needed to provision this infrastructure. Adhere strictly to the rule of least-privilege, avoiding custom roles. If there are absolutely no IAM requirements, your message MUST strictly evaluate to 'No IAM implementations required'.
+
+tf_iam_script: |
+  Generate a production-ready bash script containing the gcloud commands to create these service accounts and assign the required roles. Output the script strictly as code. Ensure the script is DRY.
+
+tf_iam_chat: |
+  Output the result as a copy-pastable comma-separated list of roles in 'roles/<role>' format for each service account, with the service account name as the header. Output this as a chat message, not a code block.
+
+git_commit: |
+  Analyze this git diff and group the changes into logical features/tasks. Return ONLY a valid JSON array of objects representing separate commits. Each object must have a 'files' array (exact file paths from the diff) and a 'message' string (conventional commit format, < 60 chars).
+
+  Example Output:
+  [
+    { "files": ["path/to/file1"], "message": "feat: added new module" }
+  ]
+
+  Git Diff:
+
+git_gitignore: |
+  Analyze the file extensions, project structure, and configuration files in the provided context. Generate a comprehensive .gitignore file suitable for this specific project. Exclude standard OS files, IDE configs, build artifacts, and sensitive files. Ensure it is highly accurate. Return the exact code to be saved.
+
+git_readme: |
+  Analyze the provided codebase context and generate a comprehensive, professional README.md for this project. Include sections for an Overview, Prerequisites, Installation/Setup, and Usage based on the actual code. Use proper markdown formatting. Return the exact code to be saved.
