@@ -3,19 +3,28 @@
 # System & Environment Bootstrap
 # ------------------------------------------
 
+# Source dependencies config safely
+if [ -f "$HOME/.bash.d/config/dependencies.sh" ]; then
+  source "$HOME/.bash.d/config/dependencies.sh"
+fi
+
+__get_missing_deps() {
+  local missing=()
+  for dep in "$@"; do
+    local cmd="${dep%%:*}"
+    local pkg="${dep##*:}"
+
+    if [ "$cmd" = "python_yaml" ]; then
+      python3 -c "import yaml" > /dev/null 2>&1 || missing+=("$pkg")
+    else
+      command -v "$cmd" > /dev/null 2>&1 || missing+=("$pkg")
+    fi
+  done
+  echo "${missing[@]}"
+}
+
 __bootstrap_apt() {
-  local apt_deps=()
-  command -v jq > /dev/null 2>&1 || apt_deps+=("jq")
-  command -v fzf > /dev/null 2>&1 || apt_deps+=("fzf")
-  command -v rg > /dev/null 2>&1 || apt_deps+=("ripgrep")
-  command -v "$BAT_BIN" > /dev/null 2>&1 || apt_deps+=("bat")
-  command -v rsync > /dev/null 2>&1 || apt_deps+=("rsync")
-  command -v shfmt > /dev/null 2>&1 || apt_deps+=("shfmt")
-  command -v file > /dev/null 2>&1 || apt_deps+=("file")
-  command -v zoxide > /dev/null 2>&1 || apt_deps+=("zoxide")
-  command -v pip3 > /dev/null 2>&1 || apt_deps+=("python3-pip")
-  command -v pipx > /dev/null 2>&1 || apt_deps+=("pipx")
-  python3 -c "import yaml" 2> /dev/null || apt_deps+=("python3-yaml")
+  local apt_deps=($(__get_missing_deps "${APT_DEPENDENCIES[@]}"))
 
   if [ ${#apt_deps[@]} -gt 0 ]; then
     echo -e "\n📦 Installing standard APT dependencies: ${apt_deps[*]}..."
@@ -43,18 +52,7 @@ __bootstrap_brew() {
     return 1
   fi
 
-  local brew_deps=()
-  command -v jq > /dev/null 2>&1 || brew_deps+=("jq")
-  command -v fzf > /dev/null 2>&1 || brew_deps+=("fzf")
-  command -v rg > /dev/null 2>&1 || brew_deps+=("ripgrep")
-  command -v "$BAT_BIN" > /dev/null 2>&1 || brew_deps+=("bat")
-  command -v rsync > /dev/null 2>&1 || brew_deps+=("rsync")
-  command -v shfmt > /dev/null 2>&1 || brew_deps+=("shfmt")
-  command -v yq > /dev/null 2>&1 || brew_deps+=("yq")
-  command -v eza > /dev/null 2>&1 || brew_deps+=("eza")
-  command -v zoxide > /dev/null 2>&1 || brew_deps+=("zoxide")
-  command -v pipx > /dev/null 2>&1 || brew_deps+=("pipx")
-  python3 -c "import yaml" 2> /dev/null || brew_deps+=("pyyaml")
+  local brew_deps=($(__get_missing_deps "${BREW_DEPENDENCIES[@]}"))
 
   if [ ${#brew_deps[@]} -gt 0 ]; then
     echo -e "\n📦 Installing standard Homebrew dependencies: ${brew_deps[*]}..."
@@ -68,17 +66,12 @@ __bootstrap_brew() {
 }
 
 __bootstrap_python() {
-  local pip_deps=("ruff" "checkov" "yapf")
-  local missing_pip=()
+  local pip_deps=($(__get_missing_deps "${PYTHON_DEPENDENCIES[@]}"))
 
-  for pkg in "${pip_deps[@]}"; do
-    command -v "$pkg" > /dev/null 2>&1 || missing_pip+=("$pkg")
-  done
-
-  if [ ${#missing_pip[@]} -gt 0 ]; then
-    echo -e "\n🐍 Installing Python tooling (${missing_pip[*]})..."
+  if [ ${#pip_deps[@]} -gt 0 ]; then
+    echo -e "\n🐍 Installing Python tooling (${pip_deps[*]})..."
     if command -v pipx > /dev/null 2>&1; then
-      for pkg in "${missing_pip[@]}"; do pipx install "$pkg" 2> /dev/null || pip3 install --user "$pkg"; done
+      for pkg in "${pip_deps[@]}"; do pipx install "$pkg" 2> /dev/null || pip3 install --user "$pkg"; done
     else
       pip3 install --user "${pip_deps[@]}"
     fi
@@ -88,8 +81,7 @@ __bootstrap_python() {
 }
 
 __bootstrap_yq() {
-  # macOS installs yq via Homebrew as part of __bootstrap_brew; this binary
-  # download is Linux-specific (and the artifact name is Linux-only).
+  # macOS installs yq via Homebrew; this binary download is Linux-specific
   [ "$OS_FAMILY" = "macos" ] && return 0
 
   if ! command -v yq > /dev/null 2>&1; then
@@ -101,15 +93,11 @@ __bootstrap_yq() {
 }
 
 __bootstrap_check_complex() {
-  local missing_complex_deps=()
-  command -v terraform > /dev/null 2>&1 || missing_complex_deps+=("terraform")
-  command -v gcloud > /dev/null 2>&1 || missing_complex_deps+=("google-cloud-cli")
-  command -v kubectl > /dev/null 2>&1 || missing_complex_deps+=("kubectl")
-  command -v eza > /dev/null 2>&1 || missing_complex_deps+=("eza")
+  local missing_complex=($(__get_missing_deps "${COMPLEX_DEPENDENCIES[@]}"))
 
-  if [ ${#missing_complex_deps[@]} -gt 0 ]; then
+  if [ ${#missing_complex[@]} -gt 0 ]; then
     echo -e "\n⚠️  The following tools are missing and require manual repo config:"
-    for dep in "${missing_complex_deps[@]}"; do echo "  - $dep"; done
+    for dep in "${missing_complex[@]}"; do echo "  - $dep"; done
   fi
 }
 
@@ -138,21 +126,18 @@ bootstrap() {
 __check_missing_deps() {
   if [[ $- != *i* ]]; then return; fi
 
-  local missing=0
-  local deps=(jq fzf rg "$BAT_BIN" rsync shfmt file ruff checkov terraform gcloud kubectl eza yq)
-
-  for dep in "${deps[@]}"; do
-    if ! command -v "$dep" > /dev/null 2>&1; then
-      missing=1
-      break
-    fi
-  done
-
-  if [ "$missing" -eq 0 ] && ! python3 -c "import yaml" > /dev/null 2>&1; then
-    missing=1
+  local to_check=()
+  if [ "$OS_FAMILY" = "macos" ]; then
+    to_check=("${BREW_DEPENDENCIES[@]}")
+  else
+    to_check=("${APT_DEPENDENCIES[@]}")
+    to_check+=("yq:yq") # Linux manually checks yq since it bypasses APT
   fi
+  to_check+=("${PYTHON_DEPENDENCIES[@]}" "${COMPLEX_DEPENDENCIES[@]}")
 
-  if [ "$missing" -eq 1 ]; then
+  local missing_list=($(__get_missing_deps "${to_check[@]}"))
+
+  if [ ${#missing_list[@]} -gt 0 ]; then
     echo -e "\n\e[33m⚠️  Missing required dependencies detected in your environment.\e[0m"
     read -p "Would you like to run 'bootstrap' to install them now? [Y/n] " -n 1 -r choice
     echo
@@ -166,7 +151,7 @@ __check_missing_deps() {
 #######################################
 # System: Updates system packages (APT on Debian/WSL, Homebrew on macOS)
 #######################################
-sys-update() { # => System: Updates system packages (APT/Homebrew)
+sys-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -185,7 +170,7 @@ sys-update() { # => System: Updates system packages (APT/Homebrew)
 #######################################
 # System: Updates system packages and clears the pending-update marker
 #######################################
-sys-install() { # => System: Updates system packages (APT/Homebrew) and clears pending marker
+sys-install() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
