@@ -116,7 +116,7 @@ __ai_query_gemini() {
   system_json=$(jq -n --arg sp "${AI_SYSTEM_PROMPT}" '{ systemInstruction: { parts: [{ text: $sp }] } }')
   local payload_file
   payload_file=$(mktemp)
-  jq -s '.[0] * .[1] * .[2]' "$HOME/.bash.d/config/gemini-config.json" <(echo "$system_json") <(echo "$prompt_json") > "$payload_file"
+  jq -s '.[0] * .[1] * .[2]' "$HOME/.bash.d/config/ai/gemini-config.json" <(echo "$system_json") <(echo "$prompt_json") > "$payload_file"
 
   echo "⏳ Querying Gemini ($final_model)..." >&2
   local response
@@ -169,7 +169,7 @@ __ai_query_claude() {
   system_json=$(jq -n --arg sp "${AI_SYSTEM_PROMPT}" '{ system: $sp }')
   local payload_file
   payload_file=$(mktemp)
-  jq -s '.[0] * .[1] * .[2] * {model: $model}' "$HOME/.bash.d/config/claude-config.json" <(echo "$system_json") <(echo "$prompt_json") --arg model "$final_model" > "$payload_file"
+  jq -s '.[0] * .[1] * .[2] * {model: $model}' "$HOME/.bash.d/config/ai/claude-config.json" <(echo "$system_json") <(echo "$prompt_json") --arg model "$final_model" > "$payload_file"
 
   echo "⏳ Querying Claude ($final_model)..." >&2
   local response
@@ -246,7 +246,7 @@ __ai_parse_response() {
   local content="$1" provider="$2" title="$3" explicit_out_file="$4"
 
   local clean_content
-  clean_content=$(echo "$content" | python3 "$HOME/.bash.d/lib/ai_parse_response.py" 2> /dev/null)
+  clean_content=$(echo "$content" | python3 "$HOME/.bash.d/lib/python/ai_parse_response.py" 2> /dev/null)
 
   local category lang ext code msg gen_title
   category=$(echo "$clean_content" | jq -r '.category // empty')
@@ -281,7 +281,7 @@ __ai_parse_response() {
 #   Writes parsed JSON array string to STDOUT.
 #######################################
 __ai_extract_json_array() {
-  echo "$1" | python3 "$HOME/.bash.d/lib/ai_extract_json_array.py" 2> /dev/null
+  echo "$1" | python3 "$HOME/.bash.d/lib/python/ai_extract_json_array.py" 2> /dev/null
 }
 
 #######################################
