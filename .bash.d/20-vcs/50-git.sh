@@ -12,13 +12,13 @@
 # Returns:
 #   0 on success, 1 on empty argument input.
 #######################################
-git-feature() {
+git-new-feature() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
   }
   [ -z "$1" ] && {
-    echo -e "🚨 Error: Jira ID / branch suffix cannot be empty.\nUsage: git-chk-feat CCON-123"
+    echo -e "🚨 Error: Jira ID / branch suffix cannot be empty.\nUsage: git-new-feature CCON-123"
     return 1
   }
 
@@ -61,7 +61,7 @@ git() {
 # Returns:
 #   0 on success, 1 if no upstream origin is found.
 #######################################
-git-web() {
+git-view-remote() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -97,7 +97,7 @@ git-web() {
 # Returns:
 #   0 on success, 1 on empty URL parameter or git clone failure.
 #######################################
-git-ide() {
+git-clone-ide() {
   local selected_ide="${DEFAULT_IDE:-vscode}"
   local repo_url=""
 
@@ -119,7 +119,7 @@ git-ide() {
   done
 
   [ -z "$repo_url" ] && {
-    echo -e "🚨 Error: Repository URL cannot be empty.\nUsage: git-ide [-ide vscode|intellij] <repo-url>"
+    echo -e "🚨 Error: Repository URL cannot be empty.\nUsage: git-clone-ide [-ide vscode|intellij] <repo-url>"
     return 1
   }
 
@@ -146,7 +146,7 @@ git-ide() {
 #######################################
 # Git: Print a beautiful, color-coded, single-line graph log
 #######################################
-git-lg() {
+git-pretty-log() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -157,7 +157,7 @@ git-lg() {
 #######################################
 # Git: Safely delete all local branches that have been merged into the default branch
 #######################################
-git-cleanup() {
+git-clean-local() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -188,7 +188,7 @@ git-cleanup() {
 #######################################
 # Git: Fetch upstream and rebase the current branch onto the default branch
 #######################################
-git-update() {
+git-default-rebase() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
