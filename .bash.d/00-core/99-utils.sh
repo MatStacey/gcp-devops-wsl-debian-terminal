@@ -202,3 +202,12 @@ docker-tail() {
   # Remove the trap once finished
   trap - SIGINT
 }
+
+#######################################
+# AI: Retrieves a prompt string from the centralized prompts.yaml
+# Arguments:
+#   $1 - The key of the prompt to retrieve
+#######################################
+__get_prompt() {
+  python3 "$HOME/.bash.d/lib/get_prompt.py" "$1"
+}
