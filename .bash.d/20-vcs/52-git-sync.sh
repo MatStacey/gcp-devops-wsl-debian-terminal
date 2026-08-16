@@ -45,20 +45,32 @@ __git_sync_copy_files() {
   mkdir -p "$repo_dir/.bash.d"
 
   # 1. Sync the core directory, aggressively dropping caches at the rsync level
-  rsync -a --delete --delete-excluded     --exclude "config/config.yaml"     --exclude "config/.env.cache"     --exclude ".mt_cache*"     --exclude ".update_check_cache"     --exclude ".profile_update_cache"     --exclude ".*_pending"     --exclude ".mt_data.tsv"     --exclude "__pycache__"     --exclude ".ruff_cache"     --exclude ".vscode"     --exclude ".vsclog"     "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+  rsync -a --delete --delete-excluded \
+    --exclude "config/config.yaml" \
+    --exclude "config/.env.cache" \
+    --exclude ".mt_cache*" \
+    --exclude ".update_check_cache" \
+    --exclude ".profile_update_cache" \
+    --exclude ".*_pending" \
+    --exclude ".mt_data.tsv" \
+    --exclude "__pycache__" \
+    --exclude ".ruff_cache" \
+    --exclude ".vscode" \
+    --exclude ".vsclog" \
+    "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
   # 2. Move root-level configuration files to the repo root
   for f in .bashrc install.sh README.md .gitignore .dockerignore Dockerfile; do
     if [ -f "$HOME/.bash.d/$f" ]; then
-        cp "$HOME/.bash.d/$f" "$repo_dir/$f"
+      cp "$HOME/.bash.d/$f" "$repo_dir/$f"
     elif [ -f "$HOME/$f" ]; then
-        cp "$HOME/$f" "$repo_dir/$f"
+      cp "$HOME/$f" "$repo_dir/$f"
     fi
   done
 
   (
     cd "$repo_dir" || exit 1
-    
+
     # 3. Enforce mandatory .gitignore rules safely
     touch .gitignore
     local required_ignores=(
@@ -107,7 +119,7 @@ mt-push-update() {
 
   if command -v google-fmt > /dev/null 2>&1; then
     echo "🧹 Running Google Style code formatting before profile sync..."
-    google-fmt
+    (cd "$HOME/.bash.d" && google-fmt > /dev/null 2>&1)
   fi
 
   local repo_dir="$SYNC_REPO_DIR"
@@ -174,8 +186,14 @@ mt-get-update() {
   while getopts "v:h" opt; do
     case ${opt} in
       v) target_version="$OPTARG" ;;
-      h) mt-help "${FUNCNAME[0]}"; return 0 ;;
-      \?) echo "Usage: mt-get-update [-v <version>]" >&2; return 1 ;;
+      h)
+        mt-help "${FUNCNAME[0]}"
+        return 0
+        ;;
+      \?)
+        echo "Usage: mt-get-update [-v <version>]" >&2
+        return 1
+        ;;
     esac
   done
   shift $((OPTIND - 1))
@@ -195,7 +213,7 @@ mt-get-update() {
 
   local release_data
   release_data=$(curl -s "$api_url")
-  
+
   local download_url
   download_url=$(echo "$release_data" | jq -r ".assets[0].browser_download_url // empty")
   local tag_name
@@ -211,15 +229,15 @@ mt-get-update() {
   fi
 
   echo -e "${CB_GREEN}📦 Found release ${tag_name}. Downloading...${C_RESET}"
-  
+
   local tmp_dir
   tmp_dir=$(mktemp -d)
   local zip_path="${tmp_dir}/update.zip"
 
   if ! curl -L -s --fail "$download_url" -o "$zip_path"; then
-     echo -e "${CB_RED}🚨 Error: Failed to download release asset from ${download_url}.${C_RESET}"
-     rm -rf "$tmp_dir"
-     return 1
+    echo -e "${CB_RED}🚨 Error: Failed to download release asset from ${download_url}.${C_RESET}"
+    rm -rf "$tmp_dir"
+    return 1
   fi
 
   echo -e "${CB_YELLOW}🔄 Extracting and applying updates...${C_RESET}"
@@ -228,11 +246,11 @@ mt-get-update() {
   # Locate the root of the extracted zip containing install.sh
   local ext_root="$tmp_dir/extracted"
   if [ ! -f "$ext_root/install.sh" ]; then
-      local nested
-      nested=$(find "$ext_root" -name "install.sh" -exec dirname {} \; | head -n 1)
-      if [ -n "$nested" ]; then
-         ext_root="$nested"
-      fi
+    local nested
+    nested=$(find "$ext_root" -name "install.sh" -exec dirname {} \; | head -n 1)
+    if [ -n "$nested" ]; then
+      ext_root="$nested"
+    fi
   fi
 
   if [ -f "$ext_root/install.sh" ]; then
@@ -243,7 +261,7 @@ mt-get-update() {
 
     # Clear update markers to reset the terminal prompts
     rm -f "$HOME/.bash.d/.profile_update_pending" "$HOME/.bash.d/.profile_update_cache"
-    
+
     source "$HOME/.bashrc"
     echo -e "${CB_GREEN}✅ Update to ${tag_name} completed successfully.${C_RESET}"
   else
@@ -263,13 +281,19 @@ mt-download-release() {
   local target_version=""
   local dest_dir="$PWD"
   local OPTIND opt
-  
+
   while getopts "v:d:h" opt; do
     case ${opt} in
       v) target_version="$OPTARG" ;;
       d) dest_dir="$OPTARG" ;;
-      h) mt-help "${FUNCNAME[0]}"; return 0 ;;
-      \?) echo "Usage: mt-download-release [-v <version>] [-d <directory>]" >&2; return 1 ;;
+      h)
+        mt-help "${FUNCNAME[0]}"
+        return 0
+        ;;
+      \?)
+        echo "Usage: mt-download-release [-v <version>] [-d <directory>]" >&2
+        return 1
+        ;;
     esac
   done
   shift $((OPTIND - 1))
@@ -297,7 +321,7 @@ mt-download-release() {
 
   local release_data
   release_data=$(curl -s "$api_url")
-  
+
   local download_url
   download_url=$(echo "$release_data" | jq -r ".assets[0].browser_download_url // empty")
   local asset_name
@@ -323,8 +347,8 @@ mt-download-release() {
 
   if curl -L -# --fail "$download_url" -o "$dest_file"; then
     echo -e "${CB_GREEN}✅ Successfully downloaded release ${tag_name} to ${dest_file}${C_RESET}"
-    if type __win_explorer_focus >/dev/null 2>&1; then
-      __win_explorer_focus "$dest_dir" 2>/dev/null || true
+    if type __win_explorer_focus > /dev/null 2>&1; then
+      __win_explorer_focus "$dest_dir" 2> /dev/null || true
     fi
   else
     echo -e "${CB_RED}🚨 Error: Failed to download release asset from ${download_url}.${C_RESET}"
