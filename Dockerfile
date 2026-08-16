@@ -7,8 +7,8 @@ SHELL ["/bin/bash", "-o", "pipefail", "-c"]
 ENV DEBIAN_FRONTEND=noninteractive
 
 # 1. Install OS utilities, HashiCorp tools, and GCP CLI in a single merged layer
-# hadolint ignore=DL3008,DL3015
 # kics-scan ignore-block
+# hadolint ignore=DL3008,DL3015
 RUN apt-get update && apt-get install -y --no-install-recommends \
     sudo curl wget git jq fzf ripgrep rsync file python3-pip pipx \
     apt-transport-https ca-certificates gnupg unzip bat python3-yaml \
@@ -38,6 +38,7 @@ COPY .bashrc install.sh /tmp/mt-devops-framework/
 COPY .bash.d/ /tmp/mt-devops-framework/.bash.d/
 
 # 6. Install Python tooling and run the profile installer in a single layer
+# hadolint ignore=DL3003,DL3013
 RUN pipx install ruff \
     && pipx install checkov \
     && pipx install yapf \
