@@ -12,3 +12,4 @@ __pycache__/
 .vsclog
 *.zip
 vsc-extensions.txt
+.current_version

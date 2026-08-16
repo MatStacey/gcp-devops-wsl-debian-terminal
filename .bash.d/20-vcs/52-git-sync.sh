@@ -51,6 +51,7 @@ __git_sync_copy_files() {
     --exclude ".mt_cache*" \
     --exclude ".update_check_cache" \
     --exclude ".profile_update_cache" \
+    --exclude ".current_version" \
     --exclude ".*_pending" \
     --exclude ".mt_data.tsv" \
     --exclude "__pycache__" \
@@ -269,6 +270,7 @@ mt-get-update() {
 
     # Clear update markers to reset the terminal prompts
     rm -f "$HOME/.bash.d/.profile_update_pending" "$HOME/.bash.d/.profile_update_cache"
+    echo "$tag_name" > "$HOME/.bash.d/.current_version"
 
     source "$HOME/.bashrc"
     echo -e "${CB_GREEN}✅ Update to ${tag_name} completed successfully.${C_RESET}"
