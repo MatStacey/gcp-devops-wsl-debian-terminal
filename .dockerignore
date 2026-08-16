@@ -1,0 +1,7 @@
+.git
+.gitignore
+.vscode
+.devcontainer
+.bash.d/config/config.yaml
+.bash.d/config/.env.cache
+__pycache__
