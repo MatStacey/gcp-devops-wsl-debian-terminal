@@ -43,14 +43,24 @@ if [ -f "$HOME/.bash.d/01-ui/01-colors.sh" ]; then
   source "$HOME/.bash.d/01-ui/01-colors.sh"
 fi
 
-if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
+if [[ -z "$GEMINI_API_KEY" ||
+  "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" ||
+  "$GEMINI_API_KEY" == "null" ]]; then
   unset GEMINI_API_KEY
-  echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:\n    ${C_RESET}mt-add-gemini-key \"your-api-key\"\e[0m"
+  if [[ "${DEFAULT_AI:-gemini}" == "gemini" ]]; then
+    echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml." \
+      "Add one via:\n    ${C_RESET}mt-add-gemini-key \"your-api-key\"${C_RESET}"
+  fi
 fi
 
-if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "null" ]]; then
+if [[ -z "$CLAUDE_API_KEY" ||
+  "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" ||
+  "$CLAUDE_API_KEY" == "null" ]]; then
   unset CLAUDE_API_KEY
-  echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:\n    ${C_RESET}mt-add-claude-key \"your-api-key\"\e[0m"
+  if [[ "${DEFAULT_AI:-gemini}" == "claude" ]]; then
+    echo -e "${C_YELLOW}No Claude API Key provided in config.yaml." \
+      "Add one via:\n    ${C_RESET}mt-add-claude-key \"your-api-key\"${C_RESET}"
+  fi
 fi
 #######################################
 # Prints the current Gemini API model version and extended reasoning mode toggle.
