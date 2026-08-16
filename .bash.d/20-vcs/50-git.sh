@@ -284,7 +284,7 @@ git-raise-pr() {
     read -p "Would you like to delete this branch locally and checkout a new one? [Y/n] " -n 1 -r
     echo
     if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-      read -p "Enter new branch name: " new_branch
+      read -r -p "Enter new branch name: " new_branch
       if [ -z "$new_branch" ]; then
         echo -e "${CB_RED}🚨 Aborted.${C_RESET}"
         return 1
