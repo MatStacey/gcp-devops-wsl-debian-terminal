@@ -59,8 +59,13 @@ __git_sync_copy_files() {
     --exclude ".vsclog" \
     "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
-  # 2. Move root-level configuration files to the repo root
-  for f in .bashrc install.sh README.md .gitignore .dockerignore Dockerfile; do
+  # 2. Explicitly sync the root ~/.bashrc file from the home directory
+  if [ -f "$HOME/.bashrc" ]; then
+    cp "$HOME/.bashrc" "$repo_dir/.bashrc"
+  fi
+
+  # 3. Move standard root-level configuration files to the repo root
+  for f in install.sh README.md .gitignore .dockerignore Dockerfile; do
     if [ -f "$HOME/.bash.d/$f" ]; then
       cp "$HOME/.bash.d/$f" "$repo_dir/$f"
     elif [ -f "$HOME/$f" ]; then
@@ -68,10 +73,19 @@ __git_sync_copy_files() {
     fi
   done
 
+  # 4. Explicitly copy required root directories
+  for d in .github .devcontainer; do
+    if [ -d "$HOME/.bash.d/$d" ]; then
+      cp -r "$HOME/.bash.d/$d" "$repo_dir/"
+    elif [ -d "$HOME/$d" ]; then
+      cp -r "$HOME/$d" "$repo_dir/"
+    fi
+  done
+
   (
     cd "$repo_dir" || exit 1
 
-    # 3. Enforce mandatory .gitignore rules safely
+    # 5. Enforce mandatory .gitignore rules safely
     touch .gitignore
     local required_ignores=(
       ".bash.d/config/config.yaml"
@@ -92,8 +106,7 @@ __git_sync_copy_files() {
       grep -qxF "$pattern" .gitignore || echo "$pattern" >> .gitignore
     done
 
-    # 4. The Nuclear Option: Purge index and restage
-    # This forcefully drops any previously tracked files that are now listed in .gitignore
+    # 6. Purge index and restage to respect new ignore rules
     git rm -r -q --cached . > /dev/null 2>&1
     git add --all
   )
@@ -117,11 +130,6 @@ mt-push-update() {
     return 0
   }
 
-  if command -v google-fmt > /dev/null 2>&1; then
-    echo "🧹 Running Google Style code formatting before profile sync..."
-    (cd "$HOME/.bash.d" && google-fmt > /dev/null 2>&1)
-  fi
-
   local repo_dir="$SYNC_REPO_DIR"
   local remote_url="${SYNC_REPO_URL:-}"
 
@@ -141,6 +149,13 @@ mt-push-update() {
 
   (
     cd "$repo_dir" || exit 1
+
+    # Format the repo just before checking diffs to guarantee CI pipelne success!
+    if command -v shfmt > /dev/null 2>&1; then
+      echo "🧹 Running Google Style code formatting before profile sync..."
+      shfmt -i 2 -ci -sr -w . > /dev/null 2>&1 || true
+    fi
+
     git diff --staged --quiet && {
       echo "✅ Configurations are already up to date. No changes to commit."
       return 0
@@ -163,10 +178,10 @@ mt-push-update() {
 
     if git push origin HEAD; then
       echo "🚀 Successfully pushed updates to remote."
-      read -p "🌐 Open repository in browser? [Y/n] " -n 1 -r
-      echo
+      read -p "🌐 Open repository in browser? [Y/n] " -n 1 -r < /dev/tty
+      echo > /dev/tty
       if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-        git-web
+        git-view-remote
       fi
     else
       echo "🚨 Error: Failed to push updates to remote." >&2
@@ -219,7 +234,7 @@ mt-get-update() {
   local tag_name
   tag_name=$(echo "$release_data" | jq -r ".tag_name // empty")
 
-  if [ -z "$download_url" ] || [ "$download_url" == "null" ]; then
+  if [ -z "$download_url" ] || [ "$download_url" = "null" ]; then
     if [ -n "$target_version" ]; then
       echo -e "${CB_RED}🚨 Error: Could not find release assets for version ${target_version} in ${repo_path}.${C_RESET}"
     else
@@ -329,7 +344,7 @@ mt-download-release() {
   local tag_name
   tag_name=$(echo "$release_data" | jq -r ".tag_name // empty")
 
-  if [ -z "$download_url" ] || [ "$download_url" == "null" ]; then
+  if [ -z "$download_url" ] || [ "$download_url" = "null" ]; then
     if [ -n "$target_version" ]; then
       echo -e "${CB_RED}🚨 Error: Could not find release assets for version ${target_version} in ${repo_path}.${C_RESET}"
     else
@@ -339,7 +354,7 @@ mt-download-release() {
   fi
 
   # Fallback if asset name wasn't parsed correctly
-  [ -z "$asset_name" ] || [ "$asset_name" == "null" ] && asset_name="mt-devops-framework-${tag_name}.zip"
+  [ -z "$asset_name" ] || [ "$asset_name" = "null" ] && asset_name="mt-devops-framework-${tag_name}.zip"
 
   local dest_file="${dest_dir}/${asset_name}"
 
