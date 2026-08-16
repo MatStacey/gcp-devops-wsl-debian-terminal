@@ -23,7 +23,7 @@ Before installing this terminal environment, ensure your local workstation meets
 *   **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment.
 *   **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-select-theme`).
 *   **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT/Homebrew packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`, `zoxide`).
-*   **Multi-Provider AI Architecture:** Consult universal AI via the `ai` command with support for **Gemini**, **Claude**, and **Local LLMs** (via Ollama or any OpenAI-compatible endpoint). Background workflows like `git-ai-pc` dynamically respect your active `DEFAULT_AI` setting.
+*   **Multi-Provider AI Architecture:** Consult universal AI via the `ai` command with support for **Gemini**, **Claude**, and **Local LLMs** (via Ollama or any OpenAI-compatible endpoint). Background workflows like `git-ai-push-all` dynamically respect your active `DEFAULT_AI` setting.
 *   **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` with configurable thread limits to concurrently validate and run Checkov security scans across all Terraform modules.
 
 ---
@@ -106,7 +106,7 @@ This command securely fetches your upstream commits and safely synchronizes them
 | --- | --- |
 | `00-core/` | Core configuration, centralized dynamic color themes, cross-platform OS helpers, mytools engine, and bootstrapping utilities. |
 | `10-infra/` | GCP authentication/project switchers, concurrent Terraform validation, and comprehensive Kubectl aliases. |
-| `20-vcs/` | Git wrappers, AI-assisted feature-grouped commit automation (`git-ai-pc`), profile syncing, and web launching. |
+| `20-vcs/` | Git wrappers, AI-assisted feature-grouped commit automation (`git-ai-push-all`), profile syncing, and web launching. |
 | `30-ai/` | API integrations for interacting with Google Gemini, Anthropic Claude, and local OpenAI-compatible endpoints. |
 | `config/` | JSON/YAML files, secure `.env` caching, and modular theme definitions (`config/themes/`). |
 | `lib/` | AWK parsers (`mytools.awk`), configuration templates, and standalone Python utility scripts (`config_manager.py`). |
@@ -227,14 +227,14 @@ These utilities are exclusive to this profile and control environment configurat
 | Command | Type | Description |
 | --- | --- | --- |
 | `git` | Function | Wrapper to force 'clone' into `~/vcs/` from anywhere. |
-| `git-ai-pc` | Function | Add all files, intelligently group via AI (respecting active provider), and push. |
-| `git-feature` | Function | Create and checkout a new feature branch using the configured prefix. |
-| `git-cleanup` | Function | Safely delete all local branches merged into the default branch. |
-| `git-update` | Function | Fetch upstream and rebase the current branch onto the default branch. |
+| `git-ai-push-all` | Function | Add all files, intelligently group via AI (respecting active provider), and push. |
+| `git-new-feature` | Function | Create and checkout a new feature branch using the configured prefix. |
+| `git-clean-local` | Function | Safely delete all local branches merged into the default branch. |
+| `git-default-rebase` | Function | Fetch upstream and rebase the current branch onto the default branch. |
 | `git-nuke` | Function | Hard reset and wipe all untracked files on the current branch. |
-| `git-ide` | Function | Clone a repository into `~/vcs/`, `cd` into it, and open in IDE. |
-| `git-lg` | Function | Print a beautiful, color-coded, single-line graph log. |
-| `git-web` | Function | Open the current repository in the default web browser. |
+| `git-clone-ide` | Function | Clone a repository into `~/vcs/`, `cd` into it, and open in IDE. |
+| `git-pretty-log` | Function | Print a beautiful, color-coded, single-line graph log. |
+| `git-view-remote` | Function | Open the current repository in the default web browser. |
 
 #### Development & Build Tools
 
