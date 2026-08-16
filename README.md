@@ -10,7 +10,7 @@ Before installing this terminal environment, ensure your local workstation meets
 
 *   **Operating System:** Officially supports WSL2 (Debian/Ubuntu), macOS (via Homebrew), and native Linux.
 *   **Visual Studio Code:** Required for seamless IDE integration. Ensure the **WSL Extension** is installed if running on Windows.
-*   **VSCode Extension Pack:** It is highly recommended to install the standardized extension pack to ensure all linting, formatting, and infrastructure integrations (like Terraform and Checkov) function perfectly alongside this terminal environment. You can install it from the dedicated repository here: [MatStacey/vscode-ext-pack](https://github.com/MatStacey/vscode-ext-pack).
+*   **VSCode Extension Pack:** It is highly recommended to install the standardized extension pack to ensure all linting, formatting, and infrastructure integrations (like Terraform and Checkov) function perfectly alongside this terminal environment. You can install it from the dedicated repository here: [MatStacey/mt-devops-vscode-extension-pack](https://github.com/MatStacey/mt-devops-vscode-extension-pack).
 *   **Git:** Required to clone the initial repository and handle ongoing AI-assisted profile synchronization.
 
 ---
@@ -97,6 +97,26 @@ mt-get-update
 ```
 
 This command securely fetches your upstream commits and safely synchronizes them into your local `~/.bash.d/` workspace.
+
+---
+
+## 🐳 Docker & Dev Container Integration
+
+This framework includes a fully functional `Dockerfile` and `.devcontainer` configuration, allowing you to instantly spin up a pristine, isolated development environment without installing local dependencies.
+
+When launched, the Dev Container automatically builds the base image, installs all framework tooling, and securely sideloads the latest release of our companion [MT DevOps VSCode Extension Pack](https://github.com/MatStacey/mt-devops-vscode-extension-pack) directly from GitHub.
+
+### 📋 Dev Container Prerequisites
+* **Docker Desktop** (or a standard Docker Engine setup).
+* **Visual Studio Code**.
+* The **Dev Containers** extension (`ms-vscode-remote.remote-containers`) installed in VS Code.
+
+### 🚀 Launch Steps
+1. Download or clone this repository to your local machine.
+2. Open the `mt-devops-framework` folder in Visual Studio Code.
+3. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) to open the Command Palette.
+4. Type and select **Dev Containers: Reopen in Container**.
+5. VS Code will build the image, initialize the framework, fetch the latest extension pack `.vsix` release, and drop you into a ready-to-use terminal!
 
 ---
 
