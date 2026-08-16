@@ -25,7 +25,7 @@ __rebuild_mytools_cache() {
 
   # Natively parse all sh files with AWK to handle multi-line blocks
   local raw_tsv
-  raw_tsv=$(find "$bashd_dir" -type f -name "*.sh" -exec awk -f "$bashd_dir/lib/mytools.awk" {} +)
+  raw_tsv=$(find "$bashd_dir" -type f -name "*.sh" -exec awk -f "$bashd_dir/lib/awk/mytools.awk" {} +)
 
   echo "$raw_tsv" | sort -t$'\t' -k1,1r -k2,2f -k3,3f > "$tsv_index"
 
@@ -220,8 +220,8 @@ mt-help() {
   echo -e "\033[1;34m==========================================================\033[0m"
   echo -e "\033[1;33m 📄 File: \033[0m $(wslpath -m "$file_path" 2> /dev/null || echo "$file_path")"
   echo -e "\033[1;34m----------------------------------------------------------\033[0m"
-  awk -v target="$target" -f "$HOME/.bash.d/lib/mt_help.awk" "$file_path" | "$BAT_BIN" --language=bash --style=plain 2> /dev/null ||
-    awk -v target="$target" -f "$HOME/.bash.d/lib/mt_help.awk" "$file_path"
+  awk -v target="$target" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$file_path" | "$BAT_BIN" --language=bash --style=plain 2> /dev/null ||
+    awk -v target="$target" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$file_path"
 
   echo -e "\033[1;34m==========================================================\033[0m"
 }
@@ -275,8 +275,8 @@ mt-refresh-caches() {
   rm -f "$HOME/.bash.d/.profile_update_cache" "$HOME/.bash.d/.profile_update_pending"
 
   echo -e "${CB_BLUE}🔄 Rebuilding configurations and tool indexes...${C_RESET}"
-  if [ -f "$HOME/.bash.d/lib/config_manager.py" ]; then
-    python3 "$HOME/.bash.d/lib/config_manager.py" load-env > "$HOME/.bash.d/config/.env.cache"
+  if [ -f "$HOME/.bash.d/lib/python/config_manager.py" ]; then
+    python3 "$HOME/.bash.d/lib/python/config_manager.py" load-env > "$HOME/.bash.d/config/.env.cache"
     chmod 600 "$HOME/.bash.d/config/.env.cache" 2> /dev/null
   fi
 

@@ -209,5 +209,5 @@ docker-tail() {
 #   $1 - The key of the prompt to retrieve
 #######################################
 __get_prompt() {
-  python3 "$HOME/.bash.d/lib/get_prompt.py" "$1"
+  python3 "$HOME/.bash.d/lib/python/get_prompt.py" "$1"
 }

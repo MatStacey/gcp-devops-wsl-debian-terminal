@@ -5,7 +5,7 @@
 # ~/.bash.d/00-core/00-config.sh
 
 CONFIG_FILE="$HOME/.bash.d/config/config.yaml"
-CONFIG_MANAGER="$HOME/.bash.d/lib/config_manager.py"
+CONFIG_MANAGER="$HOME/.bash.d/lib/python/config_manager.py"
 ENV_CACHE="$HOME/.bash.d/config/.env.cache"
 YAML_TEMPLATE="$HOME/.bash.d/lib/templates/config.yaml.tpl"
 
