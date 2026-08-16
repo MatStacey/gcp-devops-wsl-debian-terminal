@@ -14,7 +14,7 @@ __win_explorer_focus() {
       local target_path
       target_path=$(wslpath -m "$1")
 
-      powershell.exe -ExecutionPolicy Bypass -NoProfile -File "$(wslpath -w "$HOME/.bash.d/lib/win_explorer_focus.ps1")" -TargetPath "$target_path" > /dev/null 2>&1
+      powershell.exe -ExecutionPolicy Bypass -NoProfile -File "$(wslpath -w "$HOME/.bash.d/lib/windows/win_explorer_focus.ps1")" -TargetPath "$target_path" > /dev/null 2>&1
       ;;
     *)
       # No native window-focus mechanism on plain Linux; best effort only.
