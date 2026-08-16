@@ -147,6 +147,8 @@ mt-push-update() {
       shfmt -i 2 -ci -sr -w . > /dev/null 2>&1 || true
     fi
 
+    git add --all
+
     git diff --staged --quiet && {
       echo "✅ Configurations are already up to date. No changes to commit."
       return 0
