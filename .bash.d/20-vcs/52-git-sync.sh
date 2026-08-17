@@ -114,8 +114,14 @@ mt-push-update() {
   fi
   local issue_num=""
   local OPTIND opt
-  while getopts "i:" opt; do case ${opt} in i) issue_num="$OPTARG" ;; esac done
+  while getopts "i:" opt; do
+    case ${opt} in
+      i) issue_num="$OPTARG" ;;
+      *) ;;
+    esac
+  done
   shift $((OPTIND - 1))
+
   local user_msg="$*"
   local repo_dir="$SYNC_REPO_DIR"
   local remote_url="${SYNC_REPO_URL:-}"
@@ -123,15 +129,21 @@ mt-push-update() {
     echo "⚠️ Sync Not Configured"
     return 1
   fi
+
   echo "🔄 Syncing bash configuration to $repo_dir..."
   __git_sync_init_repo "$repo_dir" "$remote_url"
   (
     cd "$repo_dir" || exit 1
-    local default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
+    local default_branch
+    default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
     default_branch="${default_branch:-main}"
-    local current_branch=$(git branch --show-current)
+
+    local current_branch
+    current_branch=$(git branch --show-current)
+
     if [ "$current_branch" != "$default_branch" ] && command -v gh > /dev/null 2>&1; then
-      local pr_state=$(gh pr view "$current_branch" --json state -q .state 2> /dev/null || echo "NONE")
+      local pr_state
+      pr_state=$(gh pr view "$current_branch" --json state -q .state 2> /dev/null || echo "NONE")
       if [[ "$pr_state" == "MERGED" || "$pr_state" == "CLOSED" ]]; then
         read -r -p "⚠️ Branch dead. Checkout $default_branch? [Y/n] " -n 1
         echo
@@ -141,6 +153,7 @@ mt-push-update() {
         else exit 1; fi
       fi
     fi
+
     if [ "$current_branch" = "$default_branch" ]; then
       git checkout "$default_branch" > /dev/null 2>&1 || git checkout -b "$default_branch" > /dev/null 2>&1
       git pull origin "$default_branch" > /dev/null 2>&1 || true
@@ -162,28 +175,39 @@ mt-push-update() {
       echo "✅ Configurations already up to date."
       return 0
     fi
-    local current_branch=$(git branch --show-current)
-    local default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
+
+    local current_branch
+    current_branch=$(git branch --show-current)
+    local default_branch
+    default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
     default_branch="${default_branch:-main}"
+
     local branch_name="$current_branch"
     local pr_title="$user_msg"
     if [ "$current_branch" = "$default_branch" ]; then
       if [ -n "$user_msg" ]; then
-        local slug=$(echo "$user_msg" | sed -E 's/^[a-zA-Z]+(\([^)]+\))?:[[:space:]]*//' | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-|-$//g' | cut -c1-40)
+        local slug
+        slug=$(echo "$user_msg" | sed -E 's/^[a-zA-Z]+(\([^)]+\))?:[[:space:]]*//' | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-|-$//g' | cut -c1-40)
         branch_name="chore/${slug:-update-$(date +%s)}"
       else
         branch_name="chore/automated-sync-$(date +%Y%m%d-%H%M%S)"
         pr_title="chore: automated profile synchronization"
       fi
       git checkout -b "$branch_name" > /dev/null 2>&1
-    else [ -z "$pr_title" ] && pr_title="chore: automated profile synchronization"; fi
+    else
+      [ -z "$pr_title" ] && pr_title="chore: automated profile synchronization"
+    fi
+
     local pr_body="Automated sync of terminal profile configurations."
     [ -n "$issue_num" ] && pr_body="${pr_body}\n\nResolves #${issue_num#\#}"
-    if [ -z "$user_msg" ]; then
+
+    if [ -n "$user_msg" ]; then
+      git commit -m "$user_msg" > /dev/null
+    else
       __git_sync_ai_commit "$repo_dir"
       git add --all
       git diff --staged --quiet || git commit -m "chore: sync miscellaneous updates" > /dev/null
-    else git commit -m "$user_msg" > /dev/null; fi
+    fi
     git-raise-pr -b "$default_branch" -t "$pr_title" -m "$(echo -e "$pr_body")"
   )
 }
