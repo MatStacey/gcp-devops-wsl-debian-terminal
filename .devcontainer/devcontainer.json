@@ -13,6 +13,9 @@
     "ghcr.io/devcontainers/features/github-cli:1": {},
     "ghcr.io/devcontainers/features/node:1": {}
   },
+  "mounts": [
+    "source=${localEnv:HOME}/.bash.d/config,target=/home/devops/.bash.d/config,type=bind,consistency=cached"
+  ],
   "customizations": {
     "vscode": {
       "settings": {
@@ -28,6 +31,6 @@
     }
   },
   "remoteUser": "devops",
-  "postCreateCommand": "npm install -g --allow-scripts=@anthropic-ai/claude-code @anthropic-ai/claude-code && python3 ~/.bash.d/lib/python/config_manager.py update paths sync_repo \"${containerWorkspaceFolder}\" && bash -ic 'mt-refresh-caches'",
+  "postCreateCommand": "npm install -g --allow-scripts=@anthropic-ai/claude-code @anthropic-ai/claude-code && echo 'y' | bash -ic 'mt-get-update' && yes | bash -ic 'bootstrap' && bash -ic 'mt-refresh-caches'",
   "postAttachCommand": "bash .devcontainer/install-vsix.sh"
 }
