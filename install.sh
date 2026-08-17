@@ -43,20 +43,34 @@ fi
 
 echo "✅ Files successfully synced to home directory."
 
-# 4. Prompt to run bootstrap
-read -p "🔍 Would you like to run 'bootstrap' to install system dependencies (jq, fzf, PyYAML, terraform, etc.) now? [Y/n] " -n 1 -r
-echo
-if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-  # install.sh runs non-interactively, so `.bashrc` returns immediately
-  # (its "if not running interactively, don't do anything" guard) without
-  # defining bootstrap — sourcing it wholesale here was a silent no-op
-  # that then hit `set -e` on the undefined `bootstrap` call. Source the
-  # bootstrap module directly instead.
-  source "$TARGET_BASHD/00-system/00-os.sh"
-  source "$TARGET_BASHD/00-system/04-bootstrap.sh"
-  bootstrap
+# 4. Check dependencies and conditionally prompt for bootstrap
+echo "🔍 Checking for missing system dependencies..."
+source "$TARGET_BASHD/00-system/00-os.sh"
+source "$TARGET_BASHD/00-system/04-bootstrap.sh"
+
+MISSING_DEPS_CHECK=()
+if [ "$OS_FAMILY" = "macos" ]; then
+  MISSING_DEPS_CHECK=("${BREW_DEPENDENCIES[@]}")
 else
-  echo "💡 You can run 'bootstrap' anytime later from your terminal."
+  MISSING_DEPS_CHECK=("${APT_DEPENDENCIES[@]}")
+  MISSING_DEPS_CHECK+=("yq:yq") # Linux manually checks yq since it bypasses APT
+fi
+MISSING_DEPS_CHECK+=("${PYTHON_DEPENDENCIES[@]}" "${COMPLEX_DEPENDENCIES[@]}")
+
+# Utilize the framework's native checker
+MISSING_LIST=($(__get_missing_deps "${MISSING_DEPS_CHECK[@]}"))
+
+if [ ${#MISSING_LIST[@]} -gt 0 ]; then
+  echo -e "\n\033[1;33m⚠️ Missing required dependencies detected: ${MISSING_LIST[*]}\033[0m"
+  read -p "🔍 Would you like to run 'bootstrap' to install them now? [Y/n] " -n 1 -r
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+    bootstrap
+  else
+    echo "💡 You can run 'bootstrap' anytime later from your terminal."
+  fi
+else
+  echo "✅ All system dependencies are already satisfied."
 fi
 
 echo -e "\n🎉 Installation complete! Run 'reload' or open a new terminal session to activate your environment."
