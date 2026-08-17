@@ -2,7 +2,7 @@
 # ------------------------------------------
 # Configuration Management
 # ------------------------------------------
-# ~/.bash.d/00-core/00-config.sh
+# ~/.bash.d/00-system/00-config.sh
 
 CONFIG_FILE="$HOME/.bash.d/config/config.yaml"
 CONFIG_MANAGER="$HOME/.bash.d/lib/python/config_manager.py"
@@ -43,25 +43,20 @@ if [ -f "$HOME/.bash.d/01-ui/01-colors.sh" ]; then
   source "$HOME/.bash.d/01-ui/01-colors.sh"
 fi
 
-if [[ -z "$GEMINI_API_KEY" ||
-  "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" ||
-  "$GEMINI_API_KEY" == "null" ]]; then
+if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
   unset GEMINI_API_KEY
   if [[ "${DEFAULT_AI:-gemini}" == "gemini" ]]; then
-    echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml." \
-      "Add one via:\n    ${C_RESET}mt-add-gemini-key \"your-api-key\"${C_RESET}"
+    echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:\n    ${C_RESET}mt-add-gemini-key \"your-api-key\"\e[0m"
   fi
 fi
 
-if [[ -z "$CLAUDE_API_KEY" ||
-  "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" ||
-  "$CLAUDE_API_KEY" == "null" ]]; then
+if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "null" ]]; then
   unset CLAUDE_API_KEY
   if [[ "${DEFAULT_AI:-gemini}" == "claude" ]]; then
-    echo -e "${C_YELLOW}No Claude API Key provided in config.yaml." \
-      "Add one via:\n    ${C_RESET}mt-add-claude-key \"your-api-key\"${C_RESET}"
+    echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:\n    ${C_RESET}mt-add-claude-key \"your-api-key\"\e[0m"
   fi
 fi
+
 #######################################
 # Prints the current Gemini API model version and extended reasoning mode toggle.
 # Globals:
@@ -90,8 +85,6 @@ mt-add-gemini-key() { # => Config: Add Gemini API key to config.yaml [Usage: mt-
     return 0
   fi
   local key="$1"
-  # Passing the key as an argument lands it in shell history. Prefer the
-  # hidden prompt; the positional form still works for scripting.
   if [ -z "$key" ]; then
     read -rsp "Enter Gemini API Key (input hidden): " key
     echo
@@ -137,8 +130,6 @@ mt-add-claude-key() { # => Config: Add Claude API key to config.yaml [Usage: mt-
     return 0
   fi
   local key="$1"
-  # Passing the key as an argument lands it in shell history. Prefer the
-  # hidden prompt; the positional form still works for scripting.
   if [ -z "$key" ]; then
     read -rsp "Enter Claude API Key (input hidden): " key
     echo
@@ -361,8 +352,6 @@ mt-set-local-ai-api-key() { # => Config: Set Local AI API key [Usage: mt-set-loc
     return 0
   fi
   local key="$1"
-  # Passing the key as an argument lands it in shell history. Prefer the
-  # hidden prompt; the positional form still works for scripting.
   if [ -z "$key" ]; then
     read -rsp "Enter Local AI API Key (input hidden): " key
     echo

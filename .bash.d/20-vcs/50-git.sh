@@ -35,10 +35,6 @@ git-new-feature() {
 #   Passes through standard git return codes.
 #######################################
 git() {
-  # Deliberately does NOT intercept -h/--help here (unlike other mytools
-  # wrappers) — this wraps a real command with its own --help, and
-  # shadowing it broke `git --help`/`git <subcommand> --help` entirely.
-  # Use `mt-help git` for the custom doc block instead.
   if [ "$1" != "clone" ]; then
     command git "$@"
     return $?
@@ -171,8 +167,7 @@ git-clean-merged() {
   git fetch origin --prune
 
   echo -e "${CB_BLUE}🔄 Switching to ${default_branch} and pulling latest...${C_RESET}"
-  git checkout "$default_branch"
-  git pull origin "$default_branch"
+  git checkout "$default_branch" && git pull origin "$default_branch"
 
   echo -e "\n${CB_YELLOW}🔍 Scanning for fully merged local branches...${C_RESET}"
   local merged_branches
@@ -187,13 +182,13 @@ git-clean-merged() {
 
   echo -e "\n${CB_YELLOW}🔍 Scanning for fully merged remote branches...${C_RESET}"
   local remote_merged
-  remote_merged=$(git branch -r --merged origin/"$default_branch" | grep -v "\*" | grep -v HEAD | grep -v -E "origin/${default_branch}$" | sed 's/origin\///' | tr -d ' ' || true)
+  remote_merged=$(git branch -r --merged "origin/$default_branch" | grep -v "\*" | grep -v HEAD | grep -v -E "origin/${default_branch}$" | sed 's/origin\///' | tr -d ' ' || true)
 
   if [ -z "$remote_merged" ]; then
     echo -e "${CB_GREEN}✅ No merged remote branches found on origin.${C_RESET}"
   else
     for r_branch in $remote_merged; do
-      read -p "Delete remote branch 'origin/$r_branch'? [y/N] " -n 1 -r
+      read -r -p "Delete remote branch 'origin/$r_branch'? [y/N] " -n 1
       echo
       if [[ $REPLY =~ ^[Yy]$ ]]; then
         git push origin --delete "$r_branch"
@@ -202,7 +197,6 @@ git-clean-merged() {
     echo -e "${CB_GREEN}✅ Remote cleanup complete.${C_RESET}"
   fi
 }
-# Backward compatibility alias
 alias git-clean-local='git-clean-merged'
 
 #######################################
@@ -281,7 +275,7 @@ git-raise-pr() {
     return 0
   elif [[ "$pr_state" == "MERGED" || "$pr_state" == "CLOSED" ]]; then
     echo -e "${CB_YELLOW}⚠️  This branch has a ${pr_state} PR (Dead Branch).${C_RESET}"
-    read -p "Would you like to delete this branch locally and checkout a new one? [Y/n] " -n 1 -r
+    read -r -p "Would you like to delete this branch locally and checkout a new one? [Y/n] " -n 1
     echo
     if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
       read -r -p "Enter new branch name: " new_branch
@@ -311,7 +305,7 @@ git-raise-pr() {
     fi
     echo -e "${CB_GREEN}✅ Pull Request created successfully!${C_RESET}"
 
-    read -p "🌐 View Pull Request in browser? [Y/n] " -n 1 -r
+    read -r -p "🌐 View Pull Request in browser? [Y/n] " -n 1
     echo
     if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
       local pr_url
@@ -385,7 +379,7 @@ git-nuke() {
   fi
 
   echo -e "${CB_RED}⚠️  WARNING: This will DESTROY all local uncommitted changes AND untracked files.${C_RESET}"
-  read -p "Reset '${current_branch}' to origin/${current_branch}? [y/N] " -n 1 -r
+  read -r -p "Reset '${current_branch}' to origin/${current_branch}? [y/N] " -n 1
   echo
 
   if [[ $REPLY =~ ^[Yy]$ ]]; then
