@@ -8,31 +8,50 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 Before installing this terminal environment, ensure your local workstation meets the following baseline requirements:
 
-*   **Operating System:** Officially supports WSL2 (Debian/Ubuntu), macOS (via Homebrew), and native Linux.
-*   **Visual Studio Code:** Required for seamless IDE integration. Ensure the **WSL Extension** is installed if running on Windows.
-*   **VSCode Extension Pack:** It is highly recommended to install the standardized extension pack to ensure all linting, formatting, and infrastructure integrations (like Terraform and Checkov) function perfectly alongside this terminal environment. You can install it from the dedicated repository here: [MatStacey/mt-devops-vscode-extension-pack](https://github.com/MatStacey/mt-devops-vscode-extension-pack).
-*   **Git:** Required to clone the initial repository and handle ongoing AI-assisted profile synchronization.
+* **Operating System:** Officially supports WSL2 (Debian/Ubuntu), macOS (via Homebrew), and native Linux.
+* **Visual Studio Code:** Required for seamless IDE integration. Ensure the **WSL Extension** is installed if running on Windows.
+* **VSCode Extension Pack:** It is highly recommended to install the standardized extension pack to ensure all linting, formatting, and infrastructure integrations (like Terraform and Checkov) function perfectly alongside this terminal environment. You can install it from the dedicated repository here: [MatStacey/mt-devops-vscode-extension-pack](https://github.com/MatStacey/mt-devops-vscode-extension-pack).
+* **Git:** Required to clone the initial repository and handle ongoing AI-assisted profile synchronization.
+
+---
+
+## 🚀 Recent Updates & Enhancements
+
+* **Intelligent Git Automation:**
+  * Replaced manual pushing with `git-raise-pr`: A robust, universal function that automatically creates Pull Requests via the GitHub CLI (`gh`), or constructs the correct UI URLs for Bitbucket and GitLab.
+  * `mt-push-update` now intelligently detects branch states, prunes dead/merged PR branches, and gracefully handles merge conflicts automatically.
+  * Added `git-clean-merged` to comprehensively sweep and delete local and remote branches that have been safely merged into `main`.
+* **Advanced AI Integration:**
+  * Integrated **Claude Code** (`claude`) directly into the local bootstrap, Dockerfile, and Dev Container environments.
+  * Smart terminal profiles now only warn about missing API keys for the *actively selected* AI provider (Gemini or Claude), keeping terminal startups clean.
+* **Seamless Dev Containers:**
+  * Configured VS Code `dotfiles` integration to automatically clone and initialize the MT DevOps Framework inside *any* newly spun-up Dev Container.
+  * Hardened the base `Dockerfile` for security scanners while optimizing layer caching for `gh`, Node.js, and Terraform.
+* **Quality of Life:**
+  * Added `cd-win-docker`, dynamically parsing `config.yaml` using Python to open your internal Docker directory in Windows Explorer directly from WSL.
+  * Structured `.gitignore` for better maintainability across Secrets, State caches, Python tooling, and Build artifacts.
 
 ---
 
 ## 🚀 Key Features
 
-*   **Cross-Platform Compatibility:** Native OS detection dynamically maps clipboard (`pbcopy`, `clip.exe`), file explorer (`open`, `explorer.exe`), and package manager (`brew`, `apt`) utilities based on your host architecture.
-*   **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking optimized for minimal latency by prioritizing native file reads over subshells where possible. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
-*   **Asynchronous Update Checks:** Silently checks for system package updates, as well as upstream terminal profile updates, in the background on a configurable TTL timer without blocking terminal initialization.
-*   **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/python/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment.
-*   **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-select-theme`).
-*   **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT/Homebrew packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`, `zoxide`).
-*   **Multi-Provider AI Architecture:** Consult universal AI via the `ai` command with support for **Gemini**, **Claude**, and **Local LLMs** (via Ollama or any OpenAI-compatible endpoint). Background workflows like `git-ai-push-all` dynamically respect your active `DEFAULT_AI` setting.
-*   **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` with configurable thread limits to concurrently validate and run Checkov security scans across all Terraform modules.
+* **Cross-Platform Compatibility:** Native OS detection dynamically maps clipboard (`pbcopy`, `clip.exe`), file explorer (`open`, `explorer.exe`), and package manager (`brew`, `apt`) utilities based on your host architecture.
+* **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking optimized for minimal latency by prioritizing native file reads over subshells where possible. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
+* **Asynchronous Update Checks:** Silently checks for system package updates, as well as upstream terminal profile updates, in the background on a configurable TTL timer without blocking terminal initialization.
+* **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/python/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment.
+* **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-select-theme`).
+* **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT/Homebrew packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`, `zoxide`).
+* **Multi-Provider AI Architecture:** Consult universal AI via the `ai` command with support for **Gemini**, **Claude**, and **Local LLMs** (via Ollama or any OpenAI-compatible endpoint). Background workflows like `git-ai-push-all` dynamically respect your active `DEFAULT_AI` setting.
+* **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` with configurable thread limits to concurrently validate and run Checkov security scans across all Terraform modules.
 
 ---
 
 ## 🛠️ Setup & Installation
 
-This environment is designed to work out-of-the-box on a fresh WSL2 Debian/Ubuntu instance or macOS machine. 
+This environment is designed to work out-of-the-box on a fresh WSL2 Debian/Ubuntu instance or macOS machine.
 
 ### 1. Download and Extract
+
 Download the latest compiled release and extract it into a permanent directory. The installation script will automatically bind this location as your synchronized workspace.
 
 ```bash
@@ -107,11 +126,13 @@ This framework includes a fully functional `Dockerfile` and `.devcontainer` conf
 When launched, the Dev Container automatically builds the base image, installs all framework tooling, and securely sideloads the latest release of our companion [MT DevOps VSCode Extension Pack](https://github.com/MatStacey/mt-devops-vscode-extension-pack) directly from GitHub.
 
 ### 📋 Dev Container Prerequisites
+
 * **Docker Desktop** (or a standard Docker Engine setup).
 * **Visual Studio Code**.
 * The **Dev Containers** extension (`ms-vscode-remote.remote-containers`) installed in VS Code.
 
 ### 🚀 Launch Steps
+
 1. Download or clone this repository to your local machine.
 2. Open the `mt-devops-framework` folder in Visual Studio Code.
 3. Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on macOS) to open the Command Palette.
