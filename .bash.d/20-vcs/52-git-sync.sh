@@ -106,18 +106,32 @@ __git_sync_copy_files() {
 
 #######################################
 # Git: Sync local bash configs to terminal repo and create a Pull Request
+# Globals:
+#   SYNC_REPO_DIR
+#   SYNC_REPO_URL
+# Arguments:
+#   -i <issue> - Optional issue number to link to the Pull Request.
+#   $@ - Optional string message. If empty, triggers AI systematic feature grouping.
+# Outputs:
+#   Writes sync, diff, and execution state to STDOUT.
+# Returns:
+#   0 on success, 1 on misconfigured URL path.
 #######################################
 mt-push-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
+
   local issue_num=""
   local OPTIND opt
   while getopts "i:" opt; do
     case ${opt} in
       i) issue_num="$OPTARG" ;;
-      *) ;;
+      \?)
+        echo "Usage: mt-push-update [-i <issue_number>] [optional message]" >&2
+        return 1
+        ;;
     esac
   done
   shift $((OPTIND - 1))
@@ -125,15 +139,22 @@ mt-push-update() {
   local user_msg="$*"
   local repo_dir="$SYNC_REPO_DIR"
   local remote_url="${SYNC_REPO_URL:-}"
+
   if [[ -z "$remote_url" || "$remote_url" == "YOUR_SYNC_REPO_URL" || "$remote_url" == "null" ]]; then
-    echo "⚠️ Sync Not Configured"
+    echo -e "\033[1;33m⚠️  Profile Sync Not Configured\033[0m"
+    echo -e "The \033[1mpush-profile-update\033[0m feature automatically versions and pushes your terminal configuration to a remote Git repository."
+    echo "If you downloaded this profile as a standalone ZIP and do not wish to sync it, you can safely ignore this command."
+    echo -e "\nTo enable syncing, link an empty remote Git repository by running:"
+    echo -e "   \033[1;36mmt-add-sync-url \"git@github.com:username/my-terminal-repo.git\"\033[0m\n"
     return 1
   fi
 
   echo "🔄 Syncing bash configuration to $repo_dir..."
   __git_sync_init_repo "$repo_dir" "$remote_url"
+
   (
     cd "$repo_dir" || exit 1
+
     local default_branch
     default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
     default_branch="${default_branch:-main}"
@@ -141,73 +162,122 @@ mt-push-update() {
     local current_branch
     current_branch=$(git branch --show-current)
 
+    # 1. Pre-flight check: If on a feature branch, is it a dead branch? (Do this BEFORE copying files over)
     if [ "$current_branch" != "$default_branch" ] && command -v gh > /dev/null 2>&1; then
       local pr_state
       pr_state=$(gh pr view "$current_branch" --json state -q .state 2> /dev/null || echo "NONE")
       if [[ "$pr_state" == "MERGED" || "$pr_state" == "CLOSED" ]]; then
-        read -r -p "⚠️ Branch dead. Checkout $default_branch? [Y/n] " -n 1
+        echo -e "${CB_YELLOW}⚠️  Current branch '$current_branch' has a $pr_state PR and is considered dead.${C_RESET}"
+        read -r -p "Delete '$current_branch' locally and checkout a new branch from $default_branch? [Y/n] " -n 1
         echo
         if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
-          git checkout "$default_branch" && git pull origin "$default_branch" && git branch -D "$current_branch"
+          read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
+          echo
+          if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+            echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
+            git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
+          fi
+          git checkout "$default_branch"
+          git pull origin "$default_branch"
+          git branch -D "$current_branch"
           current_branch="$default_branch"
-        else exit 1; fi
+        else
+          echo -e "${CB_RED}🚨 Aborted profile sync.${C_RESET}"
+          exit 1
+        fi
       fi
     fi
 
+    # 2. Check out main, OR ensure current feature branch is safely merged and up to date
     if [ "$current_branch" = "$default_branch" ]; then
       git checkout "$default_branch" > /dev/null 2>&1 || git checkout -b "$default_branch" > /dev/null 2>&1
       git pull origin "$default_branch" > /dev/null 2>&1 || true
     else
+      echo -e "${CB_BLUE}🔄 Ensuring ${current_branch} is up to date with origin/${default_branch}...${C_RESET}"
       git fetch origin "$default_branch" > /dev/null 2>&1
       if ! git merge "origin/$default_branch" --no-edit > /dev/null 2>&1; then
-        echo -e "${CB_RED}💥 Merge conflict! Aborting sync.${C_RESET}"
+        echo -e "${CB_RED}💥 Merge conflict detected with origin/${default_branch}!${C_RESET}"
+        echo -e "${CB_YELLOW}The sync automation has paused to protect your code. Please resolve conflicts manually in $repo_dir, commit, and run mt-push-update again.${C_RESET}"
         git merge --abort > /dev/null 2>&1
         exit 1
       fi
     fi
   )
+
+  # 3. Synchronize modified files over to the repo
   __git_sync_copy_files "$repo_dir"
+
   (
     cd "$repo_dir" || exit 1
-    if command -v shfmt > /dev/null 2>&1; then shfmt -i 2 -ci -sr -w . > /dev/null 2>&1 || true; fi
+
+    if command -v shfmt > /dev/null 2>&1; then
+      echo "🧹 Running Google Style code formatting before profile sync..."
+      shfmt -i 2 -ci -sr -w . > /dev/null 2>&1 || true
+    fi
+
     git add --all
+
     if git diff --staged --quiet; then
-      echo "✅ Configurations already up to date."
+      echo "✅ Configurations are already up to date. No changes to commit."
       return 0
     fi
 
     local current_branch
     current_branch=$(git branch --show-current)
+
     local default_branch
     default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
     default_branch="${default_branch:-main}"
 
     local branch_name="$current_branch"
     local pr_title="$user_msg"
+
+    # 4. If we are still on main, we need to generate a new branch for the PR
     if [ "$current_branch" = "$default_branch" ]; then
       if [ -n "$user_msg" ]; then
+        local type
+        type=$(echo "$user_msg" | grep -oE '^[a-zA-Z]+' || echo "chore")
+
         local slug
         slug=$(echo "$user_msg" | sed -E 's/^[a-zA-Z]+(\([^)]+\))?:[[:space:]]*//' | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-|-$//g' | cut -c1-40)
-        branch_name="chore/${slug:-update-$(date +%s)}"
+        [ -z "$slug" ] && slug="update-$(date +%s)"
+
+        branch_name="${type}/${slug}"
       else
         branch_name="chore/automated-sync-$(date +%Y%m%d-%H%M%S)"
         pr_title="chore: automated profile synchronization"
       fi
+
+      echo "🌿 Creating and checking out branch: $branch_name"
       git checkout -b "$branch_name" > /dev/null 2>&1
     else
-      [ -z "$pr_title" ] && pr_title="chore: automated profile synchronization"
+      if [ -z "$pr_title" ]; then
+        pr_title="chore: automated profile synchronization"
+      fi
     fi
 
+    # 5. Build PR body content
     local pr_body="Automated sync of terminal profile configurations."
-    [ -n "$issue_num" ] && pr_body="${pr_body}\n\nResolves #${issue_num#\#}"
-
-    if [ -n "$user_msg" ]; then
-      git commit -m "$user_msg" > /dev/null
-    else
-      __git_sync_ai_commit "$repo_dir"
-      git add --all
-      git diff --staged --quiet || git commit -m "chore: sync miscellaneous updates" > /dev/null
+    if [ -n "$issue_num" ]; then
+      issue_num="${issue_num#\#}"
+      pr_body="${pr_body}\n\nResolves #${issue_num}"
     fi
+
+    # 6. Commit the changes
+    if [ -z "$user_msg" ]; then
+      __git_sync_ai_commit "$repo_dir"
+
+      git add --all
+      if ! git diff --staged --quiet; then
+        echo "💡 Committing: chore: sync miscellaneous updates"
+        git commit -m "chore: sync miscellaneous updates" > /dev/null
+      fi
+    else
+      echo "📦 Committing all as a single batch..."
+      git commit -m "$user_msg" > /dev/null
+    fi
+
+    # 7. Delegate all push/PR logic to the new robust function!
     git-raise-pr -b "$default_branch" -t "$pr_title" -m "$(echo -e "$pr_body")"
   )
 }

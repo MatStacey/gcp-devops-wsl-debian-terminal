@@ -46,24 +46,21 @@ fi
 if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
   unset GEMINI_API_KEY
   if [[ "${DEFAULT_AI:-gemini}" == "gemini" ]]; then
-    echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:\n    ${C_RESET}mt-add-gemini-key \"your-api-key\"\e[0m"
+    echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:${C_RESET}"
+    echo -e "    ${C_RESET}mt-add-gemini-key 'your-api-key'\033[0m"
   fi
 fi
 
 if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "null" ]]; then
   unset CLAUDE_API_KEY
   if [[ "${DEFAULT_AI:-gemini}" == "claude" ]]; then
-    echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:\n    ${C_RESET}mt-add-claude-key \"your-api-key\"\e[0m"
+    echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:${C_RESET}"
+    echo -e "    ${C_RESET}mt-add-claude-key 'your-api-key'\033[0m"
   fi
 fi
 
 #######################################
 # Prints the current Gemini API model version and extended reasoning mode toggle.
-# Globals:
-#   GEMINI_VERSION
-#   GEMINI_EXTENDED
-# Outputs:
-#   Writes the configuration status to STDOUT.
 #######################################
 mt-get-gemini-status() { # => Config: Print the active Gemini version and extended mode status
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
