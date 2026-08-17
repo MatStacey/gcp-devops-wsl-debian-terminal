@@ -60,6 +60,9 @@ __rebuild_mytools_cache() {
   echo "$latest_mod" > "$time_file"
 }
 
+#######################################
+# MyTools: Primary runner and documentation index
+#######################################
 mytools() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -78,6 +81,9 @@ mytools() {
   cat "$cache_file"
 }
 
+#######################################
+# MyTools: List all available command categories
+#######################################
 mt-cats() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -91,6 +97,11 @@ mt-cats() {
   echo ""
 }
 
+#######################################
+# MyTools: List all tools within a specific category
+# Arguments:
+#   $1 - Category name
+#######################################
 mt-cat() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -110,6 +121,9 @@ mt-cat() {
   echo ""
 }
 
+#######################################
+# MyTools: List all documented shell functions
+#######################################
 mt-funcs() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -121,6 +135,9 @@ mt-funcs() {
   echo ""
 }
 
+#######################################
+# MyTools: List all documented shell aliases
+#######################################
 mt-aliases() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -132,6 +149,9 @@ mt-aliases() {
   echo ""
 }
 
+#######################################
+# MyTools: Interactive fuzzy-finder to select and execute a command
+#######################################
 mt-run() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -148,6 +168,11 @@ mt-run() {
   fi
 }
 
+#######################################
+# MyTools: Search for a specific tool by keyword
+# Arguments:
+#   $1 - Search keyword
+#######################################
 mt-search() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -161,6 +186,9 @@ mt-search() {
   awk -F'\t' -v q="${1,,}" 'tolower($0) ~ q { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/.mt_data.tsv"
 }
 
+#######################################
+# MyTools: Interactive fuzzy-finder to search for a command
+#######################################
 mt-fzf() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -172,6 +200,9 @@ mt-fzf() {
   [ -n "$selected" ] && echo "$selected" | awk '{print $1}'
 }
 
+#######################################
+# MyTools: Display active framework configuration variables
+#######################################
 mt-config() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -191,6 +222,11 @@ mt-config() {
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
 }
 
+#######################################
+# MyTools: Display detailed help and source code for a command
+# Arguments:
+#   $1 - Command name
+#######################################
 mt-help() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     echo "Usage: mt-help <command>"

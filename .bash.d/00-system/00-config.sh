@@ -62,7 +62,7 @@ fi
 #######################################
 # Prints the current Gemini API model version and extended reasoning mode toggle.
 #######################################
-mt-get-gemini-status() { # => Config: Print the active Gemini version and extended mode status
+mt-get-gemini-status() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -76,7 +76,10 @@ mt-get-gemini-status() { # => Config: Print the active Gemini version and extend
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
 }
 
-mt-add-gemini-key() { # => Config: Add Gemini API key to config.yaml [Usage: mt-add-gemini-key ["key"]]
+#######################################
+# Config: Add Gemini API key to config.yaml [Usage: mt-add-gemini-key ["key"]]
+#######################################
+mt-add-gemini-key() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -95,7 +98,10 @@ mt-add-gemini-key() { # => Config: Add Gemini API key to config.yaml [Usage: mt-
   echo "✅ Gemini API Key added to $CONFIG_FILE."
 }
 
-mt-set-gemini-version() { # => Config: Set Gemini model version [Usage: mt-set-gemini-version "gemini-1.5-pro"]
+#######################################
+# Config: Set Gemini model version [Usage: mt-set-gemini-version "gemini-1.5-pro"]
+#######################################
+mt-set-gemini-version() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -109,7 +115,10 @@ mt-set-gemini-version() { # => Config: Set Gemini model version [Usage: mt-set-g
   echo "✅ Gemini version set to $1."
 }
 
-mt-toggle-gemini-extended() { # => Config: Toggle Gemini extended mode true/false
+#######################################
+# Config: Toggle Gemini extended mode true/false
+#######################################
+mt-toggle-gemini-extended() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -121,7 +130,10 @@ mt-toggle-gemini-extended() { # => Config: Toggle Gemini extended mode true/fals
   echo "✅ Gemini extended mode set to $new_val."
 }
 
-mt-add-claude-key() { # => Config: Add Claude API key to config.yaml [Usage: mt-add-claude-key ["key"]]
+#######################################
+# Config: Add Claude API key to config.yaml [Usage: mt-add-claude-key ["key"]]
+#######################################
+mt-add-claude-key() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -140,7 +152,10 @@ mt-add-claude-key() { # => Config: Add Claude API key to config.yaml [Usage: mt-
   echo "✅ Claude API Key added to $CONFIG_FILE."
 }
 
-mt-set-claude-version() { # => Config: Set Claude model version [Usage: smt-set-claude-version "claude-3-7-sonnet-latest"]
+#######################################
+# Config: Set Claude model version [Usage: smt-set-claude-version "claude-3-7-sonnet-latest"]
+#######################################
+mt-set-claude-version() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -154,7 +169,10 @@ mt-set-claude-version() { # => Config: Set Claude model version [Usage: smt-set-
   echo "✅ Claude version set to $1."
 }
 
-mt-add-sync-url() { # => Config: Add remote repository URL for bash sync [Usage: mt-add-sync-url "url"]
+#######################################
+# Config: Add remote repository URL for bash sync [Usage: mt-add-sync-url "url"]
+#######################################
+mt-add-sync-url() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -168,7 +186,10 @@ mt-add-sync-url() { # => Config: Add remote repository URL for bash sync [Usage:
   echo "✅ Sync URL added to $CONFIG_FILE."
 }
 
-mt-set-default-ide() { # => Config: Set default IDE [Usage: mt-set-default-ide "vscode|intellij"]
+#######################################
+# Config: Set default IDE [Usage: mt-set-default-ide "vscode|intellij"]
+#######################################
+mt-set-default-ide() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -182,7 +203,10 @@ mt-set-default-ide() { # => Config: Set default IDE [Usage: mt-set-default-ide "
   echo "✅ Default IDE set to $1."
 }
 
-mt-set-default-ai() { # => Config: Set default AI model [Usage: mt-set-default-ai "gemini|claude"]
+#######################################
+# Config: Set default AI model [Usage: mt-set-default-ai "gemini|claude"]
+#######################################
+mt-set-default-ai() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -196,7 +220,10 @@ mt-set-default-ai() { # => Config: Set default AI model [Usage: mt-set-default-a
   echo "✅ Default AI set to $1."
 }
 
-mt-toggle-ai() { # => Config: Toggle global AI prompt and integration true/false
+#######################################
+# Config: Toggle global AI prompt and integration true/false
+#######################################
+mt-toggle-ai() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -208,7 +235,10 @@ mt-toggle-ai() { # => Config: Toggle global AI prompt and integration true/false
   echo "✅ AI integration set to $new_val."
 }
 
-mt-open-config() { # => Config: Open bash.d directory and config.yaml in IDE [Usage: mt-open-config [-ide vscode|intellij]]
+#######################################
+# Config: Open bash.d directory and config.yaml in IDE [Usage: mt-open-config [-ide vscode|intellij]]
+#######################################
+mt-open-config() {
   local selected_ide="${DEFAULT_IDE:-vscode}"
   local args=()
 
@@ -244,7 +274,10 @@ mt-open-config() { # => Config: Open bash.d directory and config.yaml in IDE [Us
     code "$config_dir" "$config_file"
 }
 
-mt-set-theme() { # => Config: Set terminal color theme [Usage: mt-set-theme "theme_name"]
+#######################################
+# Config: Set terminal color theme [Usage: mt-set-theme "theme_name"]
+#######################################
+mt-set-theme() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -271,7 +304,10 @@ _set_theme_completions() {
 }
 complete -F _set_theme_completions mt-set-theme
 
-mt-select-theme() { # => Config: Interactive menu to select and apply a theme [Usage: mt-select-theme]
+#######################################
+# Config: Interactive menu to select and apply a theme [Usage: mt-select-theme]
+#######################################
+mt-select-theme() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -287,7 +323,10 @@ mt-select-theme() { # => Config: Interactive menu to select and apply a theme [U
   [ -n "$selected_theme" ] && mt-set-theme "$selected_theme" || echo "Theme selection cancelled."
 }
 
-mt-toggle-auto-cleanup() { # => Config: Toggle export file background cleanup script [Usage: mt-toggle-auto-cleanup]
+#######################################
+# Config: Toggle export file background cleanup script [Usage: mt-toggle-auto-cleanup]
+#######################################
+mt-toggle-auto-cleanup() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -300,7 +339,10 @@ mt-toggle-auto-cleanup() { # => Config: Toggle export file background cleanup sc
   echo "✅ Auto-cleanup set to $new_val."
 }
 
-mt-set-auto-cleanup-days() { # => Config: Modifies the threshold in days before exports are automatically deleted [Usage: mt-set-auto-cleanup-days 7]
+#######################################
+# Config: Modifies the threshold in days before exports are automatically deleted [Usage: mt-set-auto-cleanup-days 7]
+#######################################
+mt-set-auto-cleanup-days() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -315,7 +357,10 @@ mt-set-auto-cleanup-days() { # => Config: Modifies the threshold in days before 
   echo "✅ Auto-cleanup threshold set to $1 days."
 }
 
-mt-set-local-ai-url() { # => Config: Set Local AI base URL [Usage: mt-set-local-ai-url "http://localhost:11434/v1"]
+#######################################
+# Config: Set Local AI base URL [Usage: mt-set-local-ai-url "http://localhost:11434/v1"]
+#######################################
+mt-set-local-ai-url() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -329,7 +374,10 @@ mt-set-local-ai-url() { # => Config: Set Local AI base URL [Usage: mt-set-local-
   echo "✅ Local AI Base URL set to $1."
 }
 
-mt-set-local-ai-model() { # => Config: Set Local AI model [Usage: mt-set-local-ai-model "llama3.2"]
+#######################################
+# Config: Set Local AI model [Usage: mt-set-local-ai-model "llama3.2"]
+#######################################
+mt-set-local-ai-model() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -343,7 +391,10 @@ mt-set-local-ai-model() { # => Config: Set Local AI model [Usage: mt-set-local-a
   echo "✅ Local AI model set to $1."
 }
 
-mt-set-local-ai-api-key() { # => Config: Set Local AI API key [Usage: mt-set-local-ai-api-key ["key"]]
+#######################################
+# Config: Set Local AI API key [Usage: mt-set-local-ai-api-key ["key"]]
+#######################################
+mt-set-local-ai-api-key() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
