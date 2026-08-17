@@ -16,7 +16,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dearmor -o /usr/share/keyrings/cloud.google.gpg \
     && curl -fsSL https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg \
     && echo "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com bookworm main" | tee /etc/apt/sources.list.d/hashicorp.list \
-    && apt-get update && apt-get install -y --no-install-recommends \
     && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg \
     && chmod go+r /usr/share/keyrings/githubcli-archive-keyring.gpg \
     && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list \
@@ -47,7 +46,7 @@ RUN source /tmp/mt-devops-framework/.bash.d/config/dependencies.sh \
     && for dep in "${PYTHON_DEPENDENCIES[@]}"; do pipx install "${dep##*:}"; done \
     && cd /tmp/mt-devops-framework \
     && echo "n" | ./install.sh \
-    && rm -rf /tmp/mt-devops-framework \
+    && sudo rm -rf /tmp/mt-devops-framework \
     && bash -c "source ~/.bashrc && mt-refresh-caches"
 
 # 7. Drop straight into your custom environment
