@@ -60,6 +60,12 @@ __git_sync_copy_files() {
     --exclude ".vsclog" \
     --exclude ".github" \
     --exclude ".devcontainer" \
+    --exclude "README.md" \
+    --exclude "install.sh" \
+    --exclude "Dockerfile" \
+    --exclude ".dockerignore" \
+    --exclude ".gitignore" \
+    --exclude ".gitleaks.toml" \
     "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
   # 2. Explicitly sync the root ~/.bashrc file from the home directory
