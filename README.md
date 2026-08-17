@@ -190,14 +190,14 @@ When launched, the Dev Container automatically builds the base image, installs a
 | `mt-set-local-ai-url` | Function | Sets the Local AI base URL (e.g., `http://localhost:11434/v1`). |
 | `mt-set-local-ai-model` | Function | Sets the Local AI model (e.g., `llama3.2`). |
 | `mt-set-local-ai-api-key` | Function | Securely stores the Local AI API key. |
-| `mt-set-default-ai` | Function | Sets the default LLM provider for the 'ai' command suite (`gemini` | `claude` | `local`). |
+| `mt-set-default-ai` | Function | Sets the default LLM provider for the 'ai' command suite (`gemini` \| `claude` \| `local`). |
 | `mt-toggle-ai` | Function | Toggles global AI prompt and integration flags. |
 | `mt-toggle-gemini-extended` | Function | Toggles the Gemini extended reasoning mode flag. |
 | `mt-set-theme` | Function | Sets the active terminal color theme and reloads the color profile. |
 | `mt-select-theme` | Function | Opens an interactive fuzzy-finder menu to select and apply a terminal theme. |
 | `mt-add-sync-url` | Function | Configures the remote git URL for the bash profile synchronization tool. |
 | `mt-open-config` | Function | Opens the bash.d configuration directory directly in the configured IDE. |
-| `mt-set-default-ide` | Function | Sets the default local IDE for launch commands (`vscode` | `intellij`). |
+| `mt-set-default-ide` | Function | Sets the default local IDE for launch commands (`vscode` \| `intellij`). |
 | `mt-toggle-auto-cleanup` | Function | Toggles the background execution of the export cleanup script. |
 | `mt-set-auto-cleanup-days` | Function | Modifies the threshold in days before exports are automatically deleted. |
 
@@ -332,7 +332,7 @@ When launched, the Dev Container automatically builds the base image, installs a
 
 | Command | Type | Description |
 | --- | --- | --- |
-| `clip` | Function | Pipe output to the system clipboard (e.g. cat file | clip) |
+| `clip` | Function | Pipe output to the system clipboard (e.g. cat file \| clip) |
 | `win` | Function | Open current directory in the platform's native file manager |
 | `win-export` | Function | Open ~/vcs/personal/exports in the platform's native file manager |
 | `win-vcs` | Function | Open ~/vcs in the platform's native file manager |
