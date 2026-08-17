@@ -291,7 +291,7 @@ mt-push-update() {
 #######################################
 # System: Download and install profile updates from GitHub releases [Usage: mt-get-update [-v version]]
 # Arguments:
-#   -v <version>  Specify a target release version (e.g., v1.1.0)
+#   -v   Specify a target release version (e.g., v1.1.0)
 #######################################
 mt-get-update() {
   local target_version=""
@@ -303,7 +303,7 @@ mt-get-update() {
         mt-help "${FUNCNAME[0]}"
         return 0
         ;;
-      \?)
+      ?)
         echo "Usage: mt-get-update [-v <version>]" >&2
         return 1
         ;;
@@ -315,8 +315,9 @@ mt-get-update() {
 
   # Fallback to official repo if SYNC_REPO_URL isn't set or parsed
   local repo_path="MatStacey/mt-devops-framework"
-  if [[ "${SYNC_REPO_URL:-}" =~ github\.com[:/]([^/]+/[^/.]+)(\.git)? ]]; then
+  if [[ "${SYNC_REPO_URL:-}" =~ github\.com[:/](.+)(\.git)?$ ]]; then
     repo_path="${BASH_REMATCH[1]}"
+    repo_path="${repo_path%.git}"
   fi
 
   local api_url="https://api.github.com/repos/${repo_path}/releases/latest"
@@ -331,6 +332,25 @@ mt-get-update() {
   download_url=$(echo "$release_data" | jq -r ".assets[0].browser_download_url // empty")
   local tag_name
   tag_name=$(echo "$release_data" | jq -r ".tag_name // empty")
+
+  # --- STRICT VERSION CHECK ---
+  local current_version="Local"
+  if [ -f "$HOME/.bash.d/.current_version" ]; then
+    # Strip all newlines and spaces to prevent Bash string mismatch bugs
+    current_version=$(command cat "$HOME/.bash.d/.current_version" | tr -d '\r\n ')
+  elif [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
+    current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "Local")
+    current_version=$(echo "$current_version" | tr -d '\r\n ')
+  fi
+
+  local clean_tag
+  clean_tag=$(echo "$tag_name" | tr -d '\r\n ')
+
+  if [ "$clean_tag" = "$current_version" ] && [ -z "$target_version" ]; then
+    echo -e "${CB_GREEN}✅ You are already running the latest version (${current_version}).${C_RESET}"
+    return 0
+  fi
+  # -----------------------------
 
   if [ -z "$download_url" ] || [ "$download_url" = "null" ]; then
     if [ -n "$target_version" ]; then
@@ -354,10 +374,10 @@ mt-get-update() {
   fi
 
   echo -e "${CB_YELLOW}🔄 Extracting and applying updates...${C_RESET}"
-  unzip -q "$zip_path" -d "$tmp_dir/extracted" > /dev/null 2>&1
+  unzip -q "$zip_path" -d "${tmp_dir}/extracted" > /dev/null 2>&1
 
   # Locate the root of the extracted zip containing install.sh
-  local ext_root="$tmp_dir/extracted"
+  local ext_root="${tmp_dir}/extracted"
   if [ ! -f "$ext_root/install.sh" ]; then
     local nested
     nested=$(find "$ext_root" -name "install.sh" -exec dirname {} \; | head -n 1)
@@ -371,13 +391,6 @@ mt-get-update() {
       cd "$ext_root" || exit 1
       bash ./install.sh
     )
-
-    # Clear update markers to reset the terminal prompts
-    rm -f "$HOME/.bash.d/.profile_update_pending" "$HOME/.bash.d/.profile_update_cache"
-    echo "$tag_name" > "$HOME/.bash.d/.current_version"
-
-    source "$HOME/.bashrc"
-    echo -e "${CB_GREEN}✅ Update to ${tag_name} completed successfully.${C_RESET}"
   else
     echo -e "${CB_RED}🚨 Error: install.sh missing from downloaded release.${C_RESET}"
   fi
