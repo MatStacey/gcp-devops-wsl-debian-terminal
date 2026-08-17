@@ -278,6 +278,13 @@ git-raise-pr() {
     read -r -p "Would you like to delete this branch locally and checkout a new one? [Y/n] " -n 1
     echo
     if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+      read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
+      echo
+      if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+        echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
+        git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
+      fi
+
       read -r -p "Enter new branch name: " new_branch
       if [ -z "$new_branch" ]; then
         echo -e "${CB_RED}🚨 Aborted.${C_RESET}"
