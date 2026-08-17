@@ -46,8 +46,9 @@ RUN source /tmp/mt-devops-framework/.bash.d/config/dependencies.sh \
     && for dep in "${PYTHON_DEPENDENCIES[@]}"; do pipx install "${dep##*:}"; done \
     && cd /tmp/mt-devops-framework \
     && echo "n" | ./install.sh \
+    && cd ~ \
     && sudo rm -rf /tmp/mt-devops-framework \
-    && bash -c "source ~/.bashrc && mt-refresh-caches"
+    && bash -ic "source ~/.bashrc && mt-refresh-caches"
 
 # 7. Drop straight into your custom environment
 CMD ["/bin/bash"]
