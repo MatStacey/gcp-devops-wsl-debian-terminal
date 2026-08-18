@@ -328,7 +328,7 @@ When launched, the Dev Container automatically builds the base image, installs a
 | Command | Type | Description |
 | --- | --- | --- |
 | `cd-ai` | Function | Config: Change directory to unified AI workspace |
-| `cd-sync` | Function | Config: Change directory to sync repository root |
+| `cd-mt-git-local` | Function | Config: Change directory to sync repository root |
 | `cd-win-docker` | Function | Docker: Change to Docker directory (from config.yaml) and open in Windows Explorer |
 | `ide` | Function | Config: Open current directory in the default IDE (VSCode/IntelliJ) |
 | `mt-open-homepage` | Function | Config: Open sync repository remote URL in default web browser |
