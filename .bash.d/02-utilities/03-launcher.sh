@@ -6,9 +6,9 @@
 #######################################
 # Config: Change directory to sync repository root
 # Arguments:
-#   cd-sync
+#   cd-mt-git-local
 #######################################
-cd-sync() {
+cd-mt-git-local() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -62,7 +62,7 @@ mt-open-homepage() {
 # Arguments:
 #   cd-ai
 #######################################
-cd-ai() {
+cd-ai-workspace() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -75,7 +75,7 @@ cd-ai() {
 # Arguments:
 #   win-ai
 #######################################
-win-ai() {
+win-ai-workspace() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
