@@ -391,6 +391,7 @@ mt-get-update() {
       cd "$ext_root" || exit 1
       bash ./install.sh
     )
+    echo "$tag_name" > "$HOME/.bash.d/.current_version"
   else
     echo -e "${CB_RED}🚨 Error: install.sh missing from downloaded release.${C_RESET}"
   fi
