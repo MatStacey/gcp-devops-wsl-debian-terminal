@@ -5,15 +5,15 @@
 #######################################
 # Change directory to ~/.bash.d
 #######################################
-alias cdbashd='cd ~/.bash.d'
+alias cd-bashd='cd ~/.bash.d'
 #######################################
 # Change directory to ~/vcs
 #######################################
-alias cdvcs='cd "$VCS_ROOT"'
+alias cd-git-home='cd "$VCS_ROOT"'
 #######################################
 # Change directory to ~/vcs/personal
 #######################################
-alias cdvcsp='cd "$VCS_PERSONAL"'
+alias cd-git-personal='cd "$VCS_PERSONAL"'
 #######################################
 # Pipe output to the system clipboard (e.g. cat file | clip)
 # Uses clip.exe on WSL, pbcopy on macOS, xclip/xsel on plain Linux.
@@ -28,11 +28,15 @@ alias mt='mytools'
 #######################################
 # Reload Bash profile
 #######################################
-alias reload='source ~/.bashrc'
+alias reload='mt-refresh-caches'
+#######################################
+# Reload Bash profile
+#######################################
+alias refresh='mt-refresh-caches'
 #######################################
 # Update, Upgrade, Boostrap, Reload
 #######################################
-alias sys-install-reload='sys-update;bootstrap;reload'
+alias sys-update-install='sys-update;bootstrap;reload'
 #######################################
 # Open ~/vcs/personal/exports in the platform's native file manager
 #######################################
