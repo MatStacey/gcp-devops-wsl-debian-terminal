@@ -403,3 +403,37 @@ git-nuke() {
     echo "🛑 Aborted."
   fi
 }
+
+#######################################
+# Git: Add all files, commit with provided message, and push
+#
+# Arguments:
+#   $1 - The commit message (Required)
+#######################################
+git-push-all() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local commit_msg="${1:-}"
+
+  if [ -z "$commit_msg" ]; then
+    echo -e "${CB_RED}🚨 Error: A commit message is required.${C_RESET}"
+    echo -e "Usage: git-push-all \"Your commit message\""
+    return 1
+  fi
+
+  git add .
+
+  if git diff --staged --quiet; then
+    echo -e "${CB_GREEN}✅ No changes staged to commit.${C_RESET}"
+    return 0
+  fi
+
+  echo -e "${CB_BLUE}📦 Committing changes...${C_RESET}"
+  git commit -m "$commit_msg"
+
+  echo -e "${CB_BLUE}🚀 Pushing changes to remote...${C_RESET}"
+  git push
+}
