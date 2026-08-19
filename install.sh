@@ -73,4 +73,4 @@ else
   echo "✅ All system dependencies are already satisfied."
 fi
 
-echo -e "\n🎉 Installation complete! Run 'reload' or open a new terminal session to activate your environment."
+echo -e "\n🎉 Installation complete! Run 'source ~/.bashrc' or open a new terminal session to activate your environment."
