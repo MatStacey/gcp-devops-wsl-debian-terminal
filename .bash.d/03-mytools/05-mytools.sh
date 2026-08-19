@@ -243,7 +243,7 @@ mt-help() {
 
   if [ -z "$file_path" ]; then
     if ! type -t "$target" > /dev/null 2>&1; then
-      echo "🚨 Error: '\''$target'\'' is not a recognized command, alias, or function."
+      echo "🚨 Error: '$target' is not a recognized command, alias, or function."
       return 1
     fi
     echo "⚠️  '$target' is not a custom MyTools command. Falling back to native help..."
