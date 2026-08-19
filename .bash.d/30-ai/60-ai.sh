@@ -297,15 +297,11 @@ __ai_extract_json_array() {
 }
 
 #######################################
-# Consult universal AI
-# Arguments:
-#   -m <model>   gemini or claude
-#   -t <title>   Title string to format output
-#   -e           Flag to export full directory context
-#   -f <file>    Explicit file path to attach as context
-#   -o <file>    Explicit file path to save output to
-#   -v <version> Specific model version override
-#   -x           Enable extended reasoning logic
+# AI: Send a prompt to the currently configured LLM
+# Options:
+#   -f <file>   Attach a single file as context
+#   -e          Attach the entire active directory as context
+#   -h, --help  Show this help message
 #######################################
 ai() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
