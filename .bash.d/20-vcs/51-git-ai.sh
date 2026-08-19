@@ -97,23 +97,55 @@ git-ai-push-all() {
   }
 
   git add .
-
   if git diff --staged --quiet; then
     echo "✅ No changes staged to commit."
     return 0
   fi
 
   local user_msg="${1:-}"
-
   if [ -n "$user_msg" ]; then
     echo "📦 Committing staged changes with provided message..."
     git commit -m "$user_msg"
   else
     echo "🤖 AI enabled: Generating feature-grouped commits..."
-    if ! __git_sync_ai_commit "."; then
-      echo "⚠️ AI commit generation skipped or failed. Falling back to default batch commit..."
-      git commit -m "chore: automated changes"
-    fi
+
+    local loop_count=0
+    local max_loops=10
+
+    # 🔄 Loop to process all chunks of the diff until the staging area is clean
+    while ! git diff --staged --quiet; do
+      ((loop_count++))
+
+      # Failsafe to prevent runaway API loops
+      if [ "$loop_count" -gt "$max_loops" ]; then
+        echo "⚠️ AI loop limit reached. Batch committing remaining files..."
+        git commit -m "chore: automated changes (batch remainder)"
+        break
+      fi
+
+      # Snapshot staged count to detect stalled AI progress
+      local prev_staged
+      prev_staged=$(git diff --staged --name-only | wc -l)
+
+      if ! __git_sync_ai_commit "."; then
+        echo "⚠️ AI commit generation skipped or failed. Falling back to default batch commit..."
+        git add .
+        git commit -m "chore: automated changes"
+        break
+      fi
+
+      # __git_sync_ai_commit runs `git reset HEAD`. We must re-stage the leftovers for the next loop.
+      git add .
+
+      # Break out if the AI got stuck and didn't process any new files
+      local next_staged
+      next_staged=$(git diff --staged --name-only | wc -l)
+      if [ "$prev_staged" -eq "$next_staged" ]; then
+        echo "⚠️ AI failed to process the remaining diff chunks. Batch committing..."
+        git commit -m "chore: automated changes (batch remainder)"
+        break
+      fi
+    done
   fi
 
   echo "🚀 Pushing changes to remote..."
