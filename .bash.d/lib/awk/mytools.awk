@@ -47,7 +47,9 @@ BEGIN {
     if (in_doc && doc_desc != "") {
         match($1, /^[a-zA-Z0-9_-]+/)
         name = substr($1, 1, RLENGTH)
-        print "func\t" cat "\t" name "\t" doc_desc
+        if (name !~ /^__/) {
+            print "func\t" cat "\t" name "\t" doc_desc
+        }
     }
     in_doc = 0
     doc_desc = ""
