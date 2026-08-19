@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# ~/.bash.d/00-env.sh
+# ~/.bash.d/00-system/00-env.sh
 
 # Only prepend ANT_ROOT if it's actually set — an empty/unset var here
 # left a leading empty entry in PATH, which bash treats as "current
