@@ -7,7 +7,6 @@
 ---
 
 ## 🔗 Shell Aliases
-
 - **`mt-reload-config`** *(Configuration Management)*: Config: Forcefully re-parse config.yaml and reload environment variables
 - **`k`** *(Container Orchestration (Kubernetes) Aliases)*: Kubernetes: Core Kubectl Wrapper
 - **`ka`** *(Container Orchestration (Kubernetes) Aliases)*: Kubernetes: Apply configuration from file
@@ -114,10 +113,10 @@
 
 ## 🛠️ Public Functions
 
+
 ### 📂 AI Workflows & LLM API Integration
 
 #### `ai`
-
 > AI: Query configured LLM with prompt and optional context
 
 ```bash
@@ -178,7 +177,6 @@ ai() {
 ```
 
 #### `ai-explain`
-
 > AI: Explain a terminal command in detail
 
 ```bash
@@ -197,7 +195,6 @@ ai-explain() {
 ```
 
 #### `mt-ai-debug`
-
 > AI: Debug and explain the last failed terminal command
 
 ```bash
@@ -221,10 +218,10 @@ mt-ai-debug() {
 }
 ```
 
+
 ### 📂 Base64 Encoding & Decoding Utilities
 
 #### `base64-dec`
-
 > System: Decode a Base64 string, file, or stream
 
 ```bash
@@ -279,7 +276,6 @@ base64-dec() {
 ```
 
 #### `base64-enc`
-
 > System: Encode a string, file, or stream to Base64
 
 ```bash
@@ -333,10 +329,10 @@ base64-enc() {
 }
 ```
 
+
 ### 📂 Configuration Management
 
 #### `mt-get-gemini-status`
-
 > AI: Print current Gemini API model version and extended reasoning mode toggle
 
 ```bash
@@ -356,7 +352,6 @@ mt-get-gemini-status() {
 ```
 
 #### `mt-load-config`
-
 > Config: Forcefully re-parse config.yaml and reload environment variables
 
 ```bash
@@ -384,7 +379,6 @@ mt-load-config() {
 ```
 
 #### `mt-open-config`
-
 > Config: Open bash.d directory and config.yaml in IDE
 
 ```bash
@@ -426,7 +420,6 @@ mt-open-config() {
 ```
 
 #### `mt-set-default-ai`
-
 > Config: Set default AI model provider
 
 ```bash
@@ -446,7 +439,6 @@ mt-set-default-ai() {
 ```
 
 #### `mt-set-default-ide`
-
 > Config: Set default terminal IDE launcher
 
 ```bash
@@ -466,7 +458,6 @@ mt-set-default-ide() {
 ```
 
 #### `mt-set-theme`
-
 > Config: Set terminal color theme
 
 ```bash
@@ -488,7 +479,6 @@ mt-set-theme() {
 ```
 
 #### `mt-setup`
-
 > Config: Launch the interactive Master Setup Wizard Menu
 
 ```bash
@@ -538,7 +528,6 @@ mt-setup() {
 ```
 
 #### `mt-setup-ai`
-
 > Config: Interactive AI Setup Menu
 
 ```bash
@@ -578,7 +567,6 @@ mt-setup-ai() {
 ```
 
 #### `mt-setup-cicd`
-
 > Config: Interactive CI/CD Setup Menu
 
 ```bash
@@ -595,7 +583,6 @@ mt-setup-cicd() {
 ```
 
 #### `mt-setup-docker`
-
 > Config: Interactive Docker Setup Menu
 
 ```bash
@@ -612,7 +599,6 @@ mt-setup-docker() {
 ```
 
 #### `mt-setup-exports`
-
 > Config: Interactive Exports Setup Menu
 
 ```bash
@@ -633,7 +619,6 @@ mt-setup-exports() {
 ```
 
 #### `mt-setup-git`
-
 > Config: Interactive Git Setup Menu
 
 ```bash
@@ -663,7 +648,6 @@ mt-setup-git() {
 ```
 
 #### `mt-setup-paths`
-
 > Config: Interactive Paths Setup Menu
 
 ```bash
@@ -692,7 +676,6 @@ mt-setup-paths() {
 ```
 
 #### `mt-set-upstream-path`
-
 > Config: Set the upstream repository path for framework updates
 
 ```bash
@@ -712,7 +695,6 @@ mt-set-upstream-path() {
 ```
 
 #### `mt-setup-system`
-
 > Config: Interactive System Setup Menu
 
 ```bash
@@ -733,7 +715,6 @@ mt-setup-system() {
 ```
 
 #### `mt-toggle-ai`
-
 > Config: Toggle global AI prompt and workflow integration (true/false)
 
 ```bash
@@ -751,7 +732,6 @@ mt-toggle-ai() {
 ```
 
 #### `mt-toggle-format-on-push`
-
 > Config: Toggle global format-on-push behavior (true/false)
 
 ```bash
@@ -770,10 +750,10 @@ mt-toggle-format-on-push() {
 }
 ```
 
+
 ### 📂 Container Orchestration
 
 #### `kubectl`
-
 > Kubernetes: Core kubectl wrapper (preserves args)
 
 ```bash
@@ -783,10 +763,10 @@ kubectl() {
 }
 ```
 
+
 ### 📂 Container Orchestration (Kubernetes) Aliases
 
 #### `kns`
-
 > Kubernetes: Get or explicitly set the active namespace in the current context
 
 ```bash
@@ -806,10 +786,10 @@ kns() {
 }
 ```
 
+
 ### 📂 GCP: Configuration & Authentication
 
 #### `gcl-config`
-
 > GCP: List active configuration properties
 
 ```bash
@@ -823,7 +803,6 @@ gcl-config() {
 ```
 
 #### `gcl-export-vars`
-
 > GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell
 
 ```bash
@@ -861,7 +840,6 @@ gcl-export-vars() {
 ```
 
 #### `gcl-get-project`
-
 > GCP: Print active project ID
 
 ```bash
@@ -875,7 +853,6 @@ gcl-get-project() {
 ```
 
 #### `gcl-get-project-number`
-
 > GCP: Print active project Number (API call required)
 
 ```bash
@@ -891,7 +868,6 @@ gcl-get-project-number() {
 ```
 
 #### `gcl-get-region`
-
 > GCP: Print active compute region
 
 ```bash
@@ -905,7 +881,6 @@ gcl-get-region() {
 ```
 
 #### `gcl-get-user`
-
 > GCP: Print active user account
 
 ```bash
@@ -919,7 +894,6 @@ gcl-get-user() {
 ```
 
 #### `gcl-get-zone`
-
 > GCP: Print active compute zone
 
 ```bash
@@ -933,7 +907,6 @@ gcl-get-zone() {
 ```
 
 #### `gcl-org-policies`
-
 > GCP: List org policies for active project
 
 ```bash
@@ -949,7 +922,6 @@ gcl-org-policies() {
 ```
 
 #### `gcl-update`
-
 > GCP: Update Google Cloud CLI tools
 
 ```bash
@@ -968,7 +940,6 @@ gcl-update() {
 ```
 
 #### `gcp-login`
-
 > GCP: Login to user & application default
 
 ```bash
@@ -982,7 +953,6 @@ gcp-login() {
 ```
 
 #### `gcp-login-adc`
-
 > GCP: Login to application default only
 
 ```bash
@@ -996,7 +966,6 @@ gcp-login-adc() {
 ```
 
 #### `gcp-set-project`
-
 > GCP: Switch active project
 
 ```bash
@@ -1025,10 +994,10 @@ gcp-set-project() {
 }
 ```
 
+
 ### 📂 GCP: Resources & Services
 
 #### `bq-query`
-
 > GCP: Run standard SQL query in BigQuery
 
 ```bash
@@ -1042,7 +1011,6 @@ bq-query() {
 ```
 
 #### `gcl-as-json`
-
 > GCP: Run any gcloud command and output as formatted JSON
 
 ```bash
@@ -1056,7 +1024,6 @@ gcl-as-json() {
 ```
 
 #### `gcp-crf-logs`
-
 > GCP: Tail logs of a Cloud Run Function
 
 ```bash
@@ -1074,7 +1041,6 @@ gcp-crf-logs() {
 ```
 
 #### `gcp-gar-docker`
-
 > GCP: Configure Docker auth for Artifact Registry
 
 ```bash
@@ -1088,7 +1054,6 @@ gcp-gar-docker() {
 ```
 
 #### `gcp-get-secret`
-
 > GCP: Read the latest payload of a secret
 
 ```bash
@@ -1102,7 +1067,6 @@ gcp-get-secret() {
 ```
 
 #### `gcp-iam-show`
-
 > GCP: View IAM policy for the active project
 
 ```bash
@@ -1116,7 +1080,6 @@ gcp-iam-show() {
 ```
 
 #### `gcp-ps-pull`
-
 > GCP: Pull and auto-ack one message from a Pub/Sub subscription
 
 ```bash
@@ -1129,10 +1092,10 @@ gcp-ps-pull() {
 }
 ```
 
+
 ### 📂 General System Utilities
 
 #### `mt-top-files`
-
 > System: Display the top largest files in a directory
 
 ```bash
@@ -1148,10 +1111,10 @@ mt-top-files() {
 }
 ```
 
+
 ### 📂 Google Style Code Formatting
 
 #### `google-fmt`
-
 > Formats Python and Shell scripts according to Google Style Guides.
 
 ```bash
@@ -1186,10 +1149,10 @@ google-fmt() {
 }
 ```
 
+
 ### 📂 Infrastructure as Code
 
 #### `tf-val-all`
-
 > Terraform: Recursively validate and scan all Terraform directories
 
 ```bash
@@ -1214,74 +1177,183 @@ tf-val-all() {
 }
 ```
 
+
 ### 📂 LLM Context & Export Utilities
 
 #### `mt-export`
-
-> LLM: Export codebase to text/zip for LLM context window
-
-```bash
-mt-export() { __mt_do_export "Generic Code Export" ".*" "$@"; }
-
-#######################################
-# LLM: Export shell scripts (.sh, .bash, .zsh)
-#######################################
-mt-export-shell() { __mt_do_export "Shell Scripts Export" "sh|bash|zsh" "$@"; }
-
-#######################################
-# LLM: Export Terraform & YAML infrastructure code
-#######################################
-mt-export-terraform() { __mt_do_export "Terraform Code Export" "tf|tfvars|yaml|yml" "$@"; }
-
-#######################################
-# LLM: Export Cloud Run / Python microservice codebase
-#######################################
-mt-export-cloudrun() { __mt_do_export "Cloud Run Python Export" "py|txt|yaml|yml|Dockerfile|sh" "$@"; }
-```
-
-#### `mt-export-cloudrun`
-
-> LLM: Export Cloud Run / Python microservice codebase
+> LLM: Export codebase to text/zip for LLM context window using dynamic schemas
 
 ```bash
-mt-export-cloudrun() { __mt_do_export "Cloud Run Python Export" "py|txt|yaml|yml|Dockerfile|sh" "$@"; }
+mt-export() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local target_dir="."
+  local schema_query="default"
+  local zip_out=false
+  local quiet_mode=false
+
+  # Parse Arguments
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -d | --dir) target_dir="$2"; shift ;;
+      -s | --schema) schema_query="$2"; shift ;;
+      -z | --zip) zip_out=true ;;
+      -q | --quiet) quiet_mode=true ;;
+      *) target_dir="$1" ;; # Handle positional fallback
+    esac
+    shift
+  done
+
+  if [ ! -d "$target_dir" ]; then
+    echo -e "${CB_RED}🚨 Error: Directory '$target_dir' not found.${C_RESET}"
+    return 1
+  fi
+
+  local schemas_dir="$HOME/.bash.d/config/export/schemas"
+  local schema_file=""
+
+  # Resolve the correct schema using Python
+  local py_script="
+import os, yaml, sys
+schemas_dir = sys.argv[1]
+query = sys.argv[2].lower()
+for f in os.listdir(schemas_dir):
+    if not f.endswith('.yaml'): continue
+    path = os.path.join(schemas_dir, f)
+    try:
+        with open(path, 'r') as yf:
+            data = yaml.safe_load(yf)
+            aliases = data.get('aliases', [])
+            if query in aliases or query == data.get('name', '').lower() or query == f.split('.')[0]:
+                print(path)
+                sys.exit(0)
+    except: pass
+print('')
+"
+  if command -v python3 > /dev/null 2>&1; then
+      schema_file=$(python3 -c "$py_script" "$schemas_dir" "$schema_query")
+  fi
+
+  if [ -z "$schema_file" ] || [ ! -f "$schema_file" ]; then
+    echo -e "${CB_YELLOW}⚠️ Schema '${schema_query}' not found. Falling back to default.${C_RESET}"
+    schema_file="$schemas_dir/default.yaml"
+  fi
+
+  # Extract Schema Values using yq
+  local s_name="Code Export"
+  local s_inc=".*"
+  local s_exc=""
+
+  if command -v yq > /dev/null 2>&1; then
+    s_name=$(yq -r '.name // "Code Export"' "$schema_file")
+    s_inc=$(yq -r '.include_extensions // ".*"' "$schema_file")
+    s_exc=$(yq -r '.exclude_patterns // ""' "$schema_file")
+  fi
+
+  echo -e "${CB_BLUE}📦 Running: $s_name${C_RESET}"
+
+  # Resolve centralized exports directory
+  local dest_dir="${AI_WORKSPACE_DIR:-$HOME/vcs/ai-workspace}/exports"
+  mkdir -p "$dest_dir"
+
+  # Build the dynamic filename
+  local safe_dir_name
+  safe_dir_name=$(basename "$(realpath "$target_dir")")
+  local timestamp
+  timestamp=$(date +"%Y%m%d_%H%M%S")
+  local base_out_name="${timestamp}_${safe_dir_name}_${schema_query}"
+
+  local tmp_file="/tmp/mt_export_${RANDOM}.txt"
+  local file_list="/tmp/mt_export_files_${RANDOM}.txt"
+
+  # Find files, exclude global blocklist, include specified extensions
+  eval "find \"$target_dir\" -type f" 2> /dev/null |
+    grep -E -vi "(${EXPORT_BLOCKLIST})" |
+    grep -E -i "\.(${s_inc})$" > "$file_list"
+
+  # Optionally filter out schema-specific excluded patterns
+  if [ -n "$s_exc" ] && [ "$s_exc" != "null" ] && [ "$s_exc" != '""' ]; then
+    grep -E -vi "(${s_exc})" "$file_list" > "${file_list}.filtered"
+    mv "${file_list}.filtered" "$file_list"
+  fi
+
+  local total_files
+  total_files=$(wc -l < "$file_list")
+
+  if [ "$total_files" -eq 0 ]; then
+    echo -e "${CB_YELLOW}⚠️ No files matched the schema '${schema_query}' in ${target_dir}.${C_RESET}"
+    rm -f "$file_list"
+    return 0
+  fi
+
+  # === AI Context Size Protection (Killswitch) ===
+  if [ "$total_files" -gt 2000 ]; then
+     echo -e "${CB_RED}🚨 KILLSWITCH: $total_files files detected. Export aborted to prevent system lockup and LLM overload.${C_RESET}"
+     rm -f "$file_list"
+     return 1
+  elif [ "$total_files" -gt 500 ]; then
+     echo -e "${CB_YELLOW}⚠️ Warning: $total_files files detected. This may exceed AI context limits.${C_RESET}"
+     read -r -p "Proceed anyway? [y/N] " -n 1 < /dev/tty
+     echo
+     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${CB_RED}🛑 Aborted.${C_RESET}"
+        rm -f "$file_list"
+        return 1
+     fi
+  fi
+
+  echo "=== MT DevOps Export: $s_name ===" > "$tmp_file"
+  echo "Generated: $(date)" >> "$tmp_file"
+  echo "Directory: $(realpath "$target_dir")" >> "$tmp_file"
+  echo "Schema: $schema_query" >> "$tmp_file"
+  echo "-----------------------------------" >> "$tmp_file"
+
+  # Inject the directory tree overview
+  echo "Directory Tree:" >> "$tmp_file"
+  if command -v tree > /dev/null 2>&1; then
+    tree -a -I '.git|.dev|.vscode|.idea|node_modules|__pycache__|.terraform|venv|.venv|.mt_cache*' "$target_dir" >> "$tmp_file" 2> /dev/null
+  else
+    # Fallback to sed-formatted find if tree is missing
+    # shellcheck disable=SC2086
+    find "$target_dir" -print | grep -E -v '/(\.git|\.dev|\.vscode|\.idea|node_modules|__pycache__|\.terraform|venv|\.venv)/' | sed -e 's;[^/]*/;|____;g;s;____|; |;g' >> "$tmp_file" 2> /dev/null
+  fi
+  echo "-----------------------------------" >> "$tmp_file"
+
+  # Append actual file contents
+  while IFS= read -r file; do
+    echo -e "\n==> $file <==" >> "$tmp_file"
+    cat "$file" >> "$tmp_file" 2> /dev/null || echo "[Unreadable File]" >> "$tmp_file"
+  done < "$file_list"
+
+  local final_out=""
+  if [ "$zip_out" = true ]; then
+    final_out="${dest_dir}/${base_out_name}.zip"
+    zip -qj "$final_out" "$tmp_file" > /dev/null 2>&1
+    echo -e "${CB_GREEN}✅ Export saved to $final_out${C_RESET}"
+  else
+    final_out="${dest_dir}/${base_out_name}.txt"
+    cp "$tmp_file" "$final_out"
+    echo -e "${CB_GREEN}✅ Export saved to $final_out${C_RESET}"
+  fi
+
+  rm -f "$tmp_file" "$file_list"
+
+  # Open GUI Explorer unless quiet mode is on
+  if [ "$quiet_mode" = false ]; then
+    if type __open_path_gui > /dev/null 2>&1; then
+      __open_path_gui "$dest_dir" 2> /dev/null || true
+    fi
+  fi
+}
 ```
 
-#### `mt-export-shell`
-
-> LLM: Export shell scripts (.sh, .bash, .zsh)
-
-```bash
-mt-export-shell() { __mt_do_export "Shell Scripts Export" "sh|bash|zsh" "$@"; }
-
-#######################################
-# LLM: Export Terraform & YAML infrastructure code
-#######################################
-mt-export-terraform() { __mt_do_export "Terraform Code Export" "tf|tfvars|yaml|yml" "$@"; }
-
-#######################################
-# LLM: Export Cloud Run / Python microservice codebase
-#######################################
-mt-export-cloudrun() { __mt_do_export "Cloud Run Python Export" "py|txt|yaml|yml|Dockerfile|sh" "$@"; }
-```
-
-#### `mt-export-terraform`
-
-> LLM: Export Terraform & YAML infrastructure code
-
-```bash
-mt-export-terraform() { __mt_do_export "Terraform Code Export" "tf|tfvars|yaml|yml" "$@"; }
-
-#######################################
-# LLM: Export Cloud Run / Python microservice codebase
-#######################################
-mt-export-cloudrun() { __mt_do_export "Cloud Run Python Export" "py|txt|yaml|yml|Dockerfile|sh" "$@"; }
-```
 
 ### 📂 MyTools Documentation & Runner
 
 #### `mt-aliases`
-
 > MyTools: List all documented shell aliases
 
 ```bash
@@ -1298,7 +1370,6 @@ mt-aliases() {
 ```
 
 #### `mt-cat`
-
 > MyTools: List all tools within a specific category
 
 ```bash
@@ -1323,7 +1394,6 @@ mt-cat() {
 ```
 
 #### `mt-cats`
-
 > MyTools: List all available command categories
 
 ```bash
@@ -1342,7 +1412,6 @@ mt-cats() {
 ```
 
 #### `mt-config`
-
 > MyTools: Display active framework configuration variables
 
 ```bash
@@ -1367,7 +1436,6 @@ mt-config() {
 ```
 
 #### `mt-dump`
-
 > MyTools: Generate a detailed technical Markdown dump of all functions and aliases
 
 ```bash
@@ -1409,20 +1477,18 @@ mt-dump() {
 > Environment: $(uname -s) ($(uname -m))
 
 ---
+
 HDR
 
   local tsv_index="$HOME/.bash.d/data/cache/.mt_data.tsv"
   mytools > /dev/null
 
   if [ -f "$tsv_index" ]; then
-    echo "" >> "$out_file"
     echo "## 🔗 Shell Aliases" >> "$out_file"
-    echo "" >> "$out_file"
     awk -F'\t' '$1 == "alias" { printf "- **`%s`** *(%s)*: %s\n", $3, $2, $4 }' "$tsv_index" >> "$out_file"
-    echo "" >> "$out_file"
-    echo "---" >> "$out_file"
-    echo "" >> "$out_file"
-    echo "## 🛠️ Public Functions" >> "$out_file"
+    echo -e "\n---" >> "$out_file"
+
+    echo -e "\n## 🛠️ Public Functions\n" >> "$out_file"
 
     local current_cat=""
     while IFS=$'\t' read -r type cat name desc; do
@@ -1430,32 +1496,24 @@ HDR
 
       if [ "$cat" != "$current_cat" ]; then
         current_cat="$cat"
-        echo "" >> "$out_file"
-        echo "### 📂 ${current_cat}" >> "$out_file"
+        echo -e "\n### 📂 ${current_cat}\n" >> "$out_file"
       fi
 
-      echo "" >> "$out_file"
-      echo "#### \`$name\`" >> "$out_file"
-      echo "" >> "$out_file"
-      echo "> $desc" >> "$out_file"
-      echo "" >> "$out_file"
+      echo -e "#### \`$name\`" >> "$out_file"
+      echo -e "> $desc\n" >> "$out_file"
 
       local src_file
       src_file=$(grep -rlE "^${name}\(\)[ \t]*\{" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
       if [ -n "$src_file" ]; then
         echo "\`\`\`bash" >> "$out_file"
         awk -v target="$name" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$src_file" >> "$out_file"
-        echo "\`\`\`" >> "$out_file"
+        echo -e "\`\`\`\n" >> "$out_file"
       fi
     done < <(sort -t$'\t' -k2,2 -k3,3 "$tsv_index")
   fi
 
   if [ "$include_private" = true ]; then
-    echo "" >> "$out_file"
-    echo "---" >> "$out_file"
-    echo "" >> "$out_file"
-    echo "## 🔒 Internal Framework Helpers (Private Functions)" >> "$out_file"
-    echo "" >> "$out_file"
+    echo -e "\n---\n\n## 🔒 Internal Framework Helpers (Private Functions)\n" >> "$out_file"
     echo "Private functions prefixed with \`_\` or \`__\` used internally by the framework." >> "$out_file"
 
     find "$HOME/.bash.d" -type f -name "*.sh" -exec grep -HnE "^_{1,2}[a-zA-Z0-9_-]+\(\)[ \t]*\{" {} + | while read -r line; do
@@ -1467,12 +1525,10 @@ HDR
       [ -z "$func_name" ] && continue
       local rel_fpath="${fpath#"$HOME"/.bash.d/}"
 
-      echo "" >> "$out_file"
-      echo "### \`$func_name\` *(File: \`00-system/${rel_fpath}\`)*" >> "$out_file"
-      echo "" >> "$out_file"
+      echo -e "\n### \`$func_name\` *(File: \`00-system/${rel_fpath}\`)*" >> "$out_file"
       echo "\`\`\`bash" >> "$out_file"
       awk -v target="$func_name" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$fpath" >> "$out_file"
-      echo "\`\`\`" >> "$out_file"
+      echo -e "\`\`\`\n" >> "$out_file"
     done
   fi
 
@@ -1485,7 +1541,6 @@ HDR
 ```
 
 #### `mt-funcs`
-
 > MyTools: List all documented shell functions
 
 ```bash
@@ -1502,7 +1557,6 @@ mt-funcs() {
 ```
 
 #### `mt-fzf`
-
 > MyTools: Interactive fuzzy-finder to search for a command
 
 ```bash
@@ -1519,7 +1573,6 @@ mt-fzf() {
 ```
 
 #### `mt-get-version`
-
 > System: Print the current local version of the terminal profile
 
 ```bash
@@ -1548,7 +1601,6 @@ mt-get-version() {
 ```
 
 #### `mt-help`
-
 > MyTools: Display detailed help and source code for a command
 
 ```bash
@@ -1617,7 +1669,6 @@ mt-help() {
 ```
 
 #### `mt-lookup`
-
 > MyTools: Search through available mytools commands with tab-completion
 
 ```bash
@@ -1636,7 +1687,6 @@ mt-lookup() {
 ```
 
 #### `mt-refresh-caches`
-
 > System: Forcefully clear and rebuild all background caches (.env, mytools, updates)
 
 ```bash
@@ -1667,7 +1717,6 @@ mt-refresh-caches() {
 ```
 
 #### `mt-run`
-
 > MyTools: Interactive fuzzy-finder to select and execute a command
 
 ```bash
@@ -1689,7 +1738,6 @@ mt-run() {
 ```
 
 #### `mt-status`
-
 > System: Display a unified health check and status dashboard
 
 ```bash
@@ -1762,7 +1810,6 @@ mt-status() {
 ```
 
 #### `mytools`
-
 > MyTools: Primary runner and documentation index
 
 ```bash
@@ -1785,10 +1832,10 @@ mytools() {
 }
 ```
 
+
 ### 📂 Path & URL Launchers (Config-Driven)
 
 #### `cd-ai-workspace`
-
 > AI: Change directory to unified AI workspace
 
 ```bash
@@ -1802,7 +1849,6 @@ cd-ai-workspace() {
 ```
 
 #### `cd-win-docker`
-
 > Docker: Change to Docker directory (from config.yaml) and open in Windows Explorer
 
 ```bash
@@ -1833,7 +1879,6 @@ cd-win-docker() {
 ```
 
 #### `ide`
-
 > System: Open current directory in the default IDE (VSCode/IntelliJ)
 
 ```bash
@@ -1855,7 +1900,6 @@ ide() {
 ```
 
 #### `mt-dotfiles`
-
 > System: Change directory to dotfiles repository root
 
 ```bash
@@ -1875,7 +1919,6 @@ mt-dotfiles() {
 ```
 
 #### `mt-open-homepage`
-
 > System: Open dotfiles repository remote URL in default web browser
 
 ```bash
@@ -1904,7 +1947,6 @@ mt-open-homepage() {
 ```
 
 #### `win-ai-workspace`
-
 > AI: Open unified AI workspace in the platform's native file manager
 
 ```bash
@@ -1918,7 +1960,6 @@ win-ai-workspace() {
 ```
 
 #### `win-docker`
-
 > Docker: Open Docker root directory in the platform's native file manager
 
 ```bash
@@ -1932,7 +1973,6 @@ win-docker() {
 ```
 
 #### `win-sync`
-
 > System: Open sync repository in the platform's native file manager
 
 ```bash
@@ -1945,10 +1985,10 @@ win-sync() {
 }
 ```
 
+
 ### 📂 System & Environment Bootstrap
 
 #### `bootstrap`
-
 > System: Bootstrap missing dependencies (Debian/WSL via APT, macOS via Homebrew)
 
 ```bash
@@ -1966,6 +2006,7 @@ bootstrap() {
   fi
   __bootstrap_python
   __bootstrap_yq
+  __bootstrap_external
   __bootstrap_check_complex
 
   echo -e "\n🎉 Environment bootstrap complete!"
@@ -1995,7 +2036,6 @@ bootstrap() {
 ```
 
 #### `sys-install`
-
 > System: Updates system packages and clears pending-update marker
 
 ```bash
@@ -2010,7 +2050,6 @@ sys-install() {
 ```
 
 #### `sys-update`
-
 > System: Updates system packages (APT on Debian/WSL, Homebrew on macOS)
 
 ```bash
@@ -2031,10 +2070,10 @@ sys-update() {
 }
 ```
 
+
 ### 📂 System & Navigation Aliases
 
 #### `clip`
-
 > System: Pipe output to the system clipboard (e.g. cat file | clip)
 
 ```bash
@@ -2048,7 +2087,6 @@ clip() {
 ```
 
 #### `win`
-
 > System: Open current directory in the platform's native file manager
 
 ```bash
@@ -2062,7 +2100,6 @@ win() {
 ```
 
 #### `win-export`
-
 > System: Open ~/vcs/personal/exports in the platform's native file manager
 
 ```bash
@@ -2076,7 +2113,6 @@ win-export() {
 ```
 
 #### `win-vcs`
-
 > System: Open ~/vcs in the platform's native file manager
 
 ```bash
@@ -2089,10 +2125,10 @@ win-vcs() {
 }
 ```
 
+
 ### 📂 Terraform & AI Integrations
 
 #### `tf-iam`
-
 > AI: Analyze Terraform codebase for IAM requirements and optionally generate script
 
 ```bash
@@ -2151,10 +2187,10 @@ tf-iam() {
 }
 ```
 
+
 ### 📂 Terraform Aliases
 
 #### `tf-clean`
-
 > Terraform: Aggressively clean local caching (.terraform, locks, plans)
 
 ```bash
@@ -2180,7 +2216,6 @@ tf-clean() {
 ```
 
 #### `tf-replace`
-
 > Terraform: Replace a specific resource (Modern alternative to taint)
 
 ```bash
@@ -2199,7 +2234,6 @@ tf-replace() {
 ```
 
 #### `tf-yaml`
-
 > Terraform: Execute Terraform using a YAML config file for variables
 
 ```bash
@@ -2270,10 +2304,10 @@ tf-yaml() {
 }
 ```
 
+
 ### 📂 Terraform & Kubernetes Wrappers
 
 #### `terraform`
-
 > Terraform: Core wrapper (preserves args)
 
 ```bash
@@ -2283,10 +2317,10 @@ terraform() {
 }
 ```
 
+
 ### 📂 Version Control (Git) - AI Workflows
 
 #### `git-ai-push-all`
-
 > Git: Auto-format, stage, generate AI commits, and push all changes
 
 ```bash
@@ -2355,7 +2389,6 @@ git-ai-push-all() {
 ```
 
 #### `mt-ai-gitignore`
-
 > AI: Generate a comprehensive .gitignore for the active repository
 
 ```bash
@@ -2376,7 +2409,6 @@ mt-ai-gitignore() {
 ```
 
 #### `mt-ai-readme`
-
 > AI: Generate a comprehensive README.md for the active repository
 
 ```bash
@@ -2396,10 +2428,10 @@ mt-ai-readme() {
 }
 ```
 
+
 ### 📂 Version Control (Git) - Core Helpers
 
 #### `git`
-
 > Git: Intercept 'clone' to automatically route repositories into ~/vcs/
 
 ```bash
@@ -2421,7 +2453,6 @@ git() {
 ```
 
 #### `git-clean-merged`
-
 > Git: Delete local and remote branches merged into the default branch
 
 ```bash
@@ -2472,7 +2503,6 @@ git-clean-merged() {
 ```
 
 #### `git-clone-ide`
-
 > Git: Clone repository into ~/vcs/, navigate into it, and open in default IDE
 
 ```bash
@@ -2524,7 +2554,6 @@ git-clone-ide() {
 ```
 
 #### `git-default-rebase`
-
 > Git: Fetch upstream origin and rebase current branch onto default branch
 
 ```bash
@@ -2554,7 +2583,6 @@ git-default-rebase() {
 ```
 
 #### `git-new-feature`
-
 > Git: Create and checkout a new feature branch
 
 ```bash
@@ -2573,7 +2601,6 @@ git-new-feature() {
 ```
 
 #### `git-nuke`
-
 > Git: Hard reset local branch to upstream state and wipe untracked files
 
 ```bash
@@ -2612,7 +2639,6 @@ git-nuke() {
 ```
 
 #### `git-pretty-log`
-
 > Git: Print a clean, color-coded, single-line log graph
 
 ```bash
@@ -2626,7 +2652,6 @@ git-pretty-log() {
 ```
 
 #### `git-push-all`
-
 > Git: Stage all files, commit with provided message, and push
 
 ```bash
@@ -2660,7 +2685,6 @@ git-push-all() {
 ```
 
 #### `git-raise-pr`
-
 > Git: Push current branch and raise a Pull Request (GitHub/GitLab/Bitbucket)
 
 ```bash
@@ -2800,7 +2824,6 @@ git-raise-pr() {
 ```
 
 #### `git-view-remote`
-
 > Git: Open current repository remote URL in default web browser
 
 ```bash
@@ -2831,10 +2854,10 @@ git-view-remote() {
 }
 ```
 
+
 ### 📂 Version Control (Git) - Profile Synchronization
 
 #### `mt-download-release`
-
 > System: Download a release zip from the remote repository
 
 ```bash
@@ -2914,7 +2937,6 @@ mt-download-release() {
 ```
 
 #### `mt-get-update`
-
 > System: Download and install profile updates from GitHub releases
 
 ```bash
@@ -3018,7 +3040,6 @@ mt-get-update() {
 ```
 
 #### `mt-push-update`
-
 > System: Sync local bash configs to terminal dotfiles repo and create a Pull Request
 
 ```bash
@@ -3216,3 +3237,4 @@ mt-push-update() {
   ) || return 1
 }
 ```
+

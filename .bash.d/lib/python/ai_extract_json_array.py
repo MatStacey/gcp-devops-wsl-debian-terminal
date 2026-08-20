@@ -15,31 +15,20 @@ from typing import Any
 
 
 def try_parse(val: Any) -> list | None:
-    """
-    Attempts to parse a given value into a JSON list.
-
-    Args:
-        val (Any): The payload to attempt to parse.
-
-    Returns:
-        Optional[list]: The parsed list, or None if parsing fails.
-    """
+    """Attempts to parse a given value into a JSON list."""
     if isinstance(val, list):
         return val
 
     if isinstance(val, str):
         val_clean = val.strip()
-
         with contextlib.suppress(ValueError, TypeError):
             res = json.loads(val_clean)
             if isinstance(res, list):
                 return res
-
         with contextlib.suppress(ValueError, TypeError, SyntaxError):
             res = ast.literal_eval(val_clean)
             if isinstance(res, list):
                 return res
-
     return None
 
 
@@ -71,15 +60,9 @@ def _extract_from_regex(text: str) -> list | None:
 def main():
     """Reads raw text from STDIN and attempts to extract a JSON list payload."""
     text = sys.stdin.read().strip()
-
-    # Step 1: Attempt direct JSON extraction
     result = _extract_from_json(text)
-
-    # Step 2: Fallback to regex extraction
     if result is None:
         result = _extract_from_regex(text)
-
-    # Output results
     print(json.dumps(result if result is not None else []))
 
 

@@ -13,8 +13,6 @@ import sys
 def main():
     """Reads STDIN, extracts a JSON-like object, and prints it to STDOUT."""
     text = sys.stdin.read()
-
-    # Locate the first '{' and the last '}' in the text payload
     match = re.search(r"\{.*\}", text, re.DOTALL)
 
     if match:

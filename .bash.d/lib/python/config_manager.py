@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+"""
+Configuration Manager for the MT DevOps Framework.
+"""
+
 import contextlib
 import os
 import shlex

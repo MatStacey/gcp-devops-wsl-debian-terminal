@@ -25,8 +25,6 @@ def main():
         c = f.read()
 
     updates = f"## 🚀 Recent Updates & Enhancements\n\n{new_content}\n\n---"
-
-    # Replace the target section using regex with DOTALL to match across newlines
     c_new = re.sub(r"## 🚀 Recent Updates & Enhancements.*?---",
                    updates,
                    c,
