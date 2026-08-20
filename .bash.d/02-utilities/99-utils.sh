@@ -270,7 +270,7 @@ mt-blueprint() {
   done
 
   if [ -z "$target" ]; then
-    target=$(ls -1 "$blueprints_dir" | fzf --prompt="🏗️  Select Blueprint > " --height=~10 --layout=reverse --border)
+    target=$(find "$blueprints_dir" -mindepth 1 -maxdepth 1 -type d -exec basename {} \; | fzf --prompt="🏗️  Select Blueprint > " --height=~10 --layout=reverse --border)
   fi
 
   if [ -z "$target" ]; then

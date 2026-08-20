@@ -351,8 +351,10 @@ mt-status() {
   # 2. Sync Repository Status
   echo -e "\n${CB_YELLOW}▶ PROFILE SYNC REPO${C_RESET}"
   if [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ]; then
-    local branch=$(git -C "$SYNC_REPO_DIR" branch --show-current 2> /dev/null)
-    local changes=$(git -C "$SYNC_REPO_DIR" status --porcelain 2> /dev/null | wc -l)
+    local branch
+    branch=$(git -C "$SYNC_REPO_DIR" branch --show-current 2> /dev/null)
+    local changes
+    changes=$(git -C "$SYNC_REPO_DIR" status --porcelain 2> /dev/null | wc -l)
     echo -e "  ${CB_CYAN}Path          ${C_RESET}: ${SYNC_REPO_DIR}"
     echo -e "  ${CB_CYAN}Branch        ${C_RESET}: ${branch}"
     if [ "$changes" -gt 0 ]; then
@@ -367,8 +369,10 @@ mt-status() {
   # 3. Docker Health
   echo -e "\n${CB_YELLOW}▶ DOCKER ENVIRONMENT${C_RESET}"
   if command -v docker > /dev/null 2>&1 && docker info > /dev/null 2>&1; then
-    local running=$(docker ps -q 2> /dev/null | wc -l)
-    local total=$(docker ps -aq 2> /dev/null | wc -l)
+    local running
+    running=$(docker ps -q 2> /dev/null | wc -l)
+    local total
+    total=$(docker ps -aq 2> /dev/null | wc -l)
     echo -e "  ${CB_CYAN}Daemon        ${C_RESET}: ${CB_GREEN}Running${C_RESET}"
     echo -e "  ${CB_CYAN}Containers    ${C_RESET}: ${running} running / ${total} total"
   else
