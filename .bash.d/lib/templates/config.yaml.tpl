@@ -48,22 +48,4 @@ cicd:
   provider: github # github, bitbucket, gitlab, azure, jenkins
 
 docker:
-  restart_blocklist:
-    - secret
-    - token
-    - credential
-    - pass
-    - key
-    - rsa
-    - env
-    - lock\.hcl
-    - __pycache__
-    - \.tfstate
-    - \.mt_cache
-    - \.mt_data\.tsv
-    - \.profile_update_cache
-    - \.style\.yapf
-    - \.update_check_cache
-    - \.zoxide_cache\.sh
-    - \.env\.cache
-    - \.dev
+  restart_blocklist: redis,postgres,local-db

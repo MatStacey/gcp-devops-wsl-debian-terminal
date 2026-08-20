@@ -8,10 +8,11 @@ __check_updates() {
   # Exit immediately if not in an interactive shell
   if [[ $- != *i* ]]; then return; fi
 
-  local pending_file="$HOME/.bash.d/.update_pending"
+  local pending_file="$HOME/.bash.d/data/cache/.update_pending"
   local cache_file="$HOME/.bash.d/data/cache/.update_check_cache"
   local current_time
   current_time=$(date +%s)
+  mkdir -p "$HOME/.bash.d/data/cache" 2> /dev/null
 
   # If a background check found updates, display the notification message
   if [ -f "$pending_file" ]; then
@@ -62,17 +63,18 @@ __check_updates
 __check_profile_updates() {
   if [[ $- != *i* ]]; then return; fi
 
-  local pending_file="$HOME/.bash.d/.profile_update_pending"
+  local pending_file="$HOME/.bash.d/data/cache/.profile_update_pending"
   local cache_file="$HOME/.bash.d/data/cache/.profile_update_cache"
   local current_time
   current_time=$(date +%s)
+  mkdir -p "$HOME/.bash.d/data/cache" 2> /dev/null
 
   if [ -f "$pending_file" ]; then
     local new_version
     new_version=$(command cat "$pending_file")
     local current_version="Local"
-    if [ -f "$HOME/.bash.d/.current_version" ]; then
-      current_version=$(command cat "$HOME/.bash.d/.current_version")
+    if [ -f "$HOME/.bash.d/config/.current_version" ]; then
+      current_version=$(command cat "$HOME/.bash.d/config/.current_version")
     elif [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
       current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "Local")
     fi
@@ -100,8 +102,8 @@ __check_profile_updates() {
       remote_version=$(curl -s "https://api.github.com/repos/${repo_path}/releases/latest" | jq -r ".tag_name // empty")
 
       local current_version=""
-      if [ -f "$HOME/.bash.d/.current_version" ]; then
-        current_version=$(command cat "$HOME/.bash.d/.current_version")
+      if [ -f "$HOME/.bash.d/config/.current_version" ]; then
+        current_version=$(command cat "$HOME/.bash.d/config/.current_version")
       elif [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
         current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "")
       fi

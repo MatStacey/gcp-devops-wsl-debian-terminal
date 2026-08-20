@@ -290,9 +290,8 @@ git-raise-pr() {
         echo -e "${CB_RED}🚨 Aborted.${C_RESET}"
         return 1
       fi
-      git checkout "$target_branch"
-      git branch -D "$current_branch"
       git checkout -b "$new_branch"
+      git branch -D "$current_branch"
       current_branch="$new_branch"
     else
       echo -e "${CB_RED}🚨 Aborted. Cannot raise a new PR on a branch with a closed/merged PR in GitHub without recreating it.${C_RESET}"

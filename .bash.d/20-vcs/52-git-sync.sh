@@ -67,6 +67,7 @@ Dockerfile
 .dockerignore
 .gitignore
 .gitleaks.toml
+data/cache/
 IGNOREEOF
   fi
 
@@ -195,10 +196,21 @@ mt-push-update() {
             echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
             git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
           fi
-          git checkout "$default_branch"
-          git pull origin "$default_branch"
-          git branch -D "$current_branch"
-          current_branch="$default_branch"
+          local stashed=false
+          if ! git diff --quiet || ! git diff --staged --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+            git stash push --include-untracked -m "mt-push auto stash" > /dev/null 2>&1
+            stashed=true
+          fi
+          if git checkout "$default_branch" > /dev/null 2>&1; then
+            git pull origin "$default_branch" > /dev/null 2>&1
+            git branch -D "$current_branch" > /dev/null 2>&1
+            current_branch="$default_branch"
+          else
+            echo -e "${CB_RED}🚨 Failed to checkout $default_branch. Please commit or stash changes manually.${C_RESET}"
+            [ "$stashed" = true ] && git stash pop > /dev/null 2>&1
+            exit 1
+          fi
+          [ "$stashed" = true ] && git stash pop > /dev/null 2>&1
         else
           echo -e "${CB_RED}🚨 Aborted profile sync.${C_RESET}"
           exit 1
@@ -220,7 +232,7 @@ mt-push-update() {
         exit 1
       fi
     fi
-  )
+  ) || return 1
 
   # 3. Synchronize modified files over to the repo
   __git_sync_copy_files "$repo_dir"
@@ -235,6 +247,10 @@ mt-push-update() {
 
     # Trigger automatic documentation updates
     __git_sync_ai_docs "$repo_dir"
+    if [ $? -eq 100 ]; then
+      echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
+      exit 1
+    fi
 
     git add --all
 
@@ -287,6 +303,10 @@ mt-push-update() {
     # 6. Commit the changes
     if [ -z "$user_msg" ]; then
       __git_sync_ai_commit "$repo_dir"
+      if [ $? -eq 100 ]; then
+        echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
+        exit 1
+      fi
 
       git add --all
       if ! git diff --staged --quiet; then
@@ -300,7 +320,7 @@ mt-push-update() {
 
     # 7. Delegate all push/PR logic to the new robust function!
     git-raise-pr -b "$default_branch" -t "$pr_title" -m "$(echo -e "$pr_body")"
-  )
+  ) || return 1
 }
 
 #######################################
@@ -345,9 +365,9 @@ mt-get-update() {
 
   # --- STRICT VERSION CHECK ---
   local current_version="Local"
-  if [ -f "$HOME/.bash.d/.current_version" ]; then
+  if [ -f "$HOME/.bash.d/config/.current_version" ]; then
     # Strip all newlines and spaces to prevent Bash string mismatch bugs
-    current_version=$(command cat "$HOME/.bash.d/.current_version" | tr -d '\r\n ')
+    current_version=$(command cat "$HOME/.bash.d/config/.current_version" | tr -d '\r\n ')
   elif [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
     current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "Local")
     current_version=$(echo "$current_version" | tr -d '\r\n ')
@@ -401,7 +421,7 @@ mt-get-update() {
       cd "$ext_root" || exit 1
       bash ./install.sh
     )
-    echo "$tag_name" > "$HOME/.bash.d/.current_version"
+    echo "$tag_name" > "$HOME/.bash.d/config/.current_version"
   else
     echo -e "${CB_RED}🚨 Error: install.sh missing from downloaded release.${C_RESET}"
   fi

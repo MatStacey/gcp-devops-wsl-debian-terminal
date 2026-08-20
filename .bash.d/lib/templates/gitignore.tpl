@@ -12,7 +12,7 @@
 .bash.d/.update_check_cache
 .bash.d/.profile_update_cache
 .bash.d/.*_pending
-.current_version
+config/.current_version
 
 # Python & Linters
 __pycache__/
