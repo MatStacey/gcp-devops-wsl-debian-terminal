@@ -18,8 +18,8 @@ __bashd_latest_mod() {
 }
 
 __rebuild_mytools_cache() {
-  local bashd_dir=\"$HOME/.bash.d\"
-  mkdir -p \"$bashd_dir/data/cache\" 2> /dev/null
+  local bashd_dir="$HOME/.bash.d"
+  mkdir -p "$bashd_dir/data/cache" 2> /dev/null
   local cache_file="$bashd_dir/data/cache/.mt_cache"
   local tsv_index="$bashd_dir/data/cache/.mt_data.tsv"
   local time_file="${cache_file}.time"

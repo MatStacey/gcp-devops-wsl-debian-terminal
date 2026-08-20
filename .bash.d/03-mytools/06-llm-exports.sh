@@ -90,6 +90,7 @@ __mt_do_export() {
     tree -a -I '.git|.dev|.vscode|.idea|node_modules|__pycache__|.terraform|venv|.venv|.mt_cache*' "$target_dir" >> "$tmp_file" 2> /dev/null
   else
     # Fallback to sed-formatted find if tree is missing
+    # shellcheck disable=SC2086
     find "$target_dir" $maxdepth -print | grep -E -v '/(\.git|\.dev|\.vscode|\.idea|node_modules|__pycache__|\.terraform|venv|\.venv)/' | sed -e 's;[^/]*/;|____;g;s;____|; |;g' >> "$tmp_file" 2> /dev/null
   fi
   echo "-----------------------------------" >> "$tmp_file"

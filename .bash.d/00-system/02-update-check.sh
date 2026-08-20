@@ -12,7 +12,7 @@ __check_updates() {
   local cache_file="$HOME/.bash.d/data/cache/.update_check_cache"
   local current_time
   current_time=$(date +%s)
-  mkdir -p \"$HOME/.bash.d/data/cache\" 2> /dev/null
+  mkdir -p "$HOME/.bash.d/data/cache" 2> /dev/null
 
   # If a background check found updates, display the notification message
   if [ -f "$pending_file" ]; then
@@ -67,7 +67,7 @@ __check_profile_updates() {
   local cache_file="$HOME/.bash.d/data/cache/.profile_update_cache"
   local current_time
   current_time=$(date +%s)
-  mkdir -p \"$HOME/.bash.d/data/cache\" 2> /dev/null
+  mkdir -p "$HOME/.bash.d/data/cache" 2> /dev/null
 
   if [ -f "$pending_file" ]; then
     local new_version

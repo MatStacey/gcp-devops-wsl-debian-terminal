@@ -247,6 +247,10 @@ mt-push-update() {
 
     # Trigger automatic documentation updates
     __git_sync_ai_docs "$repo_dir"
+    if [ $? -eq 100 ]; then
+      echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
+      exit 1
+    fi
 
     git add --all
 
@@ -299,6 +303,10 @@ mt-push-update() {
     # 6. Commit the changes
     if [ -z "$user_msg" ]; then
       __git_sync_ai_commit "$repo_dir"
+      if [ $? -eq 100 ]; then
+        echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
+        exit 1
+      fi
 
       git add --all
       if ! git diff --staged --quiet; then
