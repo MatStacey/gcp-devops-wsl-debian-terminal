@@ -17,6 +17,12 @@ google-fmt() {
     return 0
   fi
 
+  echo "🔍 Linting and formatting Python scripts (Ruff)..."
+  if command -v ruff > /dev/null 2>&1; then
+    ruff check --fix .
+    ruff format .
+  fi
+
   echo "🎨 Formatting Python scripts (Google Python Style)..."
   if command -v yapf > /dev/null 2>&1; then
     yapf -r -i --style="{based_on_style: google, column_limit: 88, spaces_before_comment: 2}" .

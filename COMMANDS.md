@@ -85,9 +85,6 @@ Complex bash functions, framework utilities, and automated workflows.
 ### Configuration Management
 | Command | Description |
 |---|---|
-| `mt-add-claude-key` | Config: Set the Claude API Key |
-| `mt-add-gemini-key` | Config: Set the Gemini API Key |
-| `mt-add-sync-url` | Config: Set the upstream sync repository URL |
 | `mt-get-gemini-status` | Prints the current Gemini API model version and extended reasoning mode toggle. |
 | `mt-open-config` | Config: Open bash.d directory and config.yaml in IDE [Usage: mt-open-config [-ide vscode|intellij]] |
 | `mt-set-default-ai` | Config: Set default AI model [Usage: mt-set-default-ai "gemini|claude|local"] |
@@ -162,7 +159,6 @@ Complex bash functions, framework utilities, and automated workflows.
 | `mt-cat` | MyTools: List all tools within a specific category |
 | `mt-cats` | MyTools: List all available command categories |
 | `mt-config` | MyTools: Display active framework configuration variables |
-| `mt-export-cleanup` | LLM: Cleans up all generated context export files |
 | `mt-funcs` | MyTools: List all documented shell functions |
 | `mt-fzf` | MyTools: Interactive fuzzy-finder to search for a command |
 | `mt-get-version` | System: Print the current local version of the terminal profile |
