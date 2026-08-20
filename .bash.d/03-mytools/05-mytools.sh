@@ -326,3 +326,70 @@ mt-refresh-caches() {
   source "$HOME/.bashrc"
   echo -e "${CB_GREEN}✅ All system caches refreshed successfully.${C_RESET}"
 }
+
+#######################################
+# System: Display a unified health check and status dashboard
+#######################################
+mt-status() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+  echo -e "${CB_BLUE}                 MT DEVOPS DASHBOARD                      ${C_RESET}"
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+
+  # 1. Framework & AI
+  local current_version="Local"
+  [ -f "$HOME/.bash.d/.current_version" ] && current_version=$(cat "$HOME/.bash.d/.current_version" | tr -d '\r\n ')
+  echo -e "${CB_YELLOW}▶ FRAMEWORK${C_RESET}"
+  echo -e "  ${CB_CYAN}Version       ${C_RESET}: ${current_version}"
+  echo -e "  ${CB_CYAN}Theme         ${C_RESET}: ${BASH_THEME:-default}"
+  echo -e "  ${CB_CYAN}AI Enabled    ${C_RESET}: ${AI_ENABLED:-true} (${DEFAULT_AI:-gemini})"
+
+  # 2. Sync Repository Status
+  echo -e "\n${CB_YELLOW}▶ PROFILE SYNC REPO${C_RESET}"
+  if [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ]; then
+    local branch=$(git -C "$SYNC_REPO_DIR" branch --show-current 2> /dev/null)
+    local changes=$(git -C "$SYNC_REPO_DIR" status --porcelain 2> /dev/null | wc -l)
+    echo -e "  ${CB_CYAN}Path          ${C_RESET}: ${SYNC_REPO_DIR}"
+    echo -e "  ${CB_CYAN}Branch        ${C_RESET}: ${branch}"
+    if [ "$changes" -gt 0 ]; then
+      echo -e "  ${CB_CYAN}Uncommitted   ${C_RESET}: ${CB_RED}${changes} file(s) (Run mt-push-update)${C_RESET}"
+    else
+      echo -e "  ${CB_CYAN}Uncommitted   ${C_RESET}: ${CB_GREEN}Clean${C_RESET}"
+    fi
+  else
+    echo -e "  ${CB_RED}Not initialized or not a Git repository. Run mt-setup to configure.${C_RESET}"
+  fi
+
+  # 3. Docker Health
+  echo -e "\n${CB_YELLOW}▶ DOCKER ENVIRONMENT${C_RESET}"
+  if command -v docker > /dev/null 2>&1 && docker info > /dev/null 2>&1; then
+    local running=$(docker ps -q 2> /dev/null | wc -l)
+    local total=$(docker ps -aq 2> /dev/null | wc -l)
+    echo -e "  ${CB_CYAN}Daemon        ${C_RESET}: ${CB_GREEN}Running${C_RESET}"
+    echo -e "  ${CB_CYAN}Containers    ${C_RESET}: ${running} running / ${total} total"
+  else
+    echo -e "  ${CB_CYAN}Daemon        ${C_RESET}: ${CB_RED}Stopped or Not Installed${C_RESET}"
+  fi
+
+  # 4. Updates & Maintenance
+  echo -e "\n${CB_YELLOW}▶ SYSTEM UPDATES${C_RESET}"
+  if [ -f "$HOME/.bash.d/.update_pending" ]; then
+    local sys_updates=$(cat "$HOME/.bash.d/.update_pending" | tr -d '\r\n ')
+    echo -e "  ${CB_CYAN}OS Packages   ${C_RESET}: ${CB_RED}${sys_updates} available (Run sys-install)${C_RESET}"
+  else
+    echo -e "  ${CB_CYAN}OS Packages   ${C_RESET}: ${CB_GREEN}Up to date${C_RESET}"
+  fi
+
+  if [ -f "$HOME/.bash.d/.profile_update_pending" ]; then
+    local prof_update=$(cat "$HOME/.bash.d/.profile_update_pending" | tr -d '\r\n ')
+    echo -e "  ${CB_CYAN}Framework     ${C_RESET}: ${CB_RED}${prof_update} available (Run mt-get-update)${C_RESET}"
+  else
+    echo -e "  ${CB_CYAN}Framework     ${C_RESET}: ${CB_GREEN}Up to date${C_RESET}"
+  fi
+
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+}
