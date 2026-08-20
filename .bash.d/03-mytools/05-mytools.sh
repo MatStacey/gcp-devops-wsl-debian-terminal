@@ -287,9 +287,9 @@ mt-get-version() {
     return 0
   fi
 
-  if [ -f "$HOME/.bash.d/.current_version" ]; then
+  if [ -f "$HOME/.bash.d/data/.current_version" ]; then
     local current_version
-    current_version=$(command cat "$HOME/.bash.d/.current_version")
+    current_version=$(command cat "$HOME/.bash.d/data/.current_version")
     echo -e "${CB_CYAN}Profile Version:${C_RESET} ${current_version}"
   elif [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
     local current_version
@@ -343,7 +343,7 @@ mt-status() {
 
   # 1. Framework & AI
   local current_version="Local"
-  [ -f "$HOME/.bash.d/.current_version" ] && current_version=$(tr -d '[:space:]' < "$HOME/.bash.d/.current_version")
+  [ -f "$HOME/.bash.d/data/.current_version" ] && current_version=$(tr -d '[:space:]' < "$HOME/.bash.d/data/.current_version")
   echo -e "${CB_YELLOW}▶ FRAMEWORK${C_RESET}"
   echo -e "  ${CB_CYAN}Version       ${C_RESET}: ${current_version}"
   echo -e "  ${CB_CYAN}Theme         ${C_RESET}: ${BASH_THEME:-default}"

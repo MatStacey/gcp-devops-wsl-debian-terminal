@@ -267,31 +267,20 @@ MARKDOWN_EOF
 
   # Use the cached TSV data to deterministically build the markdown table
   if [ -f "$HOME/.bash.d/data/cache/.mt_data.tsv" ]; then
-    # Generate Aliases section grouped by Category
-    awk -F'\t' '
-      $1 == "alias" {
-        if ($2 != prev_cat) {
-          if (prev_cat != "") print ""
-          print "### " $2
-          print "| Command | Description |"
-          print "|---|---|"
-          prev_cat = $2
-        }
-        printf "| `%s` | %s |\n", $3, $4       }     ' <(sort -t$'\t' -k2,2 -k3,3 "$HOME/.bash.d/data/cache/.mt_data.tsv") >> "$repo_dir/COMMANDS.md"
+    local awk_script="$HOME/.bash.d/lib/awk/commands_md.awk"
+    local tsv_data="$HOME/.bash.d/data/cache/.mt_data.tsv"
 
-    echo -e "\n---\n\n## 🛠️ Functions\nComplex bash functions, framework utilities, and automated workflows." >> "$repo_dir/COMMANDS.md"
+    # Generate Aliases section grouped by Category
+    awk -v target_type="alias" -f "$awk_script" <(sort -t$'	' -k2,2 -k3,3 "$tsv_data") >> "$repo_dir/COMMANDS.md"
+
+    echo -e "
+---
+
+## 🛠️ Functions
+Complex bash functions, framework utilities, and automated workflows." >> "$repo_dir/COMMANDS.md"
 
     # Generate Functions section grouped by Category
-    awk -F'\t' '
-      $1 == "func" {
-        if ($2 != prev_cat) {
-          if (prev_cat != "") print ""
-          print "### " $2
-          print "| Command | Description |"
-          print "|---|---|"
-          prev_cat = $2
-        }
-        printf "| `%s` | %s |\n", $3, $4       }     ' <(sort -t$'\t' -k2,2 -k3,3 "$HOME/.bash.d/data/cache/.mt_data.tsv") >> "$repo_dir/COMMANDS.md"
+    awk -v target_type="func" -f "$awk_script" <(sort -t$'	' -k2,2 -k3,3 "$tsv_data") >> "$repo_dir/COMMANDS.md"
   fi
 
   local provider="${DEFAULT_AI:-gemini}"

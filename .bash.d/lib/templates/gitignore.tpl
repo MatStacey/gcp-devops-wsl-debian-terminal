@@ -4,7 +4,7 @@
 
 # Secrets & Configuration
 .bash.d/config/config.yaml
-.bash.d/config/.env.cache
+.bash.d/data/cache/.env.cache
 
 # Framework Caches & State Variables
 .bash.d/.mt_cache*
@@ -12,7 +12,7 @@
 .bash.d/.update_check_cache
 .bash.d/.profile_update_cache
 .bash.d/.*_pending
-config/.current_version
+data/.current_version
 
 # Python & Linters
 __pycache__/
