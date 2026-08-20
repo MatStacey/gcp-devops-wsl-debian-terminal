@@ -82,7 +82,8 @@ __mt_do_export() {
     zip -qj "$zip_name" "$tmp_file"
     echo "✅ Export saved to $zip_name"
   else
-    local out_name="export_$(date +%s).txt"
+    local out_name
+    out_name="export_$(date +%s).txt"
     cp "$tmp_file" "$out_name"
     echo "✅ Export saved to $out_name"
   fi
