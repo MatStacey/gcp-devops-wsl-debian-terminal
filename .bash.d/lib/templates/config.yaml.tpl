@@ -30,7 +30,8 @@ exports:
 
 git:
   format_on_push: true
-  sync_repo_url: YOUR_SYNC_REPO_URL
+  sync_repo_url: MatStacey/mt-devops-framework
+  upstream_repo_path: MatStacey/mt-devops-framework
   feature_prefix: feature/
   ai_max_diff_bytes: 4000
 

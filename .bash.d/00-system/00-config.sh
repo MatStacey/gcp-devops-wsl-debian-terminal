@@ -77,102 +77,28 @@ mt-get-gemini-status() {
 }
 
 #######################################
-# Config: Add Gemini API key to config.yaml [Usage: mt-add-gemini-key ["key"]]
+# Config: Toggle format-on-push true/false
 #######################################
-mt-add-gemini-key() {
+mt-toggle-format-on-push() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  local key="$1"
-  if [ -z "$key" ]; then
-    read -rsp "Enter Gemini API Key (input hidden): " key
-    echo
-  fi
-  if [ -z "$key" ]; then
-    echo "Usage: mt-add-gemini-key [<key>]"
-    return 1
-  fi
-  python3 "$CONFIG_MANAGER" update "ai.gemini" "api_key" "$key"
-  export GEMINI_API_KEY="$key"
-  echo "✅ Gemini API Key added to $CONFIG_FILE."
+  local current="${GIT_FORMAT_ON_PUSH:-true}"
+  local next="true"
+  [ "$current" = "true" ] && next="false"
+
+  python3 "$CONFIG_MANAGER" update "git" "format_on_push" "$next"
+  export GIT_FORMAT_ON_PUSH="$next"
+  echo "✅ Format-on-push set to $next."
 }
 
 #######################################
-# Config: Set Gemini model version [Usage: mt-set-gemini-version "gemini-1.5-pro"]
+# Config: Set the upstream repository path for framework updates
+# Arguments:
+#   $1 - The repository path (e.g., "MatStacey/mt-devops-framework")
 #######################################
-mt-set-gemini-version() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  if [ -z "$1" ]; then
-    echo "Usage: mt-set-gemini-version <version>"
-    return 1
-  fi
-  python3 "$CONFIG_MANAGER" update "ai.gemini" "version" "$1"
-  export GEMINI_VERSION="$1"
-  echo "✅ Gemini version set to $1."
-}
-
-#######################################
-# Config: Toggle Gemini extended mode true/false
-#######################################
-mt-toggle-gemini-extended() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local new_val="true"
-  [ "$GEMINI_EXTENDED" = "true" ] && new_val="false"
-  python3 "$CONFIG_MANAGER" update "ai.gemini" "extended" "$new_val"
-  export GEMINI_EXTENDED="$new_val"
-  echo "✅ Gemini extended mode set to $new_val."
-}
-
-#######################################
-# Config: Add Claude API key to config.yaml [Usage: mt-add-claude-key ["key"]]
-#######################################
-mt-add-claude-key() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local key="$1"
-  if [ -z "$key" ]; then
-    read -rsp "Enter Claude API Key (input hidden): " key
-    echo
-  fi
-  if [ -z "$key" ]; then
-    echo "Usage: mt-add-claude-key [<key>]"
-    return 1
-  fi
-  python3 "$CONFIG_MANAGER" update "ai.claude" "api_key" "$key"
-  export CLAUDE_API_KEY="$key"
-  echo "✅ Claude API Key added to $CONFIG_FILE."
-}
-
-#######################################
-# Config: Set Claude model version [Usage: smt-set-claude-version "claude-3-7-sonnet-latest"]
-#######################################
-mt-set-claude-version() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  if [ -z "$1" ]; then
-    echo "Usage: mt-set-claude-version <version>"
-    return 1
-  fi
-  python3 "$CONFIG_MANAGER" update "ai.claude" "version" "$1"
-  export CLAUDE_VERSION="$1"
-  echo "✅ Claude version set to $1."
-}
-
-#######################################
-# Config: Add remote repository URL for bash sync [Usage: mt-add-sync-url "url"]
-#######################################
-mt-add-sync-url() {
+mt-set-upstream-path() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -287,218 +213,87 @@ mt-set-theme() {
   [ ! -f "$THEMES_DIR/$theme.sh" ] && {
     echo "🚨 Invalid theme. Ensure $theme.sh exists in $THEMES_DIR"
     return 1
-  }
-
-  python3 "$CONFIG_MANAGER" update "system" "theme" "$theme"
-  export BASH_THEME="$theme"
-  source "$HOME/.bash.d/01-ui/01-colors.sh"
-  echo -e "${CB_GREEN}✅ Terminal theme set to $theme.${C_RESET}"
-}
-
-_set_theme_completions() {
-  if [ -d "${THEMES_DIR}" ]; then
-    local themes
-    themes=$(find "${THEMES_DIR}" -name "*.sh" -exec basename {} .sh \;)
-    COMPREPLY=($(compgen -W "$themes" -- "${COMP_WORDS[COMP_CWORD]}"))
   fi
-}
-complete -F _set_theme_completions mt-set-theme
-
-#######################################
-# Config: Interactive menu to select and apply a theme [Usage: mt-select-theme]
-#######################################
-mt-select-theme() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  [ ! -d "${THEMES_DIR}" ] && {
-    echo "🚨 Error: THEMES_DIR not found at ${THEMES_DIR}"
-    return 1
-  }
-
-  local selected_theme
-  selected_theme=$(find "${THEMES_DIR}" -maxdepth 1 -name "*.sh" -exec basename {} .sh \; | sort | fzf --prompt="🎨 Select Theme > " --height=~10 --layout=reverse --border)
-
-  [ -n "$selected_theme" ] && mt-set-theme "$selected_theme" || echo "Theme selection cancelled."
+  python3 "$CONFIG_MANAGER" update "git" "upstream_repo_path" "$1"
+  export UPSTREAM_REPO_PATH="$1"
+  echo "✅ Upstream repository path set to $1."
 }
 
 #######################################
-# Config: Toggle export file background cleanup script [Usage: mt-toggle-auto-cleanup]
-#######################################
-mt-toggle-auto-cleanup() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local new_val="true"
-  [ "$AUTO_CLEANUP_EXPORTS" = "true" ] && new_val="false"
-
-  python3 "$CONFIG_MANAGER" update "exports" "auto_cleanup" "$new_val"
-  export AUTO_CLEANUP_EXPORTS="$new_val"
-  echo "✅ Auto-cleanup set to $new_val."
-}
-
-#######################################
-# Config: Modifies the threshold in days before exports are automatically deleted [Usage: mt-set-auto-cleanup-days 7]
-#######################################
-mt-set-auto-cleanup-days() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  [[ ! "$1" =~ ^[0-9]+$ ]] && {
-    echo "Usage: mt-set-auto-cleanup-days <number>"
-    return 1
-  }
-
-  python3 "$CONFIG_MANAGER" update "exports" "auto_cleanup_days" "$1"
-  export AUTO_CLEANUP_DAYS="$1"
-  echo "✅ Auto-cleanup threshold set to $1 days."
-}
-
-#######################################
-# Config: Set Local AI base URL [Usage: mt-set-local-ai-url "http://localhost:11434/v1"]
-#######################################
-mt-set-local-ai-url() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  if [ -z "$1" ]; then
-    echo "Usage: mt-set-local-ai-url <url>"
-    return 1
-  fi
-  python3 "$CONFIG_MANAGER" update "ai.local" "base_url" "$1"
-  export LOCAL_AI_BASE_URL="$1"
-  echo "✅ Local AI Base URL set to $1."
-}
-
-#######################################
-# Config: Set Local AI model [Usage: mt-set-local-ai-model "llama3.2"]
-#######################################
-mt-set-local-ai-model() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  if [ -z "$1" ]; then
-    echo "Usage: mt-set-local-ai-model <model>"
-    return 1
-  fi
-  python3 "$CONFIG_MANAGER" update "ai.local" "model" "$1"
-  export LOCAL_AI_MODEL="$1"
-  echo "✅ Local AI model set to $1."
-}
-
-#######################################
-# Config: Set Local AI API key [Usage: mt-set-local-ai-api-key ["key"]]
-#######################################
-mt-set-local-ai-api-key() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local key="$1"
-  if [ -z "$key" ]; then
-    read -rsp "Enter Local AI API Key (input hidden): " key
-    echo
-  fi
-  if [ -z "$key" ]; then
-    echo "Usage: mt-set-local-ai-api-key [<key>]"
-    return 1
-  fi
-  python3 "$CONFIG_MANAGER" update "ai.local" "api_key" "$key"
-  export LOCAL_AI_API_KEY="$key"
-  echo "✅ Local AI API Key added to $CONFIG_FILE."
-}
-
-#######################################
-# Config: Interactive First-Time Setup Wizard
+# Config: Interactive Master Setup Wizard Menu
 #######################################
 mt-setup() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
+
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
-  echo -e "${CB_BLUE}           MT DEVOPS FRAMEWORK - SETUP WIZARD             ${C_RESET}"
+  echo -e "${CB_BLUE}        MT DEVOPS FRAMEWORK - MASTER SETUP WIZARD         ${C_RESET}"
   echo -e "${CB_BLUE}==========================================================${C_RESET}\n"
 
-  read -r -p "1️⃣  Default IDE (vscode/intellij) [vscode]: " ide
-  mt-set-default-ide "${ide:-vscode}"
+  local options=(
+    "1. Quick Setup (First-Time Defaults)"
+    "2. System Configuration"
+    "3. AI Provider Configuration"
+    "4. Exports & Cleanup Configuration"
+    "5. Workspace & Directory Paths"
+    "6. Git & Version Control"
+    "7. CI/CD Default Provider"
+    "8. Docker Preferences"
+    "9. Exit"
+  )
 
-  read -r -p "2️⃣  Default AI Provider (gemini/claude/local) [gemini]: " provider
-  mt-set-default-ai "${provider:-gemini}"
+  local choice
+  choice=$(printf '%s\n' "${options[@]}" | fzf --prompt="⚙️ Select a category to configure > " --height=~15 --layout=reverse --border)
 
-  if [[ "${provider:-gemini}" == "gemini" ]]; then
+  case "$choice" in
+    1*) __mt_setup_quick ;;
+    2*) mt-setup-system ;;
+    3*) mt-setup-ai ;;
+    4*) mt-setup-exports ;;
+    5*) mt-setup-paths ;;
+    6*) mt-setup-git ;;
+    7*) mt-setup-cicd ;;
+    8*) mt-setup-docker ;;
+    *)
+      echo "⚠️ Setup cancelled."
+      return 0
+      ;;
+  esac
+
+  mt-refresh-caches > /dev/null 2>&1
+  echo -e "${CB_GREEN}✅ Configuration saved! Run 'reload' to apply changes fully.${C_RESET}"
+}
+
+#######################################
+# Config: Quick First-Time Setup
+#######################################
+__mt_setup_quick() {
+  echo -e "${CB_BLUE}--- Quick Setup ---${C_RESET}"
+  read -r -p "1️⃣ Default IDE (vscode/intellij) [${DEFAULT_IDE:-vscode}]: " ide
+  [ -n "$ide" ] && mt-set-default-ide "$ide"
+
+  read -r -p "2️⃣ Default AI Provider (gemini/claude/local) [${DEFAULT_AI:-gemini}]: " provider
+  [ -n "$provider" ] && mt-set-default-ai "$provider"
+
+  local active_provider="${provider:-${DEFAULT_AI:-gemini}}"
+  if [ "$active_provider" = "gemini" ]; then
     read -r -s -p "🔑 Enter Gemini API Key (Enter to skip): " key
     echo
     [ -n "$key" ] && mt-add-gemini-key "$key"
-  elif [[ "$provider" == "claude" ]]; then
+  elif [ "$active_provider" = "claude" ]; then
     read -r -s -p "🔑 Enter Claude API Key (Enter to skip): " key
     echo
     [ -n "$key" ] && mt-add-claude-key "$key"
   fi
 
-  read -r -p "3️⃣  CI/CD Provider (github/bitbucket/gitlab/azure/jenkins) [github]: " cicd
-  mt-set-cicd "${cicd:-github}"
+  read -r -p "3️⃣ CI/CD Provider (github/bitbucket/gitlab/azure/jenkins) [${CICD_PROVIDER:-github}]: " cicd
+  [ -n "$cicd" ] && mt-set-cicd "$cicd"
 
-  read -r -p "4️⃣  Git Sync Repo URL (e.g. git@github.com:user/repo.git) [skip]: " sync_url
-  [ -n "$sync_url" ] && mt-add-sync-url "$sync_url"
-
-  echo -e "\n${CB_GREEN}✅ Setup Complete! Run 'reload' to apply changes.${C_RESET}"
-}
-
-#######################################
-# Config: Set default CI/CD provider [Usage: mt-set-cicd "github|bitbucket|gitlab|azure|jenkins"]
-#######################################
-mt-set-cicd() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  if [ -z "$1" ]; then
-    echo "Usage: mt-set-cicd <provider>"
-    return 1
-  fi
-  python3 "$CONFIG_MANAGER" update "cicd" "provider" "$1"
-  export CICD_PROVIDER="$1"
-  echo "✅ Default CI/CD provider set to $1."
-}
-
-#######################################
-# Config: Interactive Paths Setup
-#######################################
-mt-setup-paths() {
-  echo -e "${CB_BLUE}--- Paths Configuration ---${C_RESET}"
-  read -r -p "VCS Root [${VCS_ROOT:-~/vcs}]: " vcs_root
-  [ -n "$vcs_root" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_root" "$vcs_root"
-
-  read -r -p "Sync Repo Dir [${SYNC_REPO_DIR:-~/vcs/personal/mt-devops-framework}]: " sync_repo
-  [ -n "$sync_repo" ] && python3 "$CONFIG_MANAGER" update "paths" "sync_repo" "$sync_repo"
-
-  read -r -p "AI Workspace [${AI_WORKSPACE_DIR:-~/vcs/ai-workspace}]: " ai_ws
-  [ -n "$ai_ws" ] && python3 "$CONFIG_MANAGER" update "paths" "ai_workspace" "$ai_ws"
-
-  read -r -p "Docker Root [${DOCKER_ROOT_DIR:-~/.docker}]: " docker_root
-  [ -n "$docker_root" ] && python3 "$CONFIG_MANAGER" update "paths" "docker_root" "$docker_root"
-
-  echo -e "${CB_GREEN}✅ Paths updated.${C_RESET}"
-}
-
-#######################################
-# Config: Interactive Git Setup
-#######################################
-mt-setup-git() {
-  echo -e "${CB_BLUE}--- Git Configuration ---${C_RESET}"
-  read -r -p "Feature Branch Prefix [${GIT_FEATURE_PREFIX:-feature/}]: " prefix
-  [ -n "$prefix" ] && python3 "$CONFIG_MANAGER" update "git" "feature_prefix" "$prefix"
-
-  read -r -p "AI Max Diff Bytes [${AI_MAX_DIFF_BYTES:-4000}]: " bytes
-  [ -n "$bytes" ] && python3 "$CONFIG_MANAGER" update "git" "ai_max_diff_bytes" "$bytes"
-
-  echo -e "${CB_GREEN}✅ Git config updated.${C_RESET}"
+  local default_sync="${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"
+  read -r -p "4️⃣ Git Sync Repo URL [${SYNC_REPO_URL:-$default_sync}]: " sync_url
+  [ -n "$sync_url" ] && mt-add-sync-url "$sync_url" || { [ -z "$SYNC_REPO_URL" ] && mt-add-sync-url "$default_sync"; }
 }
 
 #######################################
@@ -506,68 +301,123 @@ mt-setup-git() {
 #######################################
 mt-setup-system() {
   echo -e "${CB_BLUE}--- System Configuration ---${C_RESET}"
+  read -r -p "Default IDE (vscode/intellij) [${DEFAULT_IDE:-vscode}]: " ide
+  [ -n "$ide" ] && python3 "$CONFIG_MANAGER" update "system" "default_ide" "$ide"
   read -r -p "Max Parallel Threads [${MAX_PARALLEL_THREADS:-8}]: " threads
   [ -n "$threads" ] && python3 "$CONFIG_MANAGER" update "system" "max_parallel_threads" "$threads"
-
   read -r -p "Update Check TTL (seconds) [${UPDATE_CHECK_TTL_SEC:-43200}]: " ttl
   [ -n "$ttl" ] && python3 "$CONFIG_MANAGER" update "system" "update_check_ttl_sec" "$ttl"
-
   echo -e "${CB_GREEN}✅ System config updated.${C_RESET}"
 }
 
 #######################################
-# Config: Interactive Docker & Exports Setup
+# Config: Interactive AI Setup
+#######################################
+mt-setup-ai() {
+  echo -e "${CB_BLUE}--- AI Configuration ---${C_RESET}"
+  read -r -p "Enable AI Features? (true/false) [${AI_ENABLED:-true}]: " enabled
+  [ -n "$enabled" ] && python3 "$CONFIG_MANAGER" update "ai" "enabled" "$enabled"
+  read -r -p "Default Provider (gemini/claude/local) [${DEFAULT_AI:-gemini}]: " prov
+  [ -n "$prov" ] && python3 "$CONFIG_MANAGER" update "ai" "default_provider" "$prov"
+
+  echo -e "\n${CB_CYAN}Gemini Settings:${C_RESET}"
+  read -r -p "Gemini Model Version [${GEMINI_VERSION:-gemini-3.6-flash}]: " g_ver
+  [ -n "$g_ver" ] && python3 "$CONFIG_MANAGER" update "ai.gemini" "version" "$g_ver"
+  read -r -s -p "Update Gemini API Key (Leave blank to keep current): " g_key
+  echo
+  [ -n "$g_key" ] && python3 "$CONFIG_MANAGER" update "ai.gemini" "api_key" "$g_key"
+
+  echo -e "\n${CB_CYAN}Claude Settings:${C_RESET}"
+  read -r -p "Claude Model Version [${CLAUDE_VERSION:-claude-3-7-sonnet-latest}]: " c_ver
+  [ -n "$c_ver" ] && python3 "$CONFIG_MANAGER" update "ai.claude" "version" "$c_ver"
+  read -r -s -p "Update Claude API Key (Leave blank to keep current): " c_key
+  echo
+  [ -n "$c_key" ] && python3 "$CONFIG_MANAGER" update "ai.claude" "api_key" "$c_key"
+
+  echo -e "\n${CB_CYAN}Local AI Settings:${C_RESET}"
+  read -r -p "Local AI Base URL [${LOCAL_AI_BASE_URL:-http://localhost:11434/v1}]: " l_url
+  [ -n "$l_url" ] && python3 "$CONFIG_MANAGER" update "ai.local" "base_url" "$l_url"
+  read -r -p "Local AI Model [${LOCAL_AI_MODEL:-llama3.2}]: " l_mod
+  [ -n "$l_mod" ] && python3 "$CONFIG_MANAGER" update "ai.local" "model" "$l_mod"
+
+  echo -e "${CB_GREEN}✅ AI config updated.${C_RESET}"
+}
+
+#######################################
+# Config: Interactive Exports Setup
+#######################################
+mt-setup-exports() {
+  echo -e "${CB_BLUE}--- Exports Configuration ---${C_RESET}"
+  read -r -p "Auto Cleanup Exports? (true/false) [${AUTO_CLEANUP_EXPORTS:-true}]: " cln
+  [ -n "$cln" ] && python3 "$CONFIG_MANAGER" update "exports" "auto_cleanup" "$cln"
+  read -r -p "Auto Cleanup Threshold (days) [${AUTO_CLEANUP_DAYS:-7}]: " days
+  [ -n "$days" ] && python3 "$CONFIG_MANAGER" update "exports" "auto_cleanup_days" "$days"
+  read -r -p "Regex Blocklist [${EXPORT_BLOCKLIST}]: " blk
+  [ -n "$blk" ] && python3 "$CONFIG_MANAGER" update "exports" "blocklist" "$blk"
+  echo -e "${CB_GREEN}✅ Exports config updated.${C_RESET}"
+}
+
+#######################################
+# Config: Interactive Paths Setup
+#######################################
+mt-setup-paths() {
+  echo -e "${CB_BLUE}--- Paths Configuration ---${C_RESET}"
+  read -r -p "VCS Root [${VCS_ROOT:-~/vcs}]: " p1
+  [ -n "$p1" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_root" "$p1"
+  read -r -p "VCS Personal [${VCS_PERSONAL:-~/vcs/personal}]: " p2
+  [ -n "$p2" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_personal" "$p2"
+  read -r -p "VCS Exports [${VCS_EXPORTS:-~/vcs/personal/exports}]: " p3
+  [ -n "$p3" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_exports" "$p3"
+  read -r -p "Sync Repo [${SYNC_REPO_DIR:-~/vcs/personal/mt-devops-framework}]: " p4
+  [ -n "$p4" ] && python3 "$CONFIG_MANAGER" update "paths" "sync_repo" "$p4"
+  read -r -p "AI Workspace [${AI_WORKSPACE_DIR:-~/vcs/ai-workspace}]: " p5
+  [ -n "$p5" ] && python3 "$CONFIG_MANAGER" update "paths" "ai_workspace" "$p5"
+  read -r -p "IAM Scripts [${SCRIPTS_IAM_DIR:-~/vcs/scripts/iam}]: " p6
+  [ -n "$p6" ] && python3 "$CONFIG_MANAGER" update "paths" "scripts_iam" "$p6"
+  read -r -p "Docker Root [${DOCKER_ROOT_DIR:-~/.docker}]: " p7
+  [ -n "$p7" ] && python3 "$CONFIG_MANAGER" update "paths" "docker_root" "$p7"
+  echo -e "${CB_GREEN}✅ Paths config updated.${C_RESET}"
+}
+
+#######################################
+# Config: Interactive Git Setup
+#######################################
+mt-setup-git() {
+  echo -e "${CB_BLUE}--- Git Configuration ---${C_RESET}"
+  local default_sync="${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"
+  read -r -p "Sync Repo URL [${SYNC_REPO_URL:-$default_sync}]: " sync_url
+  [ -n "$sync_url" ] && python3 "$CONFIG_MANAGER" update "git" "sync_repo_url" "$sync_url"
+
+  read -r -p "Upstream Framework Path [${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}]: " upstream
+  [ -n "$upstream" ] && python3 "$CONFIG_MANAGER" update "git" "upstream_repo_path" "$upstream"
+
+  read -r -p "Format on Push? (true/false) [${GIT_FORMAT_ON_PUSH:-true}]: " fmt
+  [ -n "$fmt" ] && python3 "$CONFIG_MANAGER" update "git" "format_on_push" "$fmt"
+
+  read -r -p "Feature Branch Prefix [${GIT_FEATURE_PREFIX:-feature/}]: " prefix
+  [ -n "$prefix" ] && python3 "$CONFIG_MANAGER" update "git" "feature_prefix" "$prefix"
+
+  read -r -p "AI Max Diff Bytes [${AI_MAX_DIFF_BYTES:-4000}]: " bytes
+  [ -n "$bytes" ] && python3 "$CONFIG_MANAGER" update "git" "ai_max_diff_bytes" "$bytes"
+  echo -e "${CB_GREEN}✅ Git config updated.${C_RESET}"
+}
+
+#######################################
+# Config: Interactive CI/CD Setup
+#######################################
+mt-setup-cicd() {
+  echo -e "${CB_BLUE}--- CI/CD Configuration ---${C_RESET}"
+  read -r -p "Default Provider (github/bitbucket/gitlab/azure/jenkins) [${CICD_PROVIDER:-github}]: " prov
+  [ -n "$prov" ] && python3 "$CONFIG_MANAGER" update "cicd" "provider" "$prov"
+  echo -e "${CB_GREEN}✅ CI/CD config updated.${C_RESET}"
+}
+
+#######################################
+# Config: Interactive Docker Setup
 #######################################
 mt-setup-docker() {
   echo -e "${CB_BLUE}--- Docker Configuration ---${C_RESET}"
-  read -r -p "Restart Blocklist [${DOCKER_BLOCKLIST:-redis,postgres,local-db}]: " blocklist
-  [ -n "$blocklist" ] && python3 "$CONFIG_MANAGER" update "docker" "restart_blocklist" "$blocklist"
+  read -r -p "Restart Blocklist (comma-separated) [${DOCKER_BLOCKLIST:-redis,postgres,local-db}]: " blk
+  [ -n "$blk" ] && python3 "$CONFIG_MANAGER" update "docker" "restart_blocklist" "$blk"
   echo -e "${CB_GREEN}✅ Docker config updated.${C_RESET}"
-}
-
-#######################################
-# Config: Master Setup Wizard Menu
-#######################################
-mt-setup() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-
-  local options="1. 🚀 Quick Start (API Keys, URLs, CI/CD)\n2. 📂 Paths\n3. 🌿 Git\n4. ⚙️  System\n5. 🐳 Docker"
-  local choice
-  choice=$(echo -e "$options" | fzf --prompt="⚙️  Select Configuration Category > " --height=~10 --layout=reverse --border)
-
-  case "$choice" in
-    1*) __mt_setup_quick ;;
-    2*) mt-setup-paths ;;
-    3*) mt-setup-git ;;
-    4*) mt-setup-system ;;
-    5*) mt-setup-docker ;;
-    *)
-      echo "⚠️  Setup cancelled."
-      return 0
-      ;;
-  esac
-
-  if command -v mt-refresh-caches > /dev/null 2>&1; then
-    mt-refresh-caches > /dev/null 2>&1
-  fi
-}
-
-#######################################
-# Config: Toggle format-on-push true/false
-#######################################
-mt-toggle-format-on-push() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local current="${GIT_FORMAT_ON_PUSH:-true}"
-  local next="true"
-  [ "$current" = "true" ] && next="false"
-
-  python3 "$CONFIG_MANAGER" update "git" "format_on_push" "$next"
-  export GIT_FORMAT_ON_PUSH="$next"
-  echo "✅ Format-on-push set to $next."
 }

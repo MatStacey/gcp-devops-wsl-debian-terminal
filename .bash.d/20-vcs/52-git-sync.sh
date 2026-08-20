@@ -328,12 +328,7 @@ mt-get-update() {
 
   echo -e "${CB_BLUE}⬇️ Fetching release information...${C_RESET}"
 
-  # Fallback to official repo if SYNC_REPO_URL isn't set or parsed
-  local repo_path="MatStacey/mt-devops-framework"
-  if [[ "${SYNC_REPO_URL:-}" =~ github\.com[:/](.+)(\.git)?$ ]]; then
-    repo_path="${BASH_REMATCH[1]}"
-    repo_path="${repo_path%.git}"
-  fi
+  local repo_path="${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"
 
   local api_url="https://api.github.com/repos/${repo_path}/releases/latest"
   if [ -n "$target_version" ]; then
@@ -451,11 +446,7 @@ mt-download-release() {
 
   echo -e "${CB_BLUE}⬇️ Fetching release information...${C_RESET}"
 
-  # Fallback to official repo if SYNC_REPO_URL isn't set or parsed
-  local repo_path="MatStacey/mt-devops-framework"
-  if [[ "${SYNC_REPO_URL:-}" =~ github\.com[:/]([^/]+/[^/.]+)(\.git)? ]]; then
-    repo_path="${BASH_REMATCH[1]}"
-  fi
+  local repo_path="${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"
 
   local api_url="https://api.github.com/repos/${repo_path}/releases/latest"
   if [ -n "$target_version" ]; then

@@ -15,19 +15,6 @@ Before installing this terminal environment, ensure your local workstation meets
 
 ---
 
-## 🚀 Recent Updates & Enhancements
-
-{
-  "category": "chat",
-  "language": null,
-  "extension": null,
-  "title": "git-diff-readme-summary",
-  "code": null,
-  "message": "* **System Configuration**: Updated `mt-set-default-ai` usage documentation to include support for local AI models (`gemini|claude|local`)."
-}
-
----
-
 ## 🚀 Key Features
 
 * **Cross-Platform Compatibility:** Native OS detection dynamically maps clipboard (`pbcopy`, `clip.exe`), file explorer (`open`, `explorer.exe`), and package manager (`brew`, `apt`) utilities based on your host architecture.
