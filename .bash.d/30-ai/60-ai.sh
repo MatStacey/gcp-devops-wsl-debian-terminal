@@ -423,3 +423,39 @@ __ai_query_local() {
   }
   echo "$content"
 }
+
+#######################################
+# AI: Explain a shell command
+#######################################
+ai-explain() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [ -z "$1" ]; then
+    echo "Usage: ai-explain \"<command>\""
+    return 1
+  fi
+  mt-log INFO "Asking AI to explain: $1..."
+  ai -t "command-explanation" "Please explain this terminal command in detail, breaking down what each flag and argument does: $1"
+}
+
+#######################################
+# AI: Debug the last failed command
+#######################################
+mt-ai-debug() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local last_cmd=$(fc -ln -2 | head -n 1 | xargs)
+
+  mt-log INFO "Re-running and debugging: $last_cmd..."
+  local err_out=$(eval "$last_cmd" 2>&1 > /dev/null)
+
+  if [ -z "$err_out" ]; then
+    mt-log SUCCESS "Command executed successfully. No errors to debug!"
+  else
+    ai -t "debug-error" "The command \`$last_cmd\` failed with this stderr output:\n\n$err_out\n\nPlease explain why it failed and provide the exact command to fix it."
+  fi
+}
