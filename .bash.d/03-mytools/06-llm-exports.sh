@@ -274,6 +274,7 @@ __async_auto_cleanup() {
       find "$base_dir" -type f -mtime +"$days" -delete 2> /dev/null || true
       find "$base_dir" -type d -empty -delete 2> /dev/null || true
     ) &
+    disown
   fi
 }
 __async_auto_cleanup

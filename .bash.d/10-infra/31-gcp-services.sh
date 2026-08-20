@@ -71,7 +71,7 @@ gcp-get-secret() {
 #######################################
 # Functions: Tail logs of a function
 # Arguments:
-#   gcp-crf-logs <func-name> [limit
+#   gcp-crf-logs <func-name> [limit]
 #######################################
 gcp-crf-logs() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then

@@ -169,9 +169,9 @@ mt-run() {
 }
 
 #######################################
-# MyTools: Search for a specific tool by keyword
+# Framework: Search through available mytools commands
 # Arguments:
-#   $1 - Search keyword
+#   $1 - (Optional) Search term
 #######################################
 mt-search() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {

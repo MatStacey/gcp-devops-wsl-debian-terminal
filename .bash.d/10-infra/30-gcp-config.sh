@@ -104,6 +104,8 @@ gcl-get-project-number() {
 
 #######################################
 # GCP: List active configuration properties
+# Arguments:
+#   $@ - (Optional) Additional arguments passed directly to 'gcloud config list'
 #######################################
 gcl-config() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -151,7 +153,9 @@ gcp-login-adc() {
 #######################################
 # GCP: Switch active project
 # Arguments:
-#   gcp-set-project <project_id>
+#   $1 - (Optional) <project_id> to switch to.
+#        Pass '-ls' to list available projects.
+#        If left blank, opens an interactive fzf menu.
 #######################################
 gcp-set-project() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -179,6 +183,10 @@ gcp-set-project() {
 
 #######################################
 # GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell
+# Arguments:
+#   $1 - (Optional) <project_id> to export.
+#        Pass '-ls' to list available projects.
+#        If left blank, opens an interactive fzf menu.
 #######################################
 gcl-export-vars() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
