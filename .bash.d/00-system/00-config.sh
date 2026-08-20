@@ -104,7 +104,114 @@ mt-set-upstream-path() {
     return 0
   fi
   if [ -z "$1" ]; then
-    echo "Usage: mt-set-upstream-path <org/repo>"
+    echo "Usage: mt-add-sync-url <url>"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "git" "sync_repo_url" "$1"
+  export SYNC_REPO_URL="$1"
+  echo "✅ Sync URL added to $CONFIG_FILE."
+}
+
+#######################################
+# Config: Set default IDE [Usage: mt-set-default-ide "vscode|intellij"]
+#######################################
+mt-set-default-ide() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [[ "$1" != "vscode" && "$1" != "intellij" ]]; then
+    echo "Usage: mt-set-default-ide <vscode|intellij>"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "system" "default_ide" "$1"
+  export DEFAULT_IDE="$1"
+  echo "✅ Default IDE set to $1."
+}
+
+#######################################
+# Config: Set default AI model [Usage: mt-set-default-ai "gemini|claude|local"]
+#######################################
+mt-set-default-ai() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [[ "$1" != "gemini" && "$1" != "claude" && "$1" != "local" ]]; then
+    echo "Usage: mt-set-default-ai <gemini|claude|local>"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "ai" "default_provider" "$1"
+  export DEFAULT_AI="$1"
+  echo "✅ Default AI set to $1."
+}
+
+#######################################
+# Config: Toggle global AI prompt and integration true/false
+#######################################
+mt-toggle-ai() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local new_val="true"
+  [ "${AI_ENABLED:-true}" = "true" ] && new_val="false"
+  python3 "$CONFIG_MANAGER" update "ai" "enabled" "$new_val"
+  export AI_ENABLED="$new_val"
+  echo "✅ AI integration set to $new_val."
+}
+
+#######################################
+# Config: Open bash.d directory and config.yaml in IDE [Usage: mt-open-config [-ide vscode|intellij]]
+#######################################
+mt-open-config() {
+  local selected_ide="${DEFAULT_IDE:-vscode}"
+  local args=()
+
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      -h | --help)
+        mt-help "${FUNCNAME[0]}"
+        return 0
+        ;;
+      -ide)
+        selected_ide="$2"
+        shift 2
+        ;;
+      *)
+        args+=("$1")
+        shift
+        ;;
+    esac
+  done
+
+  local config_dir="$HOME/.bash.d"
+  local config_file="$config_dir/config/config.yaml"
+  local yaml_tpl="$config_dir/lib/templates/config.yaml.tpl"
+
+  if [ ! -s "$config_file" ]; then
+    mkdir -p "$(dirname "$config_file")"
+    [ -f "$yaml_tpl" ] && cp "$yaml_tpl" "$config_file"
+  fi
+
+  echo "🚀 Opening bash config in $selected_ide..."
+  [ "$selected_ide" = "intellij" ] &&
+    { __launch_intellij "$config_dir" "$config_file" || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS."; } ||
+    code "$config_dir" "$config_file"
+}
+
+#######################################
+# Config: Set terminal color theme [Usage: mt-set-theme "theme_name"]
+#######################################
+mt-set-theme() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local theme="${1:-default}"
+
+  [ ! -f "$THEMES_DIR/$theme.sh" ] && {
+    echo "🚨 Invalid theme. Ensure $theme.sh exists in $THEMES_DIR"
     return 1
   fi
   python3 "$CONFIG_MANAGER" update "git" "upstream_repo_path" "$1"
