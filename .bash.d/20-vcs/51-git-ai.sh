@@ -70,8 +70,11 @@ __git_sync_ai_commit() {
 
       while read -r file_path; do
         if [ -e "$repo_dir/$file_path" ] || git -C "$repo_dir" ls-files --error-unmatch "$file_path" > /dev/null 2>&1; then
-          git -C "$repo_dir" add "$file_path"
-          files_staged=1
+          # Prevent AI from attempting to stage ignored files or directories
+          if ! git -C "$repo_dir" check-ignore -q "$file_path"; then
+            git -C "$repo_dir" add "$file_path" > /dev/null 2>&1
+            files_staged=1
+          fi
         fi
       done < <(echo "$commit_obj" | jq -r '.files[]')
 
@@ -293,8 +296,7 @@ MARKDOWN_EOF
   echo "🤖 Asking $provider to summarize changes for README.md..."
   local base_prompt
   base_prompt=$(__get_prompt "git_readme_summary")
-
-  $diff_content
+  base_prompt="${base_prompt}\n\n${diff_content}"
 
   local response=""
   if [ "$provider" = "gemini" ]; then

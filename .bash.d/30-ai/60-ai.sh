@@ -116,16 +116,26 @@ __ai_query_gemini() {
   fi
 
   local api_url="${URI_GEMINI_MODELS}/${final_model}:generateContent"
+
+  local tmp_prompt
+  tmp_prompt=$(mktemp)
+  echo -n "$prompt" > "$tmp_prompt"
+
   local prompt_json
-
   if [ -f "$context_file" ]; then
-    prompt_json=$(jq -n --arg p "${prompt}" --arg t "${title}" --rawfile ctx "$context_file" '{ contents: [{ parts: [{ text: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p + "\n\n=== LOCAL DIRECTORY CONTEXT ===\n" + $ctx) }] }] }')
+    prompt_json=$(jq -n --arg t "${title}" --rawfile p "$tmp_prompt" --rawfile ctx "$context_file" '{ contents: [{ parts: [{ text: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p + "\n\n=== LOCAL DIRECTORY CONTEXT ===\n" + $ctx) }] }] }')
   else
-    prompt_json=$(jq -n --arg p "${prompt}" --arg t "${title}" '{ contents: [{ parts: [{ text: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p) }] }] }')
+    prompt_json=$(jq -n --arg t "${title}" --rawfile p "$tmp_prompt" '{ contents: [{ parts: [{ text: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p) }] }] }')
   fi
+  rm -f "$tmp_prompt"
 
+  local tmp_sys
+  tmp_sys=$(mktemp)
+  echo -n "${AI_SYSTEM_PROMPT}" > "$tmp_sys"
   local system_json
-  system_json=$(jq -n --arg sp "${AI_SYSTEM_PROMPT}" '{ systemInstruction: { parts: [{ text: $sp }] } }')
+  system_json=$(jq -n --rawfile sp "$tmp_sys" '{ systemInstruction: { parts: [{ text: $sp }] } }')
+  rm -f "$tmp_sys"
+
   local payload_file
   payload_file=$(mktemp)
   jq -s '.[0] * .[1] * .[2]' "$HOME/.bash.d/config/ai/gemini-config.json" <(echo "$system_json") <(echo "$prompt_json") > "$payload_file"
@@ -169,16 +179,26 @@ __ai_query_claude() {
 
   local final_model="${req_version:-${CLAUDE_VERSION:-claude-3-7-sonnet-latest}}"
   local api_url="${URI_CLAUDE_MESSAGES}"
+
+  local tmp_prompt
+  tmp_prompt=$(mktemp)
+  echo -n "$prompt" > "$tmp_prompt"
+
   local prompt_json
-
   if [ -f "$context_file" ]; then
-    prompt_json=$(jq -n --arg p "${prompt}" --arg t "${title}" --rawfile ctx "$context_file" '{ messages: [{ role: "user", content: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p + "\n\n=== LOCAL DIRECTORY CONTEXT ===\n" + $ctx) }] }')
+    prompt_json=$(jq -n --arg t "${title}" --rawfile p "$tmp_prompt" --rawfile ctx "$context_file" '{ messages: [{ role: "user", content: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p + "\n\n=== LOCAL DIRECTORY CONTEXT ===\n" + $ctx) }] }')
   else
-    prompt_json=$(jq -n --arg p "${prompt}" --arg t "${title}" '{ messages: [{ role: "user", content: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p) }] }')
+    prompt_json=$(jq -n --arg t "${title}" --rawfile p "$tmp_prompt" '{ messages: [{ role: "user", content: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p) }] }')
   fi
+  rm -f "$tmp_prompt"
 
+  local tmp_sys
+  tmp_sys=$(mktemp)
+  echo -n "${AI_SYSTEM_PROMPT}" > "$tmp_sys"
   local system_json
-  system_json=$(jq -n --arg sp "${AI_SYSTEM_PROMPT}" '{ system: $sp }')
+  system_json=$(jq -n --rawfile sp "$tmp_sys" '{ system: $sp }')
+  rm -f "$tmp_sys"
+
   local payload_file
   payload_file=$(mktemp)
   jq -s '.[0] * .[1] * .[2] * {model: $model}' "$HOME/.bash.d/config/ai/claude-config.json" <(echo "$system_json") <(echo "$prompt_json") --arg model "$final_model" > "$payload_file"
@@ -381,29 +401,48 @@ __ai_query_local() {
   local final_model="${req_version:-${LOCAL_AI_MODEL:-llama3.2}}"
 
   local system_prompt="${AI_SYSTEM_PROMPT:-You are a helpful assistant.}"
-  local user_content=""
 
-  if [ -f "$context_file" ]; then
-    local ctx_content
-    ctx_content=$(command cat "$context_file")
-    user_content="${title:+Requested Title: $title\n}Prompt: $prompt\n\n=== LOCAL DIRECTORY CONTEXT ===\n$ctx_content"
-  else
-    user_content="${title:+Requested Title: $title\n}Prompt: $prompt"
-  fi
+  local tmp_prompt
+  tmp_prompt=$(mktemp)
+  echo -n "$prompt" > "$tmp_prompt"
+
+  local tmp_sys
+  tmp_sys=$(mktemp)
+  echo -n "$system_prompt" > "$tmp_sys"
 
   local payload_file
   payload_file=$(mktemp)
-  jq -n \
-    --arg model "$final_model" \
-    --arg sys "$system_prompt" \
-    --arg usr "$user_content" \
-    '{
-      model: $model,
-      messages: [
-        {role: "system", content: $sys},
-        {role: "user", content: $usr}
-      ]
-    }' > "$payload_file"
+
+  if [ -f "$context_file" ]; then
+    jq -n \
+      --arg model "$final_model" \
+      --rawfile sys "$tmp_sys" \
+      --arg t "$title" \
+      --rawfile p "$tmp_prompt" \
+      --rawfile ctx "$context_file" \
+      '{
+        model: $model,
+        messages: [
+          {role: "system", content: $sys},
+          {role: "user", content: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p + "\n\n=== LOCAL DIRECTORY CONTEXT ===\n" + $ctx)}
+        ]
+      }' > "$payload_file"
+  else
+    jq -n \
+      --arg model "$final_model" \
+      --rawfile sys "$tmp_sys" \
+      --arg t "$title" \
+      --rawfile p "$tmp_prompt" \
+      '{
+        model: $model,
+        messages: [
+          {role: "system", content: $sys},
+          {role: "user", content: (if $t != "" then "Requested Title: " + $t + "\n" else "" end + "Prompt: " + $p)}
+        ]
+      }' > "$payload_file"
+  fi
+
+  rm -f "$tmp_prompt" "$tmp_sys"
 
   echo "⏳ Querying Local LLM ($final_model at $base_url)..." >&2
   local response

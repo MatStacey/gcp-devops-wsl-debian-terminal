@@ -19,8 +19,8 @@ __bashd_latest_mod() {
 
 __rebuild_mytools_cache() {
   local bashd_dir="$HOME/.bash.d"
-  local cache_file="$bashd_dir/.mt_cache"
-  local tsv_index="$bashd_dir/.mt_data.tsv"
+  local cache_file="$bashd_dir/data/cache/.mt_cache"
+  local tsv_index="$bashd_dir/data/cache/.mt_data.tsv"
   local time_file="${cache_file}.time"
 
   # Natively parse all sh files with AWK to handle multi-line blocks
@@ -70,7 +70,7 @@ mytools() {
   }
 
   local bashd_dir="$HOME/.bash.d"
-  local cache_file="$bashd_dir/.mt_cache"
+  local cache_file="$bashd_dir/data/cache/.mt_cache"
   local time_file="${cache_file}.time"
   local latest_mod
   latest_mod=$(__bashd_latest_mod "$bashd_dir")
