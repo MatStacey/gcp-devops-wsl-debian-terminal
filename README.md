@@ -15,21 +15,6 @@ Before installing this terminal environment, ensure your local workstation meets
 
 ---
 
-## 🚀 Recent Updates & Enhancements
-
-{
-  "category": "chat",
-  "language": null,
-  "extension": null,
-  "title": "readme-updates-summary",
-  "code": null,
-  "message": "* **Added `mt-toggle-format-on-push`**: Added configuration helper to toggle automated code formatting on git push.
-* **Added `mt-set-upstream-path`**: Added function to set and export the upstream repository path (`UPSTREAM_REPO_PATH`) for framework updates.
-* **Removed Legacy Configuration Helpers**: Cleaned up obsolete configuration commands for legacy AI provider keys (Gemini, Claude), theme setting, default IDE selection, and config opening helpers."
-}
-
----
-
 ## 🚀 Key Features
 
 * **Cross-Platform Compatibility:** Native OS detection dynamically maps clipboard (`pbcopy`, `clip.exe`), file explorer (`open`, `explorer.exe`), and package manager (`brew`, `apt`) utilities based on your host architecture.
