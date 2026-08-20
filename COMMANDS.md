@@ -72,6 +72,7 @@ This document is automatically generated on every sync and lists all available f
 | func | Configuration Management | `mt-setup-system` | Config: Interactive System Setup |
 | func | Configuration Management | `mt-toggle-ai` | Config: Toggle global AI prompt and integration true/false |
 | func | Configuration Management | `mt-toggle-auto-cleanup` | Config: Toggle export file background cleanup script [Usage: mt-toggle-auto-cleanup] |
+| func | Configuration Management | `mt-toggle-format-on-push` | Config: Toggle format-on-push true/false |
 | func | Configuration Management | `mt-toggle-gemini-extended` | Config: Toggle Gemini extended mode true/false |
 | func | Container Orchestration | `kubectl` | Kubectl wrapper (preserves args) |
 | func | Container Orchestration (Kubernetes) | `kns` | Kubernetes: Get or explicitly set the active namespace in the current context |
