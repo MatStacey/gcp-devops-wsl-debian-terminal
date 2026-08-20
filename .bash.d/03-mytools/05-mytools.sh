@@ -504,11 +504,15 @@ HDR
   mytools > /dev/null
 
   if [ -f "$tsv_index" ]; then
+    echo "" >> "$out_file"
     echo "## 🔗 Shell Aliases" >> "$out_file"
+    echo "" >> "$out_file"
     awk -F'\t' '$1 == "alias" { printf "- **`%s`** *(%s)*: %s\n", $3, $2, $4 }' "$tsv_index" >> "$out_file"
-    echo -e "\n---" >> "$out_file"
-
-    echo -e "\n## 🛠️ Public Functions\n" >> "$out_file"
+    echo "" >> "$out_file"
+    echo "---" >> "$out_file"
+    echo "" >> "$out_file"
+    echo "## 🛠️ Public Functions" >> "$out_file"
+    echo "" >> "$out_file"
 
     local current_cat=""
     while IFS=$'\t' read -r type cat name desc; do
@@ -516,24 +520,33 @@ HDR
 
       if [ "$cat" != "$current_cat" ]; then
         current_cat="$cat"
-        echo -e "\n### 📂 ${current_cat}\n" >> "$out_file"
+        echo "" >> "$out_file"
+        echo "### 📂 ${current_cat}" >> "$out_file"
+        echo "" >> "$out_file"
       fi
 
-      echo -e "#### \`$name\`" >> "$out_file"
-      echo -e "> $desc\n" >> "$out_file"
+      echo "" >> "$out_file"
+      echo "#### \`$name\`" >> "$out_file"
+      echo "" >> "$out_file"
+      echo "> $desc" >> "$out_file"
+      echo "" >> "$out_file"
 
       local src_file
       src_file=$(grep -rlE "^${name}\(\)[ \t]*\{" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
       if [ -n "$src_file" ]; then
         echo "\`\`\`bash" >> "$out_file"
         awk -v target="$name" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$src_file" >> "$out_file"
-        echo -e "\`\`\`\n" >> "$out_file"
+        echo "\`\`\`" >> "$out_file"
       fi
     done < <(sort -t$'\t' -k2,2 -k3,3 "$tsv_index")
   fi
 
   if [ "$include_private" = true ]; then
-    echo -e "\n---\n\n## 🔒 Internal Framework Helpers (Private Functions)\n" >> "$out_file"
+    echo "" >> "$out_file"
+    echo "---" >> "$out_file"
+    echo "" >> "$out_file"
+    echo "## 🔒 Internal Framework Helpers (Private Functions)" >> "$out_file"
+    echo "" >> "$out_file"
     echo "Private functions prefixed with \`_\` or \`__\` used internally by the framework." >> "$out_file"
 
     find "$HOME/.bash.d" -type f -name "*.sh" -exec grep -HnE "^_{1,2}[a-zA-Z0-9_-]+\(\)[ \t]*\{" {} + | while read -r line; do
@@ -545,10 +558,12 @@ HDR
       [ -z "$func_name" ] && continue
       local rel_fpath="${fpath#"$HOME"/.bash.d/}"
 
-      echo -e "\n### \`$func_name\` *(File: \`00-system/${rel_fpath}\`)*" >> "$out_file"
+      echo "" >> "$out_file"
+      echo "### \`$func_name\` *(File: \`00-system/${rel_fpath}\`)*" >> "$out_file"
+      echo "" >> "$out_file"
       echo "\`\`\`bash" >> "$out_file"
       awk -v target="$func_name" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$fpath" >> "$out_file"
-      echo -e "\`\`\`\n" >> "$out_file"
+      echo "\`\`\`" >> "$out_file"
     done
   fi
 

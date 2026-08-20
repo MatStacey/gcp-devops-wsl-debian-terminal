@@ -1,16 +1,14 @@
 """
 Retrieves AI system and workflow prompts from a centralized YAML configuration.
 
-Reads the specific prompt key passed via CLI arguments from the `prompts.yaml`
+Reads the specific prompt key passed via CLI arguments from the `prompts.yaml` 
 file and prints the prompt string to standard output.
 """
 
 import contextlib
 import os
 import sys
-
 import yaml
-
 
 def main():
     """Loads the YAML prompt file, retrieves the requested key, and prints it."""
@@ -30,7 +28,6 @@ def main():
         val = prompts.get(prompt_key, "")
         if val:
             print(val.strip())
-
 
 if __name__ == "__main__":
     main()

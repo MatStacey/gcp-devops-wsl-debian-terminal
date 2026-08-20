@@ -24,7 +24,6 @@ mt-export() {
   local zip_out=false
   local quiet_mode=false
 
-  # Parse Arguments
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
       -d | --dir)
@@ -37,7 +36,7 @@ mt-export() {
         ;;
       -z | --zip) zip_out=true ;;
       -q | --quiet) quiet_mode=true ;;
-      *) target_dir="$1" ;; # Handle positional fallback
+      *) target_dir="$1" ;;
     esac
     shift
   done
@@ -50,7 +49,6 @@ mt-export() {
   local schemas_dir="$HOME/.bash.d/config/export/schemas"
   local schema_file=""
 
-  # Resolve the correct schema using Python
   local py_script="
 import os, yaml, sys
 schemas_dir = sys.argv[1]
@@ -77,7 +75,6 @@ print('')
     schema_file="$schemas_dir/default.yaml"
   fi
 
-  # Extract Schema Values using yq
   local s_name="Code Export"
   local s_inc=".*"
   local s_exc=""
@@ -90,11 +87,9 @@ print('')
 
   echo -e "${CB_BLUE}📦 Running: $s_name${C_RESET}"
 
-  # Resolve centralized exports directory
   local dest_dir="${AI_WORKSPACE_DIR:-$HOME/vcs/ai-workspace}/exports"
   mkdir -p "$dest_dir"
 
-  # Build the dynamic filename
   local safe_dir_name
   safe_dir_name=$(basename "$(realpath "$target_dir")")
   local timestamp
@@ -104,12 +99,10 @@ print('')
   local tmp_file="/tmp/mt_export_${RANDOM}.txt"
   local file_list="/tmp/mt_export_files_${RANDOM}.txt"
 
-  # Find files, exclude global blocklist, include specified extensions
   eval "find \"$target_dir\" -type f" 2> /dev/null |
     grep -E -vi "(${EXPORT_BLOCKLIST})" |
     grep -E -i "\.(${s_inc})$" > "$file_list"
 
-  # Optionally filter out schema-specific excluded patterns
   if [ -n "$s_exc" ] && [ "$s_exc" != "null" ] && [ "$s_exc" != '""' ]; then
     grep -E -vi "(${s_exc})" "$file_list" > "${file_list}.filtered"
     mv "${file_list}.filtered" "$file_list"
@@ -124,7 +117,6 @@ print('')
     return 0
   fi
 
-  # === AI Context Size Protection (Killswitch) ===
   if [ "$total_files" -gt 2000 ]; then
     echo -e "${CB_RED}🚨 KILLSWITCH: $total_files files detected. Export aborted to prevent system lockup and LLM overload.${C_RESET}"
     rm -f "$file_list"
@@ -146,18 +138,14 @@ print('')
   echo "Schema: $schema_query" >> "$tmp_file"
   echo "-----------------------------------" >> "$tmp_file"
 
-  # Inject the directory tree overview
   echo "Directory Tree:" >> "$tmp_file"
   if command -v tree > /dev/null 2>&1; then
     tree -a -I '.git|.dev|.vscode|.idea|node_modules|__pycache__|.terraform|venv|.venv|.mt_cache*' "$target_dir" >> "$tmp_file" 2> /dev/null
   else
-    # Fallback to sed-formatted find if tree is missing
-    # shellcheck disable=SC2086
     find "$target_dir" -print | grep -E -v '/(\.git|\.dev|\.vscode|\.idea|node_modules|__pycache__|\.terraform|venv|\.venv)/' | sed -e 's;[^/]*/;|____;g;s;____|; |;g' >> "$tmp_file" 2> /dev/null
   fi
   echo "-----------------------------------" >> "$tmp_file"
 
-  # Append actual file contents
   while IFS= read -r file; do
     echo -e "\n==> $file <==" >> "$tmp_file"
     cat "$file" >> "$tmp_file" 2> /dev/null || echo "[Unreadable File]" >> "$tmp_file"
@@ -176,7 +164,6 @@ print('')
 
   rm -f "$tmp_file" "$file_list"
 
-  # Open GUI Explorer unless quiet mode is on
   if [ "$quiet_mode" = false ]; then
     if type __open_path_gui > /dev/null 2>&1; then
       __open_path_gui "$dest_dir" 2> /dev/null || true

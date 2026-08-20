@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
+"""
+Configuration Manager for the MT DevOps Framework.
+"""
 import contextlib
 import os
 import shlex
 import sys
+from typing import Any, Optional
 
 
 def get_config_path():
