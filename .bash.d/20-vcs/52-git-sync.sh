@@ -70,36 +70,43 @@ Dockerfile
 IGNOREEOF
   fi
 
-  # 1. Sync the core directory, utilizing the dynamic ignore file
-  rsync -a --delete --delete-excluded --exclude-from="$syncignore" "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+  # 1. BI-DIRECTIONAL PRE-CHECK: Pull any NEWER files from git repo back into ~/.bash.d/
+  rsync -a -u --exclude-from="$syncignore" "$repo_dir/.bash.d/" "$HOME/.bash.d/"
 
-  # 2. Explicitly sync the root ~/.bashrc file from the home directory
+  # 2. SYNC TO REPO: Sync ~/.bash.d/ to git repo, preserving newer repo files (-u)
+  rsync -a -u --delete --delete-excluded --exclude-from="$syncignore" "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+
+  # 3. Explicitly sync root-level configuration files (preserving newer destination file)
   if [ -f "$HOME/.bashrc" ]; then
-    cp "$HOME/.bashrc" "$repo_dir/.bashrc"
+    if [ ! -f "$repo_dir/.bashrc" ] || [ "$HOME/.bashrc" -nt "$repo_dir/.bashrc" ]; then
+      cp "$HOME/.bashrc" "$repo_dir/.bashrc"
+    elif [ "$repo_dir/.bashrc" -nt "$HOME/.bashrc" ]; then
+      cp "$repo_dir/.bashrc" "$HOME/.bashrc"
+    fi
   fi
 
-  # 3. Move standard root-level configuration files to the repo root
+  # 4. Move standard root-level configuration files to the repo root safely
   for f in install.sh README.md .gitignore .dockerignore Dockerfile .gitleaks.toml; do
     if [ -f "$HOME/.bash.d/$f" ]; then
-      cp "$HOME/.bash.d/$f" "$repo_dir/$f"
+      cp -u "$HOME/.bash.d/$f" "$repo_dir/$f"
     elif [ -f "$HOME/$f" ]; then
-      cp "$HOME/$f" "$repo_dir/$f"
+      cp -u "$HOME/$f" "$repo_dir/$f"
     fi
   done
 
-  # 4. Explicitly copy required root directories
+  # 5. Explicitly copy required root directories
   for d in .github .devcontainer; do
     if [ -d "$HOME/.bash.d/$d" ]; then
-      cp -r "$HOME/.bash.d/$d" "$repo_dir/"
+      cp -r -u "$HOME/.bash.d/$d" "$repo_dir/"
     elif [ -d "$HOME/$d" ]; then
-      cp -r "$HOME/$d" "$repo_dir/"
+      cp -r -u "$HOME/.bash.d/$d" "$repo_dir/"
     fi
   done
 
   (
     cd "$repo_dir" || exit 1
 
-    # 5. Enforce mandatory .gitignore rules safely
+    # 6. Enforce mandatory .gitignore rules safely
     touch .gitignore
     local template_file="$HOME/.bash.d/lib/templates/gitignore.tpl"
     if [ -f "$template_file" ]; then
@@ -109,7 +116,7 @@ IGNOREEOF
       done < "$template_file"
     fi
 
-    # 6. Purge index and restage to respect new ignore rules
+    # 7. Purge index and restage to respect new ignore rules
     git rm -r -q --cached . > /dev/null 2>&1
     git add --all
   )
