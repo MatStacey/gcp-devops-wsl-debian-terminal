@@ -73,8 +73,8 @@ __check_profile_updates() {
     local new_version
     new_version=$(command cat "$pending_file")
     local current_version="Local"
-    if [ -f "$HOME/.bash.d/config/.current_version" ]; then
-      current_version=$(command cat "$HOME/.bash.d/config/.current_version")
+    if [ -f "$HOME/.bash.d/data/.current_version" ]; then
+      current_version=$(command cat "$HOME/.bash.d/data/.current_version")
     elif [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
       current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "Local")
     fi
@@ -102,8 +102,8 @@ __check_profile_updates() {
       remote_version=$(curl -s "https://api.github.com/repos/${repo_path}/releases/latest" | jq -r ".tag_name // empty")
 
       local current_version=""
-      if [ -f "$HOME/.bash.d/config/.current_version" ]; then
-        current_version=$(command cat "$HOME/.bash.d/config/.current_version")
+      if [ -f "$HOME/.bash.d/data/.current_version" ]; then
+        current_version=$(command cat "$HOME/.bash.d/data/.current_version")
       elif [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
         current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "")
       fi

@@ -6,7 +6,7 @@
 
 CONFIG_FILE="$HOME/.bash.d/config/config.yaml"
 CONFIG_MANAGER="$HOME/.bash.d/lib/python/config_manager.py"
-ENV_CACHE="$HOME/.bash.d/config/.env.cache"
+ENV_CACHE="$HOME/.bash.d/data/cache/.env.cache"
 YAML_TEMPLATE="$HOME/.bash.d/lib/templates/config.yaml.tpl"
 
 if [ ! -s "$CONFIG_FILE" ]; then
