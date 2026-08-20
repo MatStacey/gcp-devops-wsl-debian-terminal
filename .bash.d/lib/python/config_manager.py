@@ -61,6 +61,10 @@ def load_env():
     git_cfg = d.get("git") or {}
     paths_cfg = d.get("paths") or {}
     docker_cfg = d.get("docker") or {}
+    cicd_cfg = d.get("cicd") or {}
+
+    # CI/CD
+    export("CICD_PROVIDER", cicd_cfg.get("provider", "github"), to_lower=True)
 
     # System
     export("DEFAULT_IDE", sys_cfg.get("default_ide", "vscode"), to_lower=True)

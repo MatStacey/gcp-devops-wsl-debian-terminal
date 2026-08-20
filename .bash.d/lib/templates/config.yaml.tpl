@@ -42,5 +42,8 @@ paths:
   scripts_iam: ~/vcs/scripts/iam
   docker_root: ~/.docker
 
+cicd:
+  provider: github # github, bitbucket, gitlab, azure, jenkins
+
 docker:
   restart_blocklist: "redis,postgres,local-db"

@@ -441,8 +441,116 @@ mt-setup() {
     [ -n "$key" ] && mt-add-claude-key "$key"
   fi
 
-  read -r -p "3️⃣  Git Sync Repo URL (e.g. git@github.com:user/repo.git) [skip]: " sync_url
+  read -r -p "3️⃣  CI/CD Provider (github/bitbucket/gitlab/azure/jenkins) [github]: " cicd
+  mt-set-cicd "${cicd:-github}"
+
+  read -r -p "4️⃣  Git Sync Repo URL (e.g. git@github.com:user/repo.git) [skip]: " sync_url
   [ -n "$sync_url" ] && mt-add-sync-url "$sync_url"
 
   echo -e "\n${CB_GREEN}✅ Setup Complete! Run 'reload' to apply changes.${C_RESET}"
+}
+
+#######################################
+# Config: Set default CI/CD provider [Usage: mt-set-cicd "github|bitbucket|gitlab|azure|jenkins"]
+#######################################
+mt-set-cicd() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [ -z "$1" ]; then
+    echo "Usage: mt-set-cicd <provider>"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "cicd" "provider" "$1"
+  export CICD_PROVIDER="$1"
+  echo "✅ Default CI/CD provider set to $1."
+}
+
+#######################################
+# Config: Interactive Paths Setup
+#######################################
+mt-setup-paths() {
+  echo -e "${CB_BLUE}--- Paths Configuration ---${C_RESET}"
+  read -r -p "VCS Root [${VCS_ROOT:-~/vcs}]: " vcs_root
+  [ -n "$vcs_root" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_root" "$vcs_root"
+
+  read -r -p "Sync Repo Dir [${SYNC_REPO_DIR:-~/vcs/personal/mt-devops-framework}]: " sync_repo
+  [ -n "$sync_repo" ] && python3 "$CONFIG_MANAGER" update "paths" "sync_repo" "$sync_repo"
+
+  read -r -p "AI Workspace [${AI_WORKSPACE_DIR:-~/vcs/ai-workspace}]: " ai_ws
+  [ -n "$ai_ws" ] && python3 "$CONFIG_MANAGER" update "paths" "ai_workspace" "$ai_ws"
+
+  read -r -p "Docker Root [${DOCKER_ROOT_DIR:-~/.docker}]: " docker_root
+  [ -n "$docker_root" ] && python3 "$CONFIG_MANAGER" update "paths" "docker_root" "$docker_root"
+
+  echo -e "${CB_GREEN}✅ Paths updated.${C_RESET}"
+}
+
+#######################################
+# Config: Interactive Git Setup
+#######################################
+mt-setup-git() {
+  echo -e "${CB_BLUE}--- Git Configuration ---${C_RESET}"
+  read -r -p "Feature Branch Prefix [${GIT_FEATURE_PREFIX:-feature/}]: " prefix
+  [ -n "$prefix" ] && python3 "$CONFIG_MANAGER" update "git" "feature_prefix" "$prefix"
+
+  read -r -p "AI Max Diff Bytes [${AI_MAX_DIFF_BYTES:-4000}]: " bytes
+  [ -n "$bytes" ] && python3 "$CONFIG_MANAGER" update "git" "ai_max_diff_bytes" "$bytes"
+
+  echo -e "${CB_GREEN}✅ Git config updated.${C_RESET}"
+}
+
+#######################################
+# Config: Interactive System Setup
+#######################################
+mt-setup-system() {
+  echo -e "${CB_BLUE}--- System Configuration ---${C_RESET}"
+  read -r -p "Max Parallel Threads [${MAX_PARALLEL_THREADS:-8}]: " threads
+  [ -n "$threads" ] && python3 "$CONFIG_MANAGER" update "system" "max_parallel_threads" "$threads"
+
+  read -r -p "Update Check TTL (seconds) [${UPDATE_CHECK_TTL_SEC:-43200}]: " ttl
+  [ -n "$ttl" ] && python3 "$CONFIG_MANAGER" update "system" "update_check_ttl_sec" "$ttl"
+
+  echo -e "${CB_GREEN}✅ System config updated.${C_RESET}"
+}
+
+#######################################
+# Config: Interactive Docker & Exports Setup
+#######################################
+mt-setup-docker() {
+  echo -e "${CB_BLUE}--- Docker Configuration ---${C_RESET}"
+  read -r -p "Restart Blocklist [${DOCKER_BLOCKLIST:-redis,postgres,local-db}]: " blocklist
+  [ -n "$blocklist" ] && python3 "$CONFIG_MANAGER" update "docker" "restart_blocklist" "$blocklist"
+  echo -e "${CB_GREEN}✅ Docker config updated.${C_RESET}"
+}
+
+#######################################
+# Config: Master Setup Wizard Menu
+#######################################
+mt-setup() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local options="1. 🚀 Quick Start (API Keys, URLs, CI/CD)\n2. 📂 Paths\n3. 🌿 Git\n4. ⚙️  System\n5. 🐳 Docker"
+  local choice
+  choice=$(echo -e "$options" | fzf --prompt="⚙️  Select Configuration Category > " --height=~10 --layout=reverse --border)
+
+  case "$choice" in
+    1*) __mt_setup_quick ;;
+    2*) mt-setup-paths ;;
+    3*) mt-setup-git ;;
+    4*) mt-setup-system ;;
+    5*) mt-setup-docker ;;
+    *)
+      echo "⚠️  Setup cancelled."
+      return 0
+      ;;
+  esac
+
+  if command -v mt-refresh-caches > /dev/null 2>&1; then
+    mt-refresh-caches > /dev/null 2>&1
+  fi
 }
