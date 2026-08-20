@@ -6,11 +6,7 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 ## 🚀 Recent Updates & Enhancements
 
-* **Local ShellCheck Validation:** Added a `-s` flag to `mt-push-update` allowing users to run strict static analysis locally before pushing to remote CI/CD pipelines.
-* **Markdown Linting Compliance:** Rewrote `mt-dump` spacing logic to generate 100% compliant `TECHNICAL_REFERENCE.md` files (resolving MD012, MD022, and MD032).
-* **Pylance Strict Typing:** Enriched Python helpers with Google-style docstrings and strict `typing` imports (e.g., `Any`, `Optional`) to cleanly resolve static analysis warnings.
-* **AWK Parser Repair:** Fixed regex boundaries in `mt_help.awk` to properly extract function bodies formatted by `shfmt`.
-* **ShellCheck Hardening:** Resolved various POSIX compliance warnings (SC2295, SC2181) and formatting bugs across the Bash framework.
+Applied the git diff modifications to `~/.bash.d/03-mytools/06-llm-exports.sh`. The updated `mt-export` function replaces hardcoded inclusion/exclusion parameters with dynamic YAML schema parsing using Python and `yq`. Additionally, it enforces context window protection with a 2,000 file killswitch and a 500 file confirmation prompt.
 
 ---
 

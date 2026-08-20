@@ -252,10 +252,7 @@ Complex bash functions, framework utilities, and automated workflows.
 ### LLM Context & Export Utilities
 | Command | Description |
 |---|---|
-| `mt-export` | LLM: Export codebase to text/zip for LLM context window |
-| `mt-export-cloudrun` | LLM: Export Cloud Run / Python microservice codebase |
-| `mt-export-shell` | LLM: Export shell scripts (.sh, .bash, .zsh) |
-| `mt-export-terraform` | LLM: Export Terraform & YAML infrastructure code |
+| `mt-export` | LLM: Export codebase to text/zip for LLM context window using dynamic schemas |
 
 ### MyTools Documentation & Runner
 | Command | Description |
