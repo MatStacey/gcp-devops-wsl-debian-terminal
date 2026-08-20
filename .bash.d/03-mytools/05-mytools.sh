@@ -342,7 +342,7 @@ mt-status() {
 
   # 1. Framework & AI
   local current_version="Local"
-  [ -f "$HOME/.bash.d/.current_version" ] && current_version=$(cat "$HOME/.bash.d/.current_version" | tr -d '\r\n ')
+  [ -f "$HOME/.bash.d/.current_version" ] && current_version=$(tr -d \'\r\n \' < "$HOME/.bash.d/.current_version")
   echo -e "${CB_YELLOW}▶ FRAMEWORK${C_RESET}"
   echo -e "  ${CB_CYAN}Version       ${C_RESET}: ${current_version}"
   echo -e "  ${CB_CYAN}Theme         ${C_RESET}: ${BASH_THEME:-default}"
@@ -382,14 +382,16 @@ mt-status() {
   # 4. Updates & Maintenance
   echo -e "\n${CB_YELLOW}▶ SYSTEM UPDATES${C_RESET}"
   if [ -f "$HOME/.bash.d/.update_pending" ]; then
-    local sys_updates=$(cat "$HOME/.bash.d/.update_pending" | tr -d '\r\n ')
+    local sys_updates
+    sys_updates=$(tr -d \'\r\n \' < "$HOME/.bash.d/.update_pending")
     echo -e "  ${CB_CYAN}OS Packages   ${C_RESET}: ${CB_RED}${sys_updates} available (Run sys-install)${C_RESET}"
   else
     echo -e "  ${CB_CYAN}OS Packages   ${C_RESET}: ${CB_GREEN}Up to date${C_RESET}"
   fi
 
   if [ -f "$HOME/.bash.d/.profile_update_pending" ]; then
-    local prof_update=$(cat "$HOME/.bash.d/.profile_update_pending" | tr -d '\r\n ')
+    local prof_update
+    prof_update=$(tr -d \'\r\n \' < "$HOME/.bash.d/.profile_update_pending")
     echo -e "  ${CB_CYAN}Framework     ${C_RESET}: ${CB_RED}${prof_update} available (Run mt-get-update)${C_RESET}"
   else
     echo -e "  ${CB_CYAN}Framework     ${C_RESET}: ${CB_GREEN}Up to date${C_RESET}"
