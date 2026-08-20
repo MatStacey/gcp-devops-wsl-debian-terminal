@@ -71,7 +71,13 @@ __open_path_gui() {
       open "$target" 2> /dev/null
       ;;
     wsl)
-      explorer.exe "$(wslpath -w "$target")" 2> /dev/null
+      local ps_script="$HOME/.bash.d/lib/windows/win_explorer_focus.ps1"
+      if [ -f "$ps_script" ] && command -v powershell.exe > /dev/null 2>&1; then
+        # Use COM objects to bring existing window to foreground or open a new one
+        powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File "$(wslpath -w "$ps_script")" "$(wslpath -w "$target")" > /dev/null 2>&1
+      else
+        explorer.exe "$(wslpath -w "$target")" 2> /dev/null
+      fi
       ;;
     *)
       if command -v xdg-open > /dev/null 2>&1; then

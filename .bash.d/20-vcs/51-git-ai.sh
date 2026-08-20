@@ -44,16 +44,23 @@ __git_sync_ai_commit() {
   local ai_prompt="${base_prompt}\n\n${diff_content}"
 
   local response=""
+  local query_status=0
   if [ "$provider" = "gemini" ]; then
     response=$(__ai_query_gemini "$ai_prompt" "" "" "" "")
+    query_status=$?
   elif [ "$provider" = "claude" ]; then
     response=$(__ai_query_claude "$ai_prompt" "" "" "")
+    query_status=$?
   elif [ "$provider" = "local" ]; then
     response=$(__ai_query_local "$ai_prompt" "" "" "")
+    query_status=$?
   else
     echo "🚨 Error: Invalid provider '$provider'." >&2
     return 1
   fi
+
+  if [ $query_status -eq 99 ]; then return 0; fi    # User bypassed via manual commit
+  if [ $query_status -eq 100 ]; then return 100; fi # Hard fail limit
 
   # Extract JSON Array using modular AI helper
   local generated_json
@@ -131,7 +138,12 @@ git-ai-push-all() {
       local prev_staged
       prev_staged=$(git diff --staged --name-only | wc -l)
 
-      if ! __git_sync_ai_commit "."; then
+      __git_sync_ai_commit "."
+      local commit_status=$?
+      if [ $commit_status -eq 100 ]; then
+        echo -e "${CB_RED}🚨 Aborting push.${C_RESET}"
+        return 1
+      elif [ $commit_status -ne 0 ]; then
         echo "⚠️ AI commit generation skipped or failed. Falling back to default batch commit..."
         git add .
         git commit -m "chore: automated changes"
@@ -299,13 +311,20 @@ MARKDOWN_EOF
   base_prompt="${base_prompt}\n\n${diff_content}"
 
   local response=""
+  local query_status=0
   if [ "$provider" = "gemini" ]; then
     response=$(__ai_query_gemini "$base_prompt" "" "" "" "")
+    query_status=$?
   elif [ "$provider" = "claude" ]; then
     response=$(__ai_query_claude "$base_prompt" "" "" "")
+    query_status=$?
   elif [ "$provider" = "local" ]; then
     response=$(__ai_query_local "$base_prompt" "" "" "")
+    query_status=$?
   fi
+
+  if [ $query_status -eq 99 ]; then return 0; fi    # User skipped docs
+  if [ $query_status -eq 100 ]; then return 100; fi # Hard fail
 
   # Clean potential markdown wrappers from the AI output
   local raw_text

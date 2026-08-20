@@ -141,17 +141,58 @@ __ai_query_gemini() {
   jq -s '.[0] * .[1] * .[2]' "$HOME/.bash.d/config/ai/gemini-config.json" <(echo "$system_json") <(echo "$prompt_json") > "$payload_file"
 
   echo "⏳ Querying Gemini ($final_model)..." >&2
-  local response
-  response=$(curl -s -X POST "${api_url}" -H "x-goog-api-key: ${GEMINI_API_KEY}" -H 'Content-Type: application/json' -d @"$payload_file")
+  local response="" content=""
+  local attempt=1 max_retries=3
+
+  while [ $attempt -le $max_retries ]; do
+    response=$(curl -s -X POST "${api_url}" -H "x-goog-api-key: ${GEMINI_API_KEY}" -H 'Content-Type: application/json' -d @"$payload_file")
+    content=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty')
+
+    if [ -n "$content" ]; then
+      break
+    fi
+
+    local err_msg
+    err_msg=$(echo "$response" | jq -r '.error.message // "Unknown error"')
+
+    if [[ "$err_msg" == *"Quota exceeded"* || "$err_msg" == *"429"* ]]; then
+      local wait_time=25
+      if [[ "$err_msg" =~ retry[[:space:]]in[[:space:]]([0-9]+) ]]; then
+        wait_time=$((BASH_REMATCH[1] + 2))
+      fi
+
+      echo -e "\n\033[01;33m⏳ AI Rate limit hit! Required cooldown: ${wait_time}s (Attempt $attempt/$max_retries)\033[0m" >&2
+      local user_input=""
+
+      if [[ "$prompt" == "Analyze this git diff and group the changes"* ]]; then
+        read -r -p "   Enter a commit message to bypass AI and push now (or press Enter to wait & retry): " user_input < /dev/tty
+        if [ -n "$user_input" ]; then
+          echo -e "\033[01;32m💡 Bypassing AI and committing manually...\033[0m" >&2
+          git add . > /dev/null 2>&1
+          git commit -m "$user_input" > /dev/null 2>&1
+          return 99
+        fi
+      else
+        read -r -p "   Press Enter to wait & retry, or type 'skip' to abort this specific AI task: " user_input < /dev/tty
+        if [[ "${user_input,,}" == "skip" ]]; then
+          echo -e "\033[01;32m💡 Skipping AI task...\033[0m" >&2
+          return 99
+        fi
+      fi
+
+      echo "⏳ Waiting ${wait_time}s..." >&2
+      sleep "$wait_time"
+      ((attempt++))
+    else
+      break
+    fi
+  done
 
   rm -f "$payload_file"
-  local content
-  content=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty')
 
   [ -z "$content" ] && {
-    echo "🚨 Error: Failed to get a valid response from Gemini." >&2
-    echo "$response" | jq -r '.error.message // "Unknown error"' >&2
-    return 1
+    echo -e "\n\033[01;31m🚨 Error: AI failed after $max_retries retries. Aborting process.\033[0m" >&2
+    return 100
   }
   echo "$content"
 }
@@ -204,17 +245,54 @@ __ai_query_claude() {
   jq -s '.[0] * .[1] * .[2] * {model: $model}' "$HOME/.bash.d/config/ai/claude-config.json" <(echo "$system_json") <(echo "$prompt_json") --arg model "$final_model" > "$payload_file"
 
   echo "⏳ Querying Claude ($final_model)..." >&2
-  local response
-  response=$(curl -s -X POST "${api_url}" -H "x-api-key: ${CLAUDE_API_KEY}" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d @"$payload_file")
+  local response="" content=""
+  local attempt=1 max_retries=3
+
+  while [ $attempt -le $max_retries ]; do
+    response=$(curl -s -X POST "${api_url}" -H "x-api-key: ${CLAUDE_API_KEY}" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d @"$payload_file")
+    content=$(echo "$response" | jq -r '.content[0].text // empty')
+
+    if [ -n "$content" ]; then
+      break
+    fi
+
+    local err_msg
+    err_msg=$(echo "$response" | jq -r '.error.message // "Unknown error"')
+
+    if [[ "$err_msg" == *"rate_limit_error"* || "$err_msg" == *"429"* || "$err_msg" == *"Overloaded"* ]]; then
+      local wait_time=20
+      echo -e "\n\033[01;33m⏳ AI Rate limit hit! Required cooldown: ${wait_time}s (Attempt $attempt/$max_retries)\033[0m" >&2
+      local user_input=""
+
+      if [[ "$prompt" == "Analyze this git diff and group the changes"* ]]; then
+        read -r -p "   Enter a commit message to bypass AI and push now (or press Enter to wait & retry): " user_input < /dev/tty
+        if [ -n "$user_input" ]; then
+          echo -e "\033[01;32m💡 Bypassing AI and committing manually...\033[0m" >&2
+          git add . > /dev/null 2>&1
+          git commit -m "$user_input" > /dev/null 2>&1
+          return 99
+        fi
+      else
+        read -r -p "   Press Enter to wait & retry, or type 'skip' to abort this specific AI task: " user_input < /dev/tty
+        if [[ "${user_input,,}" == "skip" ]]; then
+          echo -e "\033[01;32m💡 Skipping AI task...\033[0m" >&2
+          return 99
+        fi
+      fi
+
+      echo "⏳ Waiting ${wait_time}s..." >&2
+      sleep "$wait_time"
+      ((attempt++))
+    else
+      break
+    fi
+  done
 
   rm -f "$payload_file"
-  local content
-  content=$(echo "$response" | jq -r '.content[0].text // empty')
 
   [ -z "$content" ] && {
-    echo "🚨 Error: Failed to get a valid response from Claude." >&2
-    echo "$response" | jq -r '.error.message // "Unknown error"' >&2
-    return 1
+    echo -e "\n\033[01;31m🚨 Error: AI failed after $max_retries retries. Aborting process.\033[0m" >&2
+    return 100
   }
   echo "$content"
 }
