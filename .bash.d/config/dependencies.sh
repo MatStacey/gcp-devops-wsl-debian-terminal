@@ -51,3 +51,7 @@ export COMPLEX_DEPENDENCIES=(
   "eza:eza"
   "gh:gh"
 )
+
+export EXTERNAL_DEPENDENCIES=(
+  "speedtest:speedtest"
+)
