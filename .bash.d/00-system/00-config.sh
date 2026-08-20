@@ -554,3 +554,20 @@ mt-setup() {
     mt-refresh-caches > /dev/null 2>&1
   fi
 }
+
+#######################################
+# Config: Toggle format-on-push true/false
+#######################################
+mt-toggle-format-on-push() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local current="${GIT_FORMAT_ON_PUSH:-true}"
+  local next="true"
+  [ "$current" = "true" ] && next="false"
+
+  python3 "$CONFIG_MANAGER" update "git" "format_on_push" "$next"
+  export GIT_FORMAT_ON_PUSH="$next"
+  echo "✅ Format-on-push set to $next."
+}

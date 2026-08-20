@@ -29,6 +29,7 @@ exports:
   blocklist: (secret|token|credential|password|passwd|id_rsa|id_ed25519|\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)?$|(^|/)\.env(\..+)?$|lock\.hcl|__pycache__)
 
 git:
+  format_on_push: true
   sync_repo_url: YOUR_SYNC_REPO_URL
   feature_prefix: feature/
   ai_max_diff_bytes: 4000
