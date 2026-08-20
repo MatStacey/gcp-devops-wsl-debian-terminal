@@ -151,7 +151,7 @@ git-clean-merged() {
   fi
 
   local default_branch
-  default_branch=$(git remote show origin 2> /dev/null \vert{} awk '/HEAD branch/ {print$NF}')
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print$NF}')
   default_branch="${default_branch:-main}"
 
   echo -e "${CB_BLUE}🧹 Fetching latest remote state and pruning tracking branches...${C_RESET}"
@@ -225,7 +225,7 @@ git-raise-pr() {
   shift $((OPTIND - 1))
 
   local default_branch
-  default_branch=$(git remote show origin 2> /dev/null \vert{} awk '/HEAD branch/ {print$NF}')
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print$NF}')
   default_branch="${default_branch:-main}"
   target_branch="${target_branch:-$default_branch}"
 
@@ -269,16 +269,16 @@ git-raise-pr() {
     echo -e "${CB_BLUE}🚀 Pushing latest changes to origin...${C_RESET}"
     git push origin "$current_branch"
     return 0
-  elif [[ "$pr_state" == "MERGED" \vert{}\vert{} "$pr_state" == "CLOSED" ]]; then
+  elif [ "$pr_state" = "MERGED" ] || [ "$pr_state" = "CLOSED" ]; then
     echo -e "${CB_YELLOW}⚠️  This branch has a ${pr_state} PR (Dead Branch).${C_RESET}"
     read -r -p "Would you like to delete this branch locally and checkout a new one? [Y/n] " -n 1
     echo
-    if [[ $REPLY =~ ^[Yy]$]] \vert{}\vert{} [[ -z$REPLY ]]; then
+    if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
       read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
       echo
-      if [[ $REPLY =~ ^[Yy]$]] \vert{}\vert{} [[ -z$REPLY ]]; then
+      if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
         echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
-        git push origin --delete "$current_branch" 2> /dev/null \vert{}\vert{} echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
+        git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
       fi
 
       read -r -p "Enter new branch name: " new_branch
@@ -309,7 +309,7 @@ git-raise-pr() {
 
     read -r -p "🌐 View Pull Request in browser? [Y/n] " -n 1
     echo
-    if [[ $REPLY =~ ^[Yy]$]] \vert{}\vert{} [[ -z$REPLY ]]; then
+    if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
       local pr_url
       pr_url=$(gh pr view --json url -q .url)
       __open_url "$pr_url"
@@ -349,7 +349,7 @@ git-default-rebase() {
   current_branch=$(git branch --show-current)
 
   local default_branch
-  default_branch=$(git remote show origin 2> /dev/null \vert{} awk '/HEAD branch/ {print$NF}')
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print$NF}')
   default_branch="${default_branch:-main}"
 
   if [ "$current_branch" = "$default_branch" ]; then

@@ -446,21 +446,21 @@ ai() {
   }
 
   local context_file
-  context_file=$(__ai_build_context "$target_file" "$export_context")
-  [ $? -ne 0 ] && return 1
+  if ! context_file=$(__ai_build_context "$target_file" "$export_context"); then
+    return 1
+  fi
 
   local content=""
   if [ "$provider" = "gemini" ]; then
-    content=$(__ai_query_gemini "$prompt" "$title" "$context_file" "$req_version" "$req_extended")
+    if ! content=$(__ai_query_gemini "$prompt" "$title" "$context_file" "$req_version" "$req_extended"); then return 1; fi
   elif [ "$provider" = "claude" ]; then
-    content=$(__ai_query_claude "$prompt" "$title" "$context_file" "$req_version")
+    if ! content=$(__ai_query_claude "$prompt" "$title" "$context_file" "$req_version"); then return 1; fi
   elif [ "$provider" = "local" ]; then
-    content=$(__ai_query_local "$prompt" "$title" "$context_file" "$req_version")
+    if ! content=$(__ai_query_local "$prompt" "$title" "$context_file" "$req_version"); then return 1; fi
   else
     echo "🚨 Error: Invalid provider '$provider'." >&2
     return 1
   fi
-  [ $? -ne 0 ] && return 1
 
   [ -f "$context_file" ] && rm -f "$context_file"
 

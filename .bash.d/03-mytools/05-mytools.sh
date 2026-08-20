@@ -543,7 +543,7 @@ HDR
       func_name=$(echo "$line" | grep -oE "_{1,2}[a-zA-Z0-9_-]+")
 
       [ -z "$func_name" ] && continue
-      local rel_fpath="${fpath#$HOME/.bash.d/}"
+      local rel_fpath="${fpath#"$HOME"/.bash.d/}"
 
       echo -e "\n### \`$func_name\` *(File: \`00-system/${rel_fpath}\`)*" >> "$out_file"
       echo "\`\`\`bash" >> "$out_file"
