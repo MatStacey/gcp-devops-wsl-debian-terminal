@@ -109,6 +109,85 @@ __bootstrap_yq() {
 }
 
 #######################################
+# System: Imstall Ookla Speedtest CLI
+#######################################
+__install_speedtest() {
+  echo -e "\n📦 Installing Ookla Speedtest CLI..."
+
+  if [ "$OS_FAMILY" = "macos" ]; then
+    if command -v brew > /dev/null 2>&1; then
+      brew install speedtest
+    else
+      echo "🚨 Homebrew is required to install Speedtest on macOS."
+      return 1
+    fi
+
+  elif command -v apt-get > /dev/null 2>&1; then
+    local arch
+    arch="$(dpkg --print-architecture)"
+
+    if [ "$arch" != "amd64" ]; then
+      echo "🚨 Unsupported architecture for Ookla Speedtest: $arch"
+      return 1
+    fi
+
+    # We hard coded version to 1.2.0.84-1.ea6b6773cf because the Ookla packagecloud.io repository was returning 404s for Ubuntu Noble/Jammy, so we switched to downloading a known-good .deb directly.
+    local version="1.2.0.84-1.ea6b6773cf"
+    local url="https://packagecloud.io/ookla/speedtest-cli/packages/ubuntu/jammy/speedtest_${version}_amd64.deb/download.deb"
+    local tmpdir
+    tmpdir="$(mktemp -d)"
+
+    echo "📥 Downloading Ookla Speedtest CLI..."
+
+    if ! curl -fsSL -o "$tmpdir/speedtest.deb" "$url"; then
+      echo "🚨 Failed to download Ookla Speedtest CLI."
+      rm -rf "$tmpdir"
+      return 1
+    fi
+
+    echo "📦 Installing Ookla Speedtest CLI..."
+
+    if sudo apt-get install -y "$tmpdir/speedtest.deb"; then
+      rm -rf "$tmpdir"
+      echo "✅ Ookla Speedtest CLI installed successfully."
+    else
+      echo "🚨 Speedtest installation failed."
+      rm -rf "$tmpdir"
+      return 1
+    fi
+
+  else
+    echo "🚨 Unsupported platform for Ookla Speedtest CLI."
+    return 1
+  fi
+
+  if command -v speedtest > /dev/null 2>&1; then
+    echo "✅ Speedtest is available at: $(command -v speedtest)"
+  else
+    echo "🚨 Speedtest installation failed."
+    return 1
+  fi
+}
+
+#######################################
+# System: Check and report missing external dependencies
+#######################################
+__bootstrap_external() {
+  local missing_external=($(__get_missing_deps "${EXTERNAL_DEPENDENCIES[@]}"))
+
+  for dep in "${missing_external[@]}"; do
+    case "$dep" in
+      speedtest)
+        __install_speedtest
+        ;;
+      *)
+        echo "⚠️ No installer defined for external dependency: $dep"
+        ;;
+    esac
+  done
+}
+
+#######################################
 # System: Check and report missing complex dependencies
 #######################################
 __bootstrap_check_complex() {
@@ -140,6 +219,7 @@ bootstrap() {
   fi
   __bootstrap_python
   __bootstrap_yq
+  __bootstrap_external
   __bootstrap_check_complex
 
   echo -e "\n🎉 Environment bootstrap complete!"
@@ -180,12 +260,19 @@ __check_missing_deps() {
     to_check=("${APT_DEPENDENCIES[@]}")
     to_check+=("yq:yq")
   fi
-  to_check+=("${PYTHON_DEPENDENCIES[@]}" "${COMPLEX_DEPENDENCIES[@]}")
-
+  to_check+=(
+    "${PYTHON_DEPENDENCIES[@]}"
+    "${COMPLEX_DEPENDENCIES[@]}"
+    "${EXTERNAL_DEPENDENCIES[@]}"
+  )
   local missing_list=($(__get_missing_deps "${to_check[@]}"))
 
   if [ ${#missing_list[@]} -gt 0 ]; then
-    echo -e "\n\e[33m⚠️  Missing required dependencies detected in your environment.\e[0m"
+    echo -e "\n\e[33m⚠️  Missing required dependencies detected in your environment:\e[0m"
+    for dep in "${missing_list[@]}"; do
+      echo "  - $dep"
+    done
+
     read -p "Would you like to run 'bootstrap' to install them now? [Y/n] " -n 1 -r choice
     echo
 
