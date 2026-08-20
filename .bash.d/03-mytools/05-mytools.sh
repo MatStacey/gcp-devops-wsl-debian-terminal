@@ -18,7 +18,8 @@ __bashd_latest_mod() {
 }
 
 __rebuild_mytools_cache() {
-  local bashd_dir="$HOME/.bash.d"
+  local bashd_dir=\"$HOME/.bash.d\"
+  mkdir -p \"$bashd_dir/data/cache\" 2> /dev/null
   local cache_file="$bashd_dir/data/cache/.mt_cache"
   local tsv_index="$bashd_dir/data/cache/.mt_data.tsv"
   local time_file="${cache_file}.time"
@@ -311,9 +312,9 @@ mt-refresh-caches() {
   echo -e "${CB_YELLOW}🧹 Clearing background caches...${C_RESET}"
   rm -f "$HOME/.bash.d/config/.env.cache"
   rm -f "$HOME/.bash.d/data/cache/.mt_cache" "$HOME/.bash.d/data/cache/.mt_cache.time" "$HOME/.bash.d/data/cache/.mt_data.tsv"
-  rm -f "$HOME/.bash.d/data/cache/.update_check_cache" "$HOME/.bash.d/.update_pending"
+  rm -f "$HOME/.bash.d/data/cache/.update_check_cache" "$HOME/.bash.d/data/cache/.update_pending"
   rm -f "$HOME/.bash.d/data/cache/.zoxide_cache.sh"
-  rm -f "$HOME/.bash.d/data/cache/.profile_update_cache" "$HOME/.bash.d/.profile_update_pending"
+  rm -f "$HOME/.bash.d/data/cache/.profile_update_cache" "$HOME/.bash.d/data/cache/.profile_update_pending"
 
   echo -e "${CB_BLUE}🔄 Rebuilding configurations and tool indexes...${C_RESET}"
   if [ -f "$HOME/.bash.d/lib/python/config_manager.py" ]; then
@@ -381,17 +382,17 @@ mt-status() {
 
   # 4. Updates & Maintenance
   echo -e "\n${CB_YELLOW}▶ SYSTEM UPDATES${C_RESET}"
-  if [ -f "$HOME/.bash.d/.update_pending" ]; then
+  if [ -f "$HOME/.bash.d/data/cache/.update_pending" ]; then
     local sys_updates
-    sys_updates=$(tr -d '[:space:]' < "$HOME/.bash.d/.update_pending")
+    sys_updates=$(tr -d '[:space:]' < "$HOME/.bash.d/data/cache/.update_pending")
     echo -e "  ${CB_CYAN}OS Packages   ${C_RESET}: ${CB_RED}${sys_updates} available (Run sys-install)${C_RESET}"
   else
     echo -e "  ${CB_CYAN}OS Packages   ${C_RESET}: ${CB_GREEN}Up to date${C_RESET}"
   fi
 
-  if [ -f "$HOME/.bash.d/.profile_update_pending" ]; then
+  if [ -f "$HOME/.bash.d/data/cache/.profile_update_pending" ]; then
     local prof_update
-    prof_update=$(tr -d '[:space:]' < "$HOME/.bash.d/.profile_update_pending")
+    prof_update=$(tr -d '[:space:]' < "$HOME/.bash.d/data/cache/.profile_update_pending")
     echo -e "  ${CB_CYAN}Framework     ${C_RESET}: ${CB_RED}${prof_update} available (Run mt-get-update)${C_RESET}"
   else
     echo -e "  ${CB_CYAN}Framework     ${C_RESET}: ${CB_GREEN}Up to date${C_RESET}"

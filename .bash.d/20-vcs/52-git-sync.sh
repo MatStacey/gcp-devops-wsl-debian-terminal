@@ -67,6 +67,7 @@ Dockerfile
 .dockerignore
 .gitignore
 .gitleaks.toml
+data/cache/
 IGNOREEOF
   fi
 
