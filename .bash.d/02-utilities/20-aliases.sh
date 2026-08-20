@@ -135,6 +135,10 @@ alias yaml-fmt='yq -P'
 # Zoxide (Smart cd replacement)
 # ------------------------------------------
 if command -v zoxide > /dev/null 2>&1; then
-  eval "$(zoxide init bash)"
+  ZOXIDE_CACHE="$HOME/.bash.d/.zoxide_cache.sh"
+  if [ ! -f "$ZOXIDE_CACHE" ]; then
+    zoxide init bash > "$ZOXIDE_CACHE"
+  fi
+  source "$ZOXIDE_CACHE"
   alias cd='z'
 fi
