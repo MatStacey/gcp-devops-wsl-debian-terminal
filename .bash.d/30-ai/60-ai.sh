@@ -448,10 +448,12 @@ mt-ai-debug() {
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  local last_cmd=$(fc -ln -2 | head -n 1 | xargs)
+  local last_cmd
+  last_cmd=$(fc -ln -2 | head -n 1 | xargs)
 
   mt-log INFO "Re-running and debugging: $last_cmd..."
-  local err_out=$(eval "$last_cmd" 2>&1 > /dev/null)
+  local err_out
+  err_out=$(eval "$last_cmd" 2>&1 > /dev/null)
 
   if [ -z "$err_out" ]; then
     mt-log SUCCESS "Command executed successfully. No errors to debug!"

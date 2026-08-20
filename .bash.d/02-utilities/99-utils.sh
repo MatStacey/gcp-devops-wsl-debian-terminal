@@ -226,7 +226,8 @@ mt-log() {
   shift
   local msg="$*"
   local log_file="$HOME/.bash.d/.mt_log"
-  local timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+  local timestamp
+  timestamp=$(date +"%Y-%m-%d %H:%M:%S")
 
   echo "[$timestamp] [$level] $msg" >> "$log_file"
 

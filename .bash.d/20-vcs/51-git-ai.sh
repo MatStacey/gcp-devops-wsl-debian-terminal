@@ -258,7 +258,8 @@ MARKDOWN_EOF
 
   # Stage files to capture the true diff of what is about to be committed
   git -C "$repo_dir" add --all
-  local diff_content=$(git -C "$repo_dir" diff --staged -- ':!COMMANDS.md' ':!README.md' | head -c 8000)
+  local diff_content
+  diff_content=$(git -C "$repo_dir" diff --staged -- ':!COMMANDS.md' ':!README.md' | head -c 8000)
 
   if [ -z "$diff_content" ]; then return 0; fi
 
@@ -275,7 +276,8 @@ MARKDOWN_EOF
   fi
 
   # Clean potential markdown wrappers from the AI output
-  local clean_updates=$(echo "$response" | sed 's/```markdown//gi; s/```//g')
+  local clean_updates
+  clean_updates=$(echo "$response" | sed 's/```markdown//gi; s/```//g')
 
   if [ -n "$clean_updates" ] && [ -f "$repo_dir/README.md" ]; then
     python3 -c '
