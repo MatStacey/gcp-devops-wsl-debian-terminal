@@ -44,29 +44,34 @@ __git_sync_copy_files() {
 
   mkdir -p "$repo_dir/.bash.d"
 
-  # 1. Sync the core directory, aggressively dropping caches at the rsync level
-  rsync -a --delete --delete-excluded \
-    --exclude "config/config.yaml" \
-    --exclude "config/.env.cache" \
-    --exclude ".mt_cache*" \
-    --exclude ".update_check_cache" \
-    --exclude ".profile_update_cache" \
-    --exclude ".current_version" \
-    --exclude ".*_pending" \
-    --exclude ".mt_data.tsv" \
-    --exclude "__pycache__" \
-    --exclude ".ruff_cache" \
-    --exclude ".vscode" \
-    --exclude ".vsclog" \
-    --exclude ".github" \
-    --exclude ".devcontainer" \
-    --exclude "README.md" \
-    --exclude "install.sh" \
-    --exclude "Dockerfile" \
-    --exclude ".dockerignore" \
-    --exclude ".gitignore" \
-    --exclude ".gitleaks.toml" \
-    "$HOME/.bash.d/" "$repo_dir/.bash.d/"
+  local syncignore="$HOME/.bash.d/config/.syncignore"
+  if [ ! -f "$syncignore" ]; then
+    cat << 'IGNOREEOF' > "$syncignore"
+config/config.yaml
+config/.env.cache
+.mt_cache*
+.update_check_cache
+.profile_update_cache
+.current_version
+.*_pending
+.mt_data.tsv
+__pycache__
+.ruff_cache
+.vscode
+.vsclog
+.github
+.devcontainer
+README.md
+install.sh
+Dockerfile
+.dockerignore
+.gitignore
+.gitleaks.toml
+IGNOREEOF
+  fi
+
+  # 1. Sync the core directory, utilizing the dynamic ignore file
+  rsync -a --delete --delete-excluded --exclude-from="$syncignore" "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
   # 2. Explicitly sync the root ~/.bashrc file from the home directory
   if [ -f "$HOME/.bashrc" ]; then
@@ -220,6 +225,9 @@ mt-push-update() {
       echo "🧹 Running Google Style code formatting before profile sync..."
       shfmt -i 2 -ci -sr -w . > /dev/null 2>&1 || true
     fi
+
+    # Trigger automatic documentation updates
+    __git_sync_ai_docs "$repo_dir"
 
     git add --all
 
