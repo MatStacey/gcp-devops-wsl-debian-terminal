@@ -20,3 +20,30 @@ mt-top-files() {
   echo -e "${CB_BLUE}📊 Finding the top ${count} largest files in ${target_dir}...${C_RESET}"
   find "$target_dir" -type f -exec du -h {} + 2> /dev/null | sort -rh | head -n "$count"
 }
+
+#######################################
+# System: Centralized logging for MyTools
+# Arguments:
+#   $1 - Log level (INFO, SUCCESS, WARN, ERROR)
+#   $2 - Message
+#######################################
+mt-log() {
+  local level="$1"
+  local msg="$2"
+  case "$level" in
+    INFO) echo -e "${CB_BLUE}ℹ️ ${msg}${C_RESET}" ;;
+    SUCCESS) echo -e "${CB_GREEN}✅ ${msg}${C_RESET}" ;;
+    WARN) echo -e "${CB_YELLOW}⚠️ ${msg}${C_RESET}" ;;
+    ERROR) echo -e "${CB_RED}🚨 ${msg}${C_RESET}" >&2 ;;
+    *) echo "$msg" ;;
+  esac
+}
+
+#######################################
+# AI: Retrieve prompt string from prompts.yaml
+# Arguments:
+#   $1 - Prompt key
+#######################################
+__get_prompt() {
+  python3 "$HOME/.bash.d/lib/python/get_prompt.py" "$1"
+}
