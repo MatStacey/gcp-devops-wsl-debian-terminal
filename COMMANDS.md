@@ -69,6 +69,7 @@ This document is automatically generated on every sync and lists all available f
 | func | Configuration Management | `mt-setup-docker` | Config: Interactive Docker & Exports Setup |
 | func | Configuration Management | `mt-setup-git` | Config: Interactive Git Setup |
 | func | Configuration Management | `mt-setup-paths` | Config: Interactive Paths Setup |
+| func | Configuration Management | `mt-set-upstream-path` | Config: Set the upstream repository path for framework updates |
 | func | Configuration Management | `mt-setup-system` | Config: Interactive System Setup |
 | func | Configuration Management | `mt-toggle-ai` | Config: Toggle global AI prompt and integration true/false |
 | func | Configuration Management | `mt-toggle-auto-cleanup` | Config: Toggle export file background cleanup script [Usage: mt-toggle-auto-cleanup] |
