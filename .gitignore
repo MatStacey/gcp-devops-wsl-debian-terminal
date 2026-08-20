@@ -27,3 +27,4 @@ __pycache__/
 .devdata/cache/
 .dev
 data/cache/
+config/.current_version
