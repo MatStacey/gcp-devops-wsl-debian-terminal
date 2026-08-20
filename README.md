@@ -21,9 +21,11 @@ Before installing this terminal environment, ensure your local workstation meets
   "category": "chat",
   "language": null,
   "extension": null,
-  "title": "git-diff-summary",
+  "title": "readme-recent-updates-summary",
   "code": null,
-  "message": "* **Shell Script Refactoring**: Separated `local` variable declarations from command substitution assignments across utility (`99-utils.sh`), VCS (`51-git-ai.sh`), and AI (`60-ai.sh`) modules to adhere to ShellCheck best practices and prevent masked exit codes."
+  "message": "* **Modular Setup Wizard**: Reorganized `mt-setup` into an interactive `fzf`-driven menu with specialized setup functions for Paths, Git, System, Docker, and CI/CD settings.
+* **CI/CD Provider Management**: Introduced `mt-set-cicd` function to set and export default CI/CD pipeline providers dynamically.
+* **Repository Blueprinting Utility**: Added `mt-blueprint` command to scaffold new projects using standardized DevOps blueprints, supporting custom templating, dynamic project placeholder replacement, and automatic CI/CD pipeline injection."
 }
 
 ---

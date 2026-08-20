@@ -46,6 +46,7 @@ This document is automatically generated on every sync and lists all available f
 | func | Base64 Encoding & Decoding Utilities | `docker-sandbox` | Docker: Spin up a temporary, throwaway container sandbox |
 | func | Base64 Encoding & Decoding Utilities | `docker-shell` | Docker: Interactive fuzzy-finder to exec into a running container |
 | func | Base64 Encoding & Decoding Utilities | `docker-tail` | Docker: Concurrently tail logs from multiple selected containers |
+| func | Base64 Encoding & Decoding Utilities | `mt-blueprint` | Framework: Scaffold a new repository using standardized DevOps blueprints |
 | func | Base64 Encoding & Decoding Utilities | `mt-log` | System: Centralized logging with colored output |
 | func | Configuration Management | `mt-add-claude-key` | Config: Add Claude API key to config.yaml [Usage: mt-add-claude-key ["key"]] |
 | func | Configuration Management | `mt-add-gemini-key` | Config: Add Gemini API key to config.yaml [Usage: mt-add-gemini-key ["key"]] |
@@ -54,6 +55,7 @@ This document is automatically generated on every sync and lists all available f
 | func | Configuration Management | `mt-open-config` | Config: Open bash.d directory and config.yaml in IDE [Usage: mt-open-config [-ide vscode|intellij]] |
 | func | Configuration Management | `mt-select-theme` | Config: Interactive menu to select and apply a theme [Usage: mt-select-theme] |
 | func | Configuration Management | `mt-set-auto-cleanup-days` | Config: Modifies the threshold in days before exports are automatically deleted [Usage: mt-set-auto-cleanup-days 7] |
+| func | Configuration Management | `mt-set-cicd` | Config: Set default CI/CD provider [Usage: mt-set-cicd "github|bitbucket|gitlab|azure|jenkins"] |
 | func | Configuration Management | `mt-set-claude-version` | Config: Set Claude model version [Usage: smt-set-claude-version "claude-3-7-sonnet-latest"] |
 | func | Configuration Management | `mt-set-default-ai` | Config: Set default AI model [Usage: mt-set-default-ai "gemini|claude"] |
 | func | Configuration Management | `mt-set-default-ide` | Config: Set default IDE [Usage: mt-set-default-ide "vscode|intellij"] |
@@ -63,6 +65,11 @@ This document is automatically generated on every sync and lists all available f
 | func | Configuration Management | `mt-set-local-ai-url` | Config: Set Local AI base URL [Usage: mt-set-local-ai-url "http://localhost:11434/v1"] |
 | func | Configuration Management | `mt-set-theme` | Config: Set terminal color theme [Usage: mt-set-theme "theme_name"] |
 | func | Configuration Management | `mt-setup` | Config: Interactive First-Time Setup Wizard |
+| func | Configuration Management | `mt-setup` | Config: Master Setup Wizard Menu |
+| func | Configuration Management | `mt-setup-docker` | Config: Interactive Docker & Exports Setup |
+| func | Configuration Management | `mt-setup-git` | Config: Interactive Git Setup |
+| func | Configuration Management | `mt-setup-paths` | Config: Interactive Paths Setup |
+| func | Configuration Management | `mt-setup-system` | Config: Interactive System Setup |
 | func | Configuration Management | `mt-toggle-ai` | Config: Toggle global AI prompt and integration true/false |
 | func | Configuration Management | `mt-toggle-auto-cleanup` | Config: Toggle export file background cleanup script [Usage: mt-toggle-auto-cleanup] |
 | func | Configuration Management | `mt-toggle-gemini-extended` | Config: Toggle Gemini extended mode true/false |
@@ -109,6 +116,7 @@ This document is automatically generated on every sync and lists all available f
 | func | MyTools Documentation & Runner | `mt-refresh-caches` | System: Forcefully clear and rebuild all background caches (.env, mytools, updates) |
 | func | MyTools Documentation & Runner | `mt-run` | MyTools: Interactive fuzzy-finder to select and execute a command |
 | func | MyTools Documentation & Runner | `mt-search` | Framework: Search through available mytools commands |
+| func | MyTools Documentation & Runner | `mt-status` | System: Display a unified health check and status dashboard |
 | func | MyTools Documentation & Runner | `mytools` | MyTools: Primary runner and documentation index |
 | func | Path & URL Launchers (Config-Driven) | `cd-ai-workspace` | Config: Change directory to unified AI workspace |
 | func | Path & URL Launchers (Config-Driven) | `cd-mt-git-local` | Config: Change directory to sync repository root |
