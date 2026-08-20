@@ -87,10 +87,16 @@ def load_env():
         ai_cfg.get("default_provider", sys_cfg.get("default_ai", "gemini")),
         to_lower=True,
     )
-    export(
-        "AI_SYSTEM_PROMPT",
-        ai_cfg.get("system_prompt", gem_cfg.get("system_prompt", "")),
-    )
+    sys_prompt = ai_cfg.get("system_prompt", gem_cfg.get("system_prompt", ""))
+    sys_prompt_file = ai_cfg.get("system_prompt_file", "")
+    if sys_prompt_file:
+        try:
+            with open(os.path.expanduser(sys_prompt_file), "r", encoding="utf-8") as f:
+                sys_prompt = f.read().strip()
+        except Exception:
+            pass
+            
+    export("AI_SYSTEM_PROMPT", sys_prompt)
 
     export("GEMINI_API_KEY", gem_cfg.get("api_key", ""))
     export("GEMINI_VERSION", gem_cfg.get("version", "gemini-3.6-flash"))
@@ -118,6 +124,10 @@ def load_env():
     export(
         "EXPORT_BLOCKLIST",
         exp_cfg.get("blocklist", paths_cfg.get("export_blocklist", default_blocklist)),
+    )
+    export(
+        "EXPORT_IGNORE_DIRS", 
+        exp_cfg.get("ignore_dirs", ".git|.dev|.vscode|.idea|node_modules|__pycache__|.terraform|venv|.venv|.mt_cache*")
     )
 
     # Git
@@ -194,7 +204,7 @@ def update_yaml(cat_path, key, val):
     os.chmod(path, 0o600)
 
     # Force cache invalidation to prevent WSL mtime race conditions
-    cache_file = os.path.join(os.path.dirname(path), ".env.cache")
+    cache_file = os.path.expanduser("~/.bash.d/data/cache/.env.cache")
     if os.path.exists(cache_file):
         os.remove(cache_file)
 
