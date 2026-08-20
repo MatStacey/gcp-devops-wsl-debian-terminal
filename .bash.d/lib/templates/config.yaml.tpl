@@ -7,7 +7,7 @@ system:
 ai:
   enabled: true
   default_provider: gemini
-  system_prompt: 'You are a Senior Cloud Software and Devops Engineer. You write DRY, fully complete, production-ready code with no placeholders. Respond ONLY with a valid JSON object using this exact schema: { "category": "gcloud" | "script" | "project" | "chat", "language": "bash, python, terraform, etc (null if chat)", "extension": "sh, py, tf, etc (null if chat)", "title": "generate-a-kebab-case-title-if-not-provided", "code": "the fully complete working code string without markdown wrapping (null if chat)", "message": "Your brief explanation or answer" }'
+  system_prompt_file: ~/.bash.d/config/system_prompt.txt
   gemini:
     api_key: YOUR_GEMINI_API_KEY
     version: gemini-3.6-flash
@@ -26,7 +26,7 @@ exports:
   # Precise patterns, not bare substrings: the old (pass|key|env|rsa) blocked
   # legit files like environment.tf while missing GCP service-account JSON
   # keys, .tfvars, and .pem/.p12 certs entirely.
-  blocklist: (secret|token|credential|password|passwd|id_rsa|id_ed25519|\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)?$|(^|/)\.env(\..+)?$|lock\.hcl|__pycache__)
+  blocklist: (secret|token|credential|password|passwd|id_rsa|id_ed25519|\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)?$|(^|/)\.env(\..+)?$|lock\.hcl|__pycache__|\.mt_cache|\.mt_cache\.time|\.mt_data\.tsv|\.profile_update_cache|\.style\.yapf|\.update_check_cache|\.zoxide_cache\.sh|\.env\.cache)
 
 git:
   format_on_push: true
@@ -48,4 +48,22 @@ cicd:
   provider: github # github, bitbucket, gitlab, azure, jenkins
 
 docker:
-  restart_blocklist: "redis,postgres,local-db"
+  restart_blocklist:
+    - secret
+    - token
+    - credential
+    - pass
+    - key
+    - rsa
+    - env
+    - lock\.hcl
+    - __pycache__
+    - \.tfstate
+    - \.mt_cache
+    - \.mt_data\.tsv
+    - \.profile_update_cache
+    - \.style\.yapf
+    - \.update_check_cache
+    - \.zoxide_cache\.sh
+    - \.env\.cache
+    - \.dev

@@ -1,349 +1,94 @@
 # shellcheck shell=bash
-# ------------------------------------------
-# LLM Code Export Utilities
-# ------------------------------------------
 
-__vcs_core_export() {
-  local export_prefix="$1"
-  local allow_regex="$2"
-  local block_regex="$3"
-  local search_dir="${4:-.}"
-  local zip_mode="${5:-false}"
+__mt_do_export() {
+  local title="$1"
+  local default_ext="$2"
+  shift 2
 
-  local root_dir
-  root_dir=$(basename "$PWD")
+  local target_dir="."
+  local recursive=true
+  local inc_exts=""
+  local exc_exts=""
+  local zip_out=false
 
-  if [ "$search_dir" != "." ]; then
-    # Sanitize the sub-directory path to safely append it to the filename
-    local safe_sub
-    safe_sub=$(echo "$search_dir" | sed -e 's/^\.\///' -e 's/[^a-zA-Z0-9]/-/g' -e 's/--*/-/g' -e 's/^-//' -e 's/-$//')
-    [ -n "$safe_sub" ] && root_dir="${root_dir}-${safe_sub}"
-  fi
-
-  local datetime_str
-  datetime_str=$(date +"%Y-%m-%d_%H-%M-%S")
-  local target_dir="${AI_WORKSPACE_DIR}/context-exports/${root_dir}-exports"
-  mkdir -p "$target_dir"
-
-  local patch=0
-  local ext="txt"
-  [ "$zip_mode" = true ] && ext="zip"
-
-  while [[ -f "${target_dir}/${datetime_str}-${root_dir}-${export_prefix}-v1.0.${patch}.${ext}" ]]; do
-    patch=$((patch + 1))
-  done
-
-  local export_file="${target_dir}/${datetime_str}-${root_dir}-${export_prefix}-v1.0.${patch}.${ext}"
-  echo "📦 Compiling codebase into ${export_file}..."
-
-  local matched_files=()
-
-  # We use process substitution < <(find...) to ensure the array updates stick (avoids subshell isolation)
-  while IFS= read -r -d '' file; do
-    local clean_file="${file#./}"
-    local lower_file="${clean_file,,}"
-
-    # Global binary/state ignores
-    [[ "$lower_file" =~ \.(png|jpe?g|gif|ico|pdf|zip|tar|gz|mp4|mp3|wav|exe|dll|so|class|jar|bin|o|pyc|tfstate)$ ]] && continue
-
-    # Configurable blocklist
-    [[ -n "$block_regex" && "$lower_file" =~ $block_regex ]] && continue
-
-    # Specific command allowlist (e.g. only .tf files)
-    [[ -n "$allow_regex" && ! "$lower_file" =~ $allow_regex ]] && continue
-
-    matched_files+=("$file")
-  done < <(find "$search_dir" -type f -not -path "*/.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/.terraform/*" -print0)
-
-  if [ ${#matched_files[@]} -eq 0 ]; then
-    echo "⚠️ No matching files found to export."
-    return 0
-  fi
-
-  if [ "$zip_mode" = true ]; then
-    # Create the zip directly containing all matching files with their structure
-    zip -q "$export_file" "${matched_files[@]}"
-  else
-    : > "$export_file"
-    for file in "${matched_files[@]}"; do
-      echo -e "\n==> $file <==" >> "$export_file"
-      cat "$file" >> "$export_file"
-    done
-  fi
-
-  local file_size
-  file_size=$(du -h "$export_file" | cut -f1)
-  echo "✅ Export saved to $export_file ($file_size)"
-  __open_path_gui "$target_dir"
-}
-
-#######################################
-# LLM: Exports all text/code files [Usage: mt-export [-d subdir] [-z]]
-#######################################
-mt-export() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local search_dir="."
-  local zip_mode=false
-  local OPTIND opt
-  while getopts "d:z" opt; do
-    case ${opt} in
-      d) search_dir="$OPTARG" ;;
-      z) zip_mode=true ;;
-      ?)
-        echo "Usage: mt-export [-d subdirectory] [-z]" >&2
-        return 1
+  # Parse Arguments
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -d | --dir)
+        target_dir="$2"
+        shift
         ;;
-    esac
-  done
-  if [ "$search_dir" != "." ] && [ ! -d "$search_dir" ]; then
-    echo "🚨 Error: Subdirectory '$search_dir' not found." >&2
-    return 1
-  fi
-  __vcs_core_export "export" "" "${EXPORT_BLOCKLIST}" "$search_dir" "$zip_mode"
-}
-
-#######################################
-# LLM: Exports local TF codebase [Usage: mt-export-terraform [-d subdir] [-z]]
-#######################################
-mt-export-terraform() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local search_dir="."
-  local zip_mode=false
-  local OPTIND opt
-  while getopts "d:z" opt; do
-    case ${opt} in
-      d) search_dir="$OPTARG" ;;
-      z) zip_mode=true ;;
-      ?)
-        echo "Usage: mt-export-terraform [-d subdirectory] [-z]" >&2
-        return 1
+      -R | --no-recursive) recursive=false ;;
+      -i | --include)
+        inc_exts="$2"
+        shift
         ;;
-    esac
-  done
-  if [ "$search_dir" != "." ] && [ ! -d "$search_dir" ]; then
-    echo "🚨 Error: Subdirectory '$search_dir' not found." >&2
-    return 1
-  fi
-  __vcs_core_export "tf-export" "\.(tf|sh|ya?ml|json|md)$" "${EXPORT_BLOCKLIST}" "$search_dir" "$zip_mode"
-}
-
-#######################################
-# LLM: Exports local .sh files [Usage: mt-export-shell [-d subdir] [-z]]
-#######################################
-mt-export-shell() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local search_dir="."
-  local zip_mode=false
-  local OPTIND opt
-  while getopts "d:z" opt; do
-    case ${opt} in
-      d) search_dir="$OPTARG" ;;
-      z) zip_mode=true ;;
-      ?)
-        echo "Usage: mt-export-shell [-d subdirectory] [-z]" >&2
-        return 1
+      -x | --exclude)
+        exc_exts="$2"
+        shift
         ;;
-    esac
-  done
-  if [ "$search_dir" != "." ] && [ ! -d "$search_dir" ]; then
-    echo "🚨 Error: Subdirectory '$search_dir' not found." >&2
-    return 1
-  fi
-  __vcs_core_export "sh-export" "\.sh$" "${EXPORT_BLOCKLIST}" "$search_dir" "$zip_mode"
-}
-
-#######################################
-# LLM: Exports Python GCF codebase [Usage: mt-export-cloudrun [-d subdir] [-z]]
-#######################################
-mt-export-cloudrun() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local search_dir="."
-  local zip_mode=false
-  local OPTIND opt
-  while getopts "d:z" opt; do
-    case ${opt} in
-      d) search_dir="$OPTARG" ;;
-      z) zip_mode=true ;;
-      ?)
-        echo "Usage: mt-export-cloudrun [-d subdirectory] [-z]" >&2
-        return 1
-        ;;
-    esac
-  done
-  if [ "$search_dir" != "." ] && [ ! -d "$search_dir" ]; then
-    echo "🚨 Error: Subdirectory '$search_dir' not found." >&2
-    return 1
-  fi
-  __vcs_core_export "py-export" "\.(py|tf|sh|ya?ml|json|toml|md|properties|txt)$" "${EXPORT_BLOCKLIST}|(\.egg-info|test-reports|\.pyc$)" "$search_dir" "$zip_mode"
-}
-
-#######################################
-# LLM: Clean up export files
-# Arguments:
-#   cleanup-exports [-d <repo_name>] [-o <days_old>]
-#######################################
-mt-export-cleanup() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-
-  local target_repo=""
-  local days=""
-  local base_dir="${AI_WORKSPACE_DIR}/context-exports"
-
-  local OPTIND opt
-  while getopts "d:o:" opt; do
-    case ${opt} in
-      d) target_repo="$OPTARG" ;;
-      o) days="$OPTARG" ;;
-      ?)
-        echo "Usage: cleanup-exports [-d <repo_name>] [-o <days_old>]" >&2
-        return 1
-        ;;
-    esac
-  done
-
-  if [ ! -d "$base_dir" ]; then
-    echo "⚠️ Exports directory not found at $base_dir."
-    return 0
-  fi
-
-  local target_dir="$base_dir"
-  if [ -n "$target_repo" ]; then
-    target_dir="${base_dir}/${target_repo}-exports"
-    if [ ! -d "$target_dir" ]; then
-      echo "⚠️ No exports found for repository '$target_repo'."
-      return 0
-    fi
-  fi
-
-  if [ -n "$days" ]; then
-    if ! [[ "$days" =~ ^[0-9]+$ ]]; then
-      echo "🚨 Error: The '-o' flag requires a numeric value (days)."
-      return 1
-    fi
-    echo "🧹 Pruning files older than $days days in ${target_dir}..."
-    find "$target_dir" -type f -mtime +"$days" -delete
-    find "$base_dir" -type d -empty -delete 2> /dev/null || true
-    echo "✅ Old exports pruned."
-  else
-    echo "🧹 Deleting all exports in ${target_dir}..."
-    rm -rf "${target_dir:?}"
-    [ -z "$target_repo" ] && mkdir -p "$base_dir"
-    echo "✅ Export cleanup complete."
-  fi
-}
-
-__async_auto_cleanup() {
-  if [[ $- != *i* ]]; then return; fi
-  if [ "$AUTO_CLEANUP_EXPORTS" = "true" ]; then
-    local days="${AUTO_CLEANUP_DAYS:-7}"
-    local base_dir="${AI_WORKSPACE_DIR}/context-exports"
-    # Auto-prune quietly in background
-    (
-      find "$base_dir" -type f -mtime +"$days" -delete 2> /dev/null || true
-      find "$base_dir" -type d -empty -delete 2> /dev/null || true
-    ) &
-    disown
-  fi
-}
-__async_auto_cleanup
-
-#######################################
-# LLM: Copy a file or directory tree to clipboard with headers and extension filters
-#######################################
-mt-copy() {
-  local ext_list=""
-  local target=""
-  local OPTIND opt
-
-  while getopts "e:h" opt; do
-    case ${opt} in
-      e) ext_list="$OPTARG" ;;
-      h)
-        echo -e "${CB_BLUE}Usage:${C_RESET} mt-copy [-e <ext1,ext2>] <file_or_dir>"
+      -z | --zip) zip_out=true ;;
+      -h | --help)
+        mt-help "${FUNCNAME[1]}"
         return 0
         ;;
-      ?)
-        echo "Usage: mt-copy [-e <ext1,ext2>] <file_or_dir>" >&2
-        return 1
-        ;;
+      *) target_dir="$1" ;; # Handle positional fallback
     esac
+    shift
   done
-  shift $((OPTIND - 1))
-  target="${1:-.}"
 
-  if [ ! -e "$target" ]; then
-    echo -e "${CB_RED}🚨 Error: '$target' missing.${C_RESET}"
+  if [ ! -d "$target_dir" ]; then
+    echo -e "${CB_RED}🚨 Error: Directory '$target_dir' not found.${C_RESET}"
     return 1
   fi
 
-  local clip_cmd=""
-  if command -v clip.exe > /dev/null 2>&1; then
-    clip_cmd="clip.exe"
-  elif command -v pbcopy > /dev/null 2>&1; then
-    clip_cmd="pbcopy"
-  elif command -v xclip > /dev/null 2>&1; then
-    clip_cmd="xclip -selection clipboard"
+  # Build recursion arg
+  local maxdepth=""
+  [ "$recursive" = false ] && maxdepth="-maxdepth 1"
+
+  # Convert comma separated strings to regex (e.g. py,sh -> py|sh)
+  local ext_pattern="$default_ext"
+  [ -n "$inc_exts" ] && ext_pattern="${inc_exts//,/|}"
+  local exc_pattern=""
+  [ -n "$exc_exts" ] && exc_pattern="${exc_exts//,/|}"
+
+  local tmp_file="/tmp/mt_export_${RANDOM}.txt"
+  local file_list="/tmp/mt_export_files_${RANDOM}.txt"
+
+  # Find files, exclude global blocklist, include specified extensions
+  eval "find \"$target_dir\" $maxdepth -type f" 2> /dev/null |
+    egrep -vi "(${EXPORT_BLOCKLIST})" |
+    egrep -i "\.(${ext_pattern})$" > "$file_list"
+
+  # Optionally filter out excluded extensions
+  if [ -n "$exc_pattern" ]; then
+    egrep -vi "\.(${exc_pattern})$" "$file_list" > "${file_list}.filtered"
+    mv "${file_list}.filtered" "$file_list"
+  fi
+
+  echo "=== MT DevOps Export: $title ===" > "$tmp_file"
+  echo "Generated: $(date)" >> "$tmp_file"
+  echo "Directory: $(realpath "$target_dir")" >> "$tmp_file"
+  echo "-----------------------------------" >> "$tmp_file"
+
+  while IFS= read -r file; do
+    echo -e "\n==> $file <==" >> "$tmp_file"
+    cat "$file" >> "$tmp_file" 2> /dev/null || echo "[Unreadable File]" >> "$tmp_file"
+  done < "$file_list"
+
+  if [ "$zip_out" = true ]; then
+    local zip_name="export_$(date +%s).zip"
+    zip -qj "$zip_name" "$tmp_file"
+    echo "✅ Export saved to $zip_name"
   else
-    echo "🚨 No clipboard utility."
-    return 1
+    cat "$tmp_file" | clip
+    echo "✅ Export copied to clipboard!"
   fi
 
-  echo -e "${CB_BLUE}🔍 Scanning '$target'...${C_RESET}"
-  local temp_file
-  temp_file=$(mktemp)
-
-  local blocklist_regex
-  blocklist_regex=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("exports", {}).get("blocklist", ""))' 2> /dev/null)
-  [ -z "$blocklist_regex" ] && blocklist_regex="(secret|token|credential|pass|key|rsa|env|lock\.hcl|__pycache__)"
-
-  local filter_ext=".*"
-  if [ -n "$ext_list" ]; then
-    local ext_fmt
-    ext_fmt=$(echo "$ext_list" | sed 's/,/|/g; s/ //g')
-    filter_ext="\.(${ext_fmt})$"
-    echo -e "${C_GRAY}   (Filtering for: $ext_list)${C_RESET}"
-  fi
-
-  local prune_dirs=(-name .git -o -name node_modules -o -name .terraform -o -name __pycache__ -o -name .venv)
-
-  if [ -d "$target" ]; then
-    find "$target" -type d \( "${prune_dirs[@]}" \) -prune -o -type f -print |
-      grep -E -v "$blocklist_regex" | grep -Ei "$filter_ext" |
-      while IFS= read -r file; do
-        if file -b --mime-encoding "$file" | grep -qv "binary"; then
-          echo -e "\n==> $file <==" >> "$temp_file"
-          cat "$file" >> "$temp_file"
-        fi
-      done
-  elif [ -f "$target" ]; then
-    echo -e "==> $target <==" >> "$temp_file"
-    cat "$target" >> "$temp_file"
-  fi
-
-  local bytes
-  bytes=$(wc -c < "$temp_file")
-  if [ "$bytes" -eq 0 ]; then
-    echo -e "${CB_YELLOW}⚠️ Nothing copied. ${C_RESET}"
-  else
-    eval "$clip_cmd" < "$temp_file"
-    local lines
-    lines=$(wc -l < "$temp_file")
-    echo -e "${CB_GREEN}✅ Copied $lines lines to clipboard!${C_RESET}"
-  fi
-  rm -f "$temp_file"
+  rm -f "$tmp_file" "$file_list"
 }
+
+mt-export() { __mt_do_export "Generic Code Export" ".*" "$@"; }
+mt-export-shell() { __mt_do_export "Shell Scripts Export" "sh|bash|zsh" "$@"; }
+mt-export-terraform() { __mt_do_export "Terraform Code Export" "tf|tfvars|yaml|yml" "$@"; }
+mt-export-cloudrun() { __mt_do_export "Cloud Run Python Export" "py|txt|yaml|yml|Dockerfile|sh" "$@"; }

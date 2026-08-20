@@ -244,13 +244,39 @@ __git_sync_ai_docs() {
 
 This document is automatically generated on every sync and lists all available framework functions and aliases.
 
-| Type | Category | Command | Description |
-|---|---|---|---|
+---
+
+## 🔗 Aliases
+Shortcuts for common commands and CLI replacements.
 MARKDOWN_EOF
 
   # Use the cached TSV data to deterministically build the markdown table
-  if [ -f "$HOME/.bash.d/.mt_data.tsv" ]; then
-    awk -F'\t' '{ printf "| %s | %s | `%s` | %s |\n", $1, $2, $3, $4 }' "$HOME/.bash.d/.mt_data.tsv" | sort >> "$repo_dir/COMMANDS.md"
+  if [ -f "$HOME/.bash.d/data/cache/.mt_data.tsv" ]; then
+    # Generate Aliases section grouped by Category
+    awk -F'\t' '
+      $1 == "alias" {
+        if ($2 != prev_cat) {
+          if (prev_cat != "") print ""
+          print "### " $2
+          print "| Command | Description |"
+          print "|---|---|"
+          prev_cat = $2
+        }
+        printf "| `%s` | %s |\n", $3, $4       }     ' <(sort -t$'\t' -k2,2 -k3,3 "$HOME/.bash.d/data/cache/.mt_data.tsv") >> "$repo_dir/COMMANDS.md"
+
+    echo -e "\n---\n\n## 🛠️ Functions\nComplex bash functions, framework utilities, and automated workflows." >> "$repo_dir/COMMANDS.md"
+
+    # Generate Functions section grouped by Category
+    awk -F'\t' '
+      $1 == "func" {
+        if ($2 != prev_cat) {
+          if (prev_cat != "") print ""
+          print "### " $2
+          print "| Command | Description |"
+          print "|---|---|"
+          prev_cat = $2
+        }
+        printf "| `%s` | %s |\n", $3, $4       }     ' <(sort -t$'\t' -k2,2 -k3,3 "$HOME/.bash.d/data/cache/.mt_data.tsv") >> "$repo_dir/COMMANDS.md"
   fi
 
   local provider="${DEFAULT_AI:-gemini}"
@@ -265,7 +291,9 @@ MARKDOWN_EOF
   if [ -z "$diff_content" ]; then return 0; fi
 
   echo "🤖 Asking $provider to summarize changes for README.md..."
-  local base_prompt="Analyze this git diff and write a brief, professional bulleted summary of the updates for a README.md 'Recent Updates' section. Return ONLY the raw markdown bullet points.\n\nDiff:\n$diff_content"
+  local base_prompt=$(__get_prompt "git_readme_summary")
+
+  $diff_content
 
   local response=""
   if [ "$provider" = "gemini" ]; then
@@ -277,16 +305,19 @@ MARKDOWN_EOF
   fi
 
   # Clean potential markdown wrappers from the AI output
+  local raw_text
+  raw_text=$(echo "$response" | sed 's/```json//gi; s/```markdown//gi; s/```//g')
+
   local clean_updates
-  clean_updates=$(echo "$response" | sed 's/```markdown//gi; s/```//g')
+  # Safely parse JSON if present, otherwise fallback to the raw text
+  if echo "$raw_text" | jq -e . > /dev/null 2>&1; then
+    # Extract the message, fallback to code, and if all else fails, use the raw text
+    clean_updates=$(echo "$raw_text" | jq -r '.message // .code')
+  else
+    clean_updates="$raw_text"
+  fi
 
   if [ -n "$clean_updates" ] && [ -f "$repo_dir/README.md" ]; then
-    python3 -c '
-import sys, re
-with open(sys.argv[1], "r", encoding="utf-8") as f: c = f.read()
-updates = "## 🚀 Recent Updates & Enhancements\n\n" + sys.argv[2] + "\n\n---"
-c_new = re.sub(r"## 🚀 Recent Updates & Enhancements.*?---", updates, c, flags=re.DOTALL)
-with open(sys.argv[1], "w", encoding="utf-8") as f: f.write(c_new)
-' "$repo_dir/README.md" "$clean_updates"
+    python3 "$HOME/.bash.d/lib/python/update_readme_summary.py" "$repo_dir/README.md" "$clean_updates"
   fi
 }

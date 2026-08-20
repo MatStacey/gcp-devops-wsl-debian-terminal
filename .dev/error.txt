@@ -1,0 +1,798 @@
+[24 ms] Dev Containers 0.466.0 in VS Code 1.133.0 (a5b500951314efd502d07465bd138dfbd714a960).
+[24 ms] Start: Run: wsl -d Debian -e wslpath -u \\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework
+[126 ms] Start: Resolving Remote
+[131 ms] Start: Run: wsl -d Debian -e wslpath -u \\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework
+[203 ms] Start: Run: wsl -d Debian -e /bin/sh -c cd '/home/mst/vcs/personal/mt-devops-framework' && /bin/sh
+[208 ms] Start: Run in host: id -un
+[247 ms] mst
+[247 ms] 
+[247 ms] Start: Run in host:  (command -v getent >/dev/null 2>&1 && getent passwd 'mst' || grep -E '^mst|^[^:]*:[^:]*:mst:' /etc/passwd || true)
+[249 ms] Start: Run in host: echo ~
+[249 ms] /home/mst
+[249 ms] 
+[250 ms] Start: Run in host: test -f '/home/mst/.vscode-server/cli/servers/Stable-a5b500951314efd502d07465bd138dfbd714a960/server/node'
+[250 ms] 
+[250 ms] 
+[250 ms] Exit code 1
+[250 ms] Start: Run in host: test -f '/home/mst/.vscode/cli/servers/Stable-a5b500951314efd502d07465bd138dfbd714a960/server/node'
+[251 ms] 
+[251 ms] 
+[251 ms] Exit code 1
+[251 ms] Start: Run in host: test -f '/home/mst/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/node'
+[251 ms] 
+[251 ms] 
+[252 ms] Start: Run in host: test -f '/home/mst/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/node_modules/node-pty/package.json'
+[252 ms] 
+[252 ms] 
+[252 ms] Start: Run in host: test -f '/home/mst/.vscode-remote-containers/dist/vscode-remote-containers-server-0.466.0.js'
+[253 ms] 
+[253 ms] 
+[254 ms] userEnvProbe: loginInteractiveShell (default)
+[255 ms] userEnvProbe: not found in cache
+[255 ms] userEnvProbe shell: /bin/bash
+[1012 ms] userEnvProbe PATHs:
+Probe:     '/home/mst/.local/bin:/home/mst/.nvm/versions/node/v26.5.0/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/usr/lib/wsl/lib:/mnt/c/Python314/Scripts/:/mnt/c/Python314/:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/java8path:/mnt/c/Program Files (x86)/Common Files/Oracle/Java/javapath:/mnt/c/WINDOWS/system32:/mnt/c/WINDOWS:/mnt/c/WINDOWS/System32/Wbem:/mnt/c/WINDOWS/System32/WindowsPowerShell/v1.0/:/mnt/c/WINDOWS/System32/OpenSSH/:/mnt/c/Program Files/NVIDIA Corporation/NVIDIA App/NvDLISR:/mnt/c/Program Files (x86)/NVIDIA Corporation/PhysX/Common:/mnt/c/Program Files/dotnet/:/mnt/c/Program Files/Git/cmd:/mnt/c/ProgramData/chocolatey/bin:/mnt/c/Program Files/Docker/Docker/resources/bin:/mnt/c/Program Files/Go/bin:/mnt/c/ProgramData/chocolatey/lib/maven/apache-maven-3.9.16/bin:/mnt/c/ProgramData/chocolatey/lib/mpvio.install/tools:/mnt/c/Program Files/PowerShell/7/:/mnt/c/Users/matst/AppData/Local/Programs/Python/Python313/Scripts/:/mnt/c/Users/matst/AppData/Local/Programs/Python/Python313/:/mnt/c/Users/matst/AppData/Local/Programs/Python/Launcher/:/mnt/c/Users/matst/AppData/Local/Microsoft/WindowsApps:/mnt/c/Users/matst/AppData/Local/Programs/Microsoft VS Code/bin:/mnt/c/Users/matst/.dotnet/tools:/mnt/c/bin/terraform:/mnt/c/Users/matst/go/bin:/mnt/c/Users/matst/AppData/Local/Python/bin:/mnt/c/Users/matst/AppData/Local/PowerToys/DSCModules/:/mnt/c/Users/matst/AppData/Roaming/Code/User/globalStorage/ms-vscode-remote.remote-containers/cli-bin:/home/mst/.local/bin:/home/mst/.local/bin'
+Container: None
+[1013 ms] Setting up container for folder or workspace: /home/mst/vcs/personal/mt-devops-framework
+[1042 ms] Start: Check Docker is running
+[1042 ms] Start: Run in Host: docker version
+[1058 ms] Client: Docker Engine - Community
+ Version:           29.7.2
+ API version:       1.55
+ Go version:        go1.26.5
+ Git commit:        a7dcaa6
+ Built:             Wed Aug  5 18:29:26 2026
+ OS/Arch:           linux/amd64
+ Context:           default
+
+[1058 ms] Server: Docker Engine - Community
+ Engine:
+  Version:          29.7.2
+  API version:      1.55 (minimum version 1.40)
+  Go version:       go1.26.5
+  Git commit:       6a43e3d
+  Built:            Wed Aug  5 18:29:26 2026
+  OS/Arch:          linux/amd64
+  Experimental:     false
+ containerd:
+  Version:          v2.3.3
+  GitCommit:        aad11006b869517fcd3009450b6f82da282e1a9b
+ runc:
+  Version:          1.4.3
+  GitCommit:        v1.4.3-0-gbb14dabe
+ docker-init:
+  Version:          0.19.0
+  GitCommit:        de40ad0
+[1060 ms] Start: Run in Host: docker volume ls -q
+[1071 ms] Start: Run in Host: docker inspect --type container 08829524d131b6e657a028c643314a3095c3d191205057409bea87c7f4616808
+[1083 ms] Start: Run in Host: docker ps -q -a --filter label=vsch.local.folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework --filter label=vsch.quality=stable
+[1093 ms] Start: Run in Host: docker ps -q -a --filter label=devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework --filter label=devcontainer.config_file=/home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json
+[1105 ms] Start: Run in Host: docker ps -q -a --filter label=devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework
+[1115 ms] Start: Run in Host: docker ps -q -a --filter label=devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework
+[1125 ms] Running Dev Containers CLI:   up --container-session-data-folder /tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 --workspace-folder /home/mst/vcs/personal/mt-devops-framework --workspace-mount-consistency cached --gpu-availability detect --id-label devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework --id-label devcontainer.config_file=/home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --log-level debug --log-format json --config /home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --default-user-env-probe loginInteractiveShell --build-no-cache --mount type=volume,source=vscode,target=/vscode,external=true --mount type=bind,source=/run/user/1000/wayland-0,target=/tmp/vscode-wayland-1d0d0735-f57d-4564-9bb2-c1623ab25773.sock --skip-post-create --update-remote-user-uid-default on --mount-workspace-git-root --include-configuration --include-merged-configuration
+[1125 ms] Start: Checking for Dev Containers CLI
+[1129 ms] Start: Run in Host: /home/mst/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/node /home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js up --container-session-data-folder /tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 --workspace-folder /home/mst/vcs/personal/mt-devops-framework --workspace-mount-consistency cached --gpu-availability detect --id-label devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework --id-label devcontainer.config_file=/home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --log-level debug --log-format json --config /home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --default-user-env-probe loginInteractiveShell --build-no-cache --mount type=volume,source=vscode,target=/vscode,external=true --mount type=bind,source=/run/user/1000/wayland-0,target=/tmp/vscode-wayland-1d0d0735-f57d-4564-9bb2-c1623ab25773.sock --skip-post-create --update-remote-user-uid-default on --mount-workspace-git-root --include-configuration --include-merged-configuration
+[1199 ms] @devcontainers/cli 0.88.0. Node.js v24.18.0. linux 6.6.114.1-microsoft-standard-WSL2 x64.
+[1199 ms] Start: Run: docker buildx version
+[1338 ms] github.com/docker/buildx v0.36.1 1d8dde89b8aba914e05e45366770736fea1fd690
+[1338 ms] 
+[1339 ms] Start: Run: docker -v
+[1348 ms] Start: Run: docker version --format {{.Server.Version}}
+[1361 ms] 29.7.2
+[1361 ms] 
+[1361 ms] Start: Resolving Remote
+[1363 ms] Start: Run: git rev-parse --show-cdup
+[1382 ms] (node:1395000) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+[1382 ms] (Use `node --trace-deprecation ...` to show where the warning was created)
+[1520 ms] Start: Run: docker ps -q -a --filter label=devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework --filter label=devcontainer.config_file=/home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json
+[1534 ms] Start: Run: docker inspect --type image debian:bookworm-slim
+[3661 ms] Resolving Feature dependencies for 'ghcr.io/devcontainers/features/docker-outside-of-docker:1'...
+[3661 ms] * Processing feature: ghcr.io/devcontainers/features/docker-outside-of-docker:1
+[4147 ms] * Processing feature: ghcr.io/devcontainers/features/common-utils
+[4356 ms] Resolving Feature dependencies for 'ghcr.io/devcontainers/features/github-cli:1'...
+[4356 ms] * Processing feature: ghcr.io/devcontainers/features/github-cli:1
+[4528 ms] * Processing feature: ghcr.io/devcontainers/features/common-utils
+[4703 ms] * Processing feature: ghcr.io/devcontainers/features/git
+[4895 ms] Resolving Feature dependencies for 'ghcr.io/devcontainers/features/node:1'...
+[4895 ms] * Processing feature: ghcr.io/devcontainers/features/node:1
+[5071 ms] * Processing feature: ghcr.io/devcontainers/features/common-utils
+[5247 ms] Soft-dependency 'ghcr.io/devcontainers/features/common-utils' is not required.  Removing from installation order...
+[5247 ms] Soft-dependency 'ghcr.io/devcontainers/features/git' is not required.  Removing from installation order...
+[5247 ms] Soft-dependency 'ghcr.io/devcontainers/features/common-utils' is not required.  Removing from installation order...
+[5247 ms] Soft-dependency 'ghcr.io/devcontainers/features/common-utils' is not required.  Removing from installation order...
+[5248 ms] * Fetching feature: docker-outside-of-docker_0_oci
+[5606 ms] Files to omit: ''
+[5611 ms] * Fetched feature: docker-outside-of-docker_0_oci version 1.10.0
+[5611 ms] * Fetching feature: github-cli_1_oci
+[5919 ms] Files to omit: ''
+[5922 ms] * Fetched feature: github-cli_1_oci version 1.1.0
+[5922 ms] * Fetching feature: node_2_oci
+[6462 ms] Files to omit: ''
+[6464 ms] * Fetched feature: node_2_oci version 1.7.1
+[6468 ms] Start: Run: docker buildx build --load --build-arg BUILDKIT_INLINE_CACHE=1 -f /tmp/devcontainercli-mst/container-features/0.88.0-1787003876096/Dockerfile-with-features -t vsc-mt-devops-framework-9a33cc618a5d90321a740eb777e8272c16754a8be5d92c7f40f9172e79daec2b --target dev_containers_target_stage --no-cache --pull --build-context dev_containers_feature_content_source=/tmp/devcontainercli-mst/container-features/0.88.0-1787003876096 --build-arg _DEV_CONTAINERS_BASE_IMAGE=dev_container_auto_added_stage_label --build-arg _DEV_CONTAINERS_IMAGE_USER=devops --build-arg _DEV_CONTAINERS_FEATURE_CONTENT_SOURCE=dev_container_feature_content_temp /home/mst/vcs/personal/mt-devops-framework
+[+] Building 123.1s (24/24) FINISHED                             docker:default
+ => [internal] load build definition from Dockerfile-with-features         0.0s
+ => => transferring dockerfile: 7.66kB                                     0.0s
+ => [internal] load metadata for docker.io/library/debian:bookworm-slim    0.7s
+ => [context dev_containers_feature_content_source] load .dockerignore     0.0s
+ => => transferring dev_containers_feature_content_source: 2B              0.0s
+ => [internal] load .dockerignore                                          0.0s
+ => => transferring context: 142B                                          0.0s
+ => [context dev_containers_feature_content_source] load from client       0.1s
+ => => transferring dev_containers_feature_content_source: 19.28kB         0.0s
+ => CACHED [dev_container_auto_added_stage_label 1/6] FROM docker.io/libr  0.0s
+ => => resolve docker.io/library/debian:bookworm-slim@sha256:abd67ffcfa54  0.0s
+ => [context dev_containers_feature_content_source] load from client       0.1s
+ => => transferring dev_containers_feature_content_source: 103B            0.0s
+ => [context dev_containers_feature_content_source] load from client       0.1s
+ => => transferring dev_containers_feature_content_source: 25.25kB         0.0s
+ => [context dev_containers_feature_content_source] load from client       0.1s
+ => => transferring dev_containers_feature_content_source: 39.80kB         0.0s   
+ => [internal] load build context                                          0.0s   
+ => => transferring context: 2.95kB                                        0.0s 
+ => [dev_container_auto_added_stage_label 2/6] RUN apt-get update && apt  31.8s   
+ => [dev_container_auto_added_stage_label 3/6] WORKDIR /home/devops        0.2s 
+ => [dev_container_auto_added_stage_label 4/6] COPY .bashrc install.sh /t  0.1s   
+ => [dev_container_auto_added_stage_label 5/6] COPY .bash.d/ /tmp/mt-devo  0.1s
+ => [dev_container_auto_added_stage_label 6/6] RUN source /tmp/mt-devops  23.6s
+ => [dev_containers_feature_content_normalize 1/2] COPY --from=dev_contai  0.2s
+ => [dev_containers_target_stage 1/6] RUN mkdir -p /tmp/dev-container-fea  0.4s
+ => [dev_containers_feature_content_normalize 2/2] RUN chmod -R 0755 /tmp  0.3s
+ => [dev_containers_target_stage 2/6] COPY --from=dev_containers_feature_  0.1s
+ => [dev_containers_target_stage 3/6] RUN echo "_CONTAINER_USER_HOME=$( (  0.4s
+ => [dev_containers_target_stage 4/6] RUN --mount=type=bind,from=dev_con  10.7s
+ => [dev_containers_target_stage 5/6] RUN --mount=type=bind,from=dev_cont  1.8s
+ => [dev_containers_target_stage 6/6] RUN --mount=type=bind,from=dev_con  17.8s
+ => exporting to image                                                    35.1s
+ => => exporting layers                                                   22.4s
+ => => preparing layers for inline cache                                   0.1s
+ => => exporting manifest sha256:167dcf36c6d5af3d1c3095b58c093725114f5e7b  0.0s
+ => => exporting config sha256:76096ddf1d4ae208ea0abca43190638b11faea3cac  0.0s
+ => => exporting attestation manifest sha256:e71968f5e27e672341ced721ce9a  0.0s
+ => => exporting manifest list sha256:865036c77b3f5ad901e0b3e4871b9198bea  0.0s
+ => => naming to docker.io/library/vsc-mt-devops-framework-9a33cc618a5d90  0.0s
+ => => unpacking to docker.io/library/vsc-mt-devops-framework-9a33cc618a  12.5s
+[129696 ms] Start: Run: docker inspect --type image vsc-mt-devops-framework-9a33cc618a5d90321a740eb777e8272c16754a8be5d92c7f40f9172e79daec2b
+[129728 ms] Start: Run: docker build -f /tmp/devcontainercli-mst/updateUID.Dockerfile-0.88.0 -t vsc-mt-devops-framework-9a33cc618a5d90321a740eb777e8272c16754a8be5d92c7f40f9172e79daec2b-uid --platform linux/amd64 --build-arg BASE_IMAGE=vsc-mt-devops-framework-9a33cc618a5d90321a740eb777e8272c16754a8be5d92c7f40f9172e79daec2b --build-arg REMOTE_USER=devops --build-arg NEW_UID=1000 --build-arg NEW_GID=1000 --build-arg IMAGE_USER=devops /tmp/devcontainercli-mst/empty-folder
+[+] Building 2.6s (6/6) FINISHED                                 docker:default
+ => [internal] load build definition from updateUID.Dockerfile-0.88.0      0.0s
+ => => transferring dockerfile: 1.36kB                                     0.0s
+ => WARN: InvalidDefaultArgInFrom: Default value for ARG $BASE_IMAGE resu  0.0s
+ => [internal] load metadata for docker.io/library/vsc-mt-devops-framewor  0.0s
+ => [internal] load .dockerignore                                          0.0s
+ => => transferring context: 2B                                            0.0s
+ => [1/2] FROM docker.io/library/vsc-mt-devops-framework-9a33cc618a5d9032  0.1s
+ => => resolve docker.io/library/vsc-mt-devops-framework-9a33cc618a5d9032  0.0s
+ => [2/2] RUN eval $(sed -n "s/devops:[^:]*:\([^:]*\):\([^:]*\):[^:]*:\([  2.2s
+ => exporting to image                                                     0.2s 
+ => => exporting layers                                                    0.1s
+ => => exporting manifest sha256:cb45866bb9dfcddfbbcc717e94e68a881654c5be  0.0s
+ => => exporting config sha256:c353a8225c8a4154b198563a896e7ad04ed622e156  0.0s
+ => => exporting attestation manifest sha256:235f6fea0e69da317a0bcb5b991b  0.0s
+ => => exporting manifest list sha256:92fcbd1d4f70245473cecf1d83a8b850a40  0.0s
+ => => naming to docker.io/library/vsc-mt-devops-framework-9a33cc618a5d90  0.0s
+ => => unpacking to docker.io/library/vsc-mt-devops-framework-9a33cc618a5  0.0s
+
+ 1 warning found (use docker --debug to expand):
+ - InvalidDefaultArgInFrom: Default value for ARG $BASE_IMAGE results in empty or invalid base image name (line 2)
+[132560 ms] Start: Run: docker events --format {{json .}} --filter event=start
+[132561 ms] Start: Starting container
+[132561 ms] Start: Run: docker run --sig-proxy=false -a STDOUT -a STDERR --mount type=bind,source=/home/mst/vcs/personal/mt-devops-framework,target=/workspaces/mt-devops-framework --mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker-host.sock --mount type=volume,src=vscode,dst=/vscode --mount type=bind,src=/run/user/1000/wayland-0,dst=/tmp/vscode-wayland-1d0d0735-f57d-4564-9bb2-c1623ab25773.sock -l devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework -l devcontainer.config_file=/home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --security-opt label=disable --entrypoint /bin/sh vsc-mt-devops-framework-9a33cc618a5d90321a740eb777e8272c16754a8be5d92c7f40f9172e79daec2b-uid -c echo Container started
+Container started
+[132785 ms] Start: Run: docker ps -q -a --filter label=devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework --filter label=devcontainer.config_file=/home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json
+[132805 ms] Start: Run: docker inspect --type container 9395bd3726d7
+[132818 ms] Start: Inspecting container
+[132818 ms] Start: Run: docker inspect --type container 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b
+[132830 ms] Start: Run in container: /bin/sh
+[132831 ms] Start: Run in container: uname -m
+[132863 ms] x86_64
+[132863 ms] 
+[132863 ms] Start: Run in container: (cat /etc/os-release || cat /usr/lib/os-release) 2>/dev/null
+[132864 ms] PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+VERSION_ID="12"
+VERSION="12 (bookworm)"
+VERSION_CODENAME=bookworm
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+[132864 ms] 
+[132864 ms] Start: Run in container:  (command -v getent >/dev/null 2>&1 && getent passwd 'devops' || grep -E '^devops|^[^:]*:[^:]*:devops:' /etc/passwd || true)
+[132865 ms] Start: Run in container: test -f '/var/devcontainer/.patchEtcEnvironmentMarker'
+[132866 ms] 
+[132866 ms] 
+[132866 ms] Exit code 1
+[132866 ms] Start: Run in container: /bin/sh
+[132867 ms] Start: Run in container: test ! -f '/var/devcontainer/.patchEtcEnvironmentMarker' && set -o noclobber && mkdir -p '/var/devcontainer' && { > '/var/devcontainer/.patchEtcEnvironmentMarker' ; } 2> /dev/null
+[132899 ms] 
+[132899 ms] 
+[132899 ms] Start: Run in container: cat >> /etc/environment <<'etcEnvironmentEOF'
+[132900 ms] 
+[132900 ms] 
+[132900 ms] Start: Run in container: test -f '/var/devcontainer/.patchEtcProfileMarker'
+[132901 ms] 
+[132901 ms] 
+[132901 ms] Exit code 1
+[132901 ms] Start: Run in container: test ! -f '/var/devcontainer/.patchEtcProfileMarker' && set -o noclobber && mkdir -p '/var/devcontainer' && { > '/var/devcontainer/.patchEtcProfileMarker' ; } 2> /dev/null
+[132902 ms] 
+[132902 ms] 
+[132902 ms] Start: Run in container: sed -i -E 's/((^|\s)PATH=)([^\$]*)$/\1${PATH:-\3}/g' /etc/profile || true
+[132904 ms] 
+[132904 ms] 
+[132909 ms] Start: Run in Host: docker inspect --type container 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b
+[132920 ms] Start: Run in Host: docker exec -i -u root 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b /bin/sh -c echo "New container started. Keep-alive process started." ; export VSCODE_REMOTE_CONTAINERS_SESSION=56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 ; /bin/sh
+[132921 ms] Start: Inspecting container
+[132921 ms] Start: Run in Host: docker inspect --type container 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b
+[132941 ms] Start: Run in Host: docker exec -i -u devops -e VSCODE_REMOTE_CONTAINERS_SESSION=56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b /bin/sh
+[132942 ms] Start: Run in container: uname -m
+[132954 ms] New container started. Keep-alive process started.
+[132974 ms] x86_64
+[132974 ms] 
+[132974 ms] Start: Run in container: (cat /etc/os-release || cat /usr/lib/os-release) 2>/dev/null
+[132975 ms] PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+VERSION_ID="12"
+VERSION="12 (bookworm)"
+VERSION_CODENAME=bookworm
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+[132975 ms] 
+[132976 ms] Start: Run in container:  (command -v getent >/dev/null 2>&1 && getent passwd 'devops' || grep -E '^devops|^[^:]*:[^:]*:devops:' /etc/passwd || true)
+[132978 ms] safe.directory: Looking up root folder for workspace folder '/workspaces/mt-devops-framework'.
+[132978 ms] Start: Run in container: command -v git >/dev/null 2>&1 && ROOT_FOLDER="$(git -C '/workspaces/mt-devops-framework' rev-parse --show-toplevel)" && test "$(stat -c %u "$ROOT_FOLDER")" != "$(id -u)" && echo -n "$ROOT_FOLDER"
+[132981 ms] 
+[132981 ms] 
+[132981 ms] Exit code 1
+[132982 ms] safe.directory: Checking host ownership of root folder at mount point '/workspaces/mt-devops-framework' skipped.
+[132982 ms] Start: Updating configuration state
+[133000 ms] Start: Setup shutdown monitor
+[133001 ms] Forking shutdown monitor: c:\Users\matst\.vscode\extensions\ms-vscode-remote.remote-containers-0.466.0\dist\shutdown\shutdownMonitorProcess \\.\pipe\vscode-rc-a2f73459-f6b3-4cdf-9dd1-265226153418-sock singleContainer Debug c:\Users\matst\AppData\Roaming\Code\logs\20260817T215136\window5\exthost\ms-vscode-remote.remote-containers 1787003872437
+[133015 ms] Start: Run in container: test -d '/home/devops/.vscode-server'
+[133016 ms] 
+[133016 ms] 
+[133017 ms] Exit code 1
+[133017 ms] Start: Run in container: test -d '/home/devops/.vscode-remote'
+[133018 ms] 
+[133018 ms] 
+[133018 ms] Exit code 1
+[133018 ms] Start: Run in container: test ! -f '/home/devops/.vscode-server/data/Machine/.writeMachineSettingsMarker' && set -o noclobber && mkdir -p '/home/devops/.vscode-server/data/Machine' && { > '/home/devops/.vscode-server/data/Machine/.writeMachineSettingsMarker' ; } 2> /dev/null
+[133021 ms] 
+[133021 ms] 
+[133021 ms] Start: Run in container: test -f '/home/devops/.vscode-server/data/Machine/settings.json'
+[133022 ms] 
+[133022 ms] 
+[133022 ms] Exit code 1
+[133023 ms] Start: Run in container: which apt dpkg snap dnf yum rpm apk docker git gh kubectl podman curl wget ssh scp rsync gpg ps lsof netstat top tree find grep zip unzip tar gzip bzip2 xz || true
+[133025 ms] Start: Run in container: mkdir -p '/home/devops/.vscode-server/data/Machine' && cat >'/home/devops/.vscode-server/data/Machine/settings.json' <<'settingsJSON'
+[133027 ms] 
+[133027 ms] 
+[133028 ms] Start: Run in container: test ! -f '/home/devops/.vscode-server/data/Machine/.writeMachineMCPConfigMarker' && set -o noclobber && mkdir -p '/home/devops/.vscode-server/data/Machine' && { > '/home/devops/.vscode-server/data/Machine/.writeMachineMCPConfigMarker' ; } 2> /dev/null
+[133029 ms] 
+[133030 ms] 
+[133030 ms] Start: Run in container: test -f '/home/devops/.vscode-server/data/User/mcp.json'
+[133031 ms] 
+[133031 ms] 
+[133031 ms] Exit code 1
+[133031 ms] Start: Run in container: test -d '/home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960'
+[133033 ms] 
+[133033 ms] 
+[133033 ms] Exit code 1
+[133033 ms] Start: Run in container: test -d '/vscode/vscode-server/bin/linux-x64/a5b500951314efd502d07465bd138dfbd714a960'
+[133034 ms] 
+[133034 ms] 
+[133034 ms] Start: Run in container: mkdir -p '/home/devops/.vscode-server/bin' && ln -snf '/vscode/vscode-server/bin/linux-x64/a5b500951314efd502d07465bd138dfbd714a960' '/home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960'
+[133036 ms] 
+[133037 ms] 
+[133037 ms] Start: Run in Host: docker exec -i -u root 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b /bin/sh
+[133037 ms] Start: Run in container: test -x '/home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/bin/helpers/check-requirements.sh'
+[133038 ms] Start: Run in container: touch '/vscode/vscode-server/bin/linux-x64/a5b500951314efd502d07465bd138dfbd714a960'
+[133039 ms] 
+[133039 ms] 
+[133039 ms] Start: Run in container: '/home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/bin/helpers/check-requirements.sh'
+[133060 ms] 
+[133060 ms] 
+[133060 ms] Start: Launching Dev Containers helper.
+[133061 ms] ssh-agent: SSH_AUTH_SOCK not set on wsl host.
+[133061 ms] ssh-agent: SSH_AUTH_SOCK not set on local host.
+[133061 ms] Start: Run in container: test -e /tmp/.X11-unix/X0
+[133062 ms] 
+[133062 ms] 
+[133062 ms] Exit code 1
+[133062 ms] Start: Run in container: mkdir -p '/tmp/.X11-unix'
+[133064 ms] 
+[133064 ms] 
+[133064 ms] X11 forwarding: DISPLAY in container (:0) forwarded to wsl host (:0).
+[133065 ms] Start: Run in container: gpgconf --list-dirs
+[133066 ms] sysconfdir:/etc/gnupg
+bindir:/usr/bin
+libexecdir:/usr/lib/gnupg
+libdir:/usr/lib/x86_64-linux-gnu/gnupg
+datadir:/usr/share/gnupg
+localedir:/usr/share/locale
+socketdir:/home/devops/.gnupg
+dirmngr-socket:/home/devops/.gnupg/S.dirmngr
+agent-ssh-socket:/home/devops/.gnupg/S.gpg-agent.ssh
+agent-extra-socket:/home/devops/.gnupg/S.gpg-agent.extra
+agent-browser-socket:/home/devops/.gnupg/S.gpg-agent.browser
+agent-socket:/home/devops/.gnupg/S.gpg-agent
+homedir:/home/devops/.gnupg
+[133066 ms] 
+[133066 ms] Start: Run in container: ls '/home/devops/.gnupg/private-keys-v1.d' 2>/dev/null
+[133068 ms] 
+[133068 ms] 
+[133068 ms] Exit code 2
+[133068 ms] Start: Run in Host: gpgconf --list-dirs
+[133071 ms] sysconfdir:/etc/gnupg
+bindir:/usr/bin
+libexecdir:/usr/lib/gnupg
+libdir:/usr/lib/x86_64-linux-gnu/gnupg
+datadir:/usr/share/gnupg
+localedir:/usr/share/locale
+socketdir:/run/user/1000/gnupg
+dirmngr-socket:/run/user/1000/gnupg/S.dirmngr
+keyboxd-socket:/run/user/1000/gnupg/S.keyboxd
+agent-ssh-socket:/run/user/1000/gnupg/S.gpg-agent.ssh
+agent-extra-socket:/run/user/1000/gnupg/S.gpg-agent.extra
+agent-browser-socket:/run/user/1000/gnupg/S.gpg-agent.browser
+agent-socket:/run/user/1000/gnupg/S.gpg-agent
+homedir:/home/mst/.gnupg
+[133071 ms] 
+[133073 ms] Start: Run in container: test -f '/home/devops/.gnupg/pubring.kbx'
+[133074 ms] 
+[133074 ms] 
+[133074 ms] Exit code 1
+[133074 ms] Start: Run in container: test -f '/home/devops/.gnupg/pubring.gpg'
+[133075 ms] 
+[133076 ms] 
+[133076 ms] Exit code 1
+[133076 ms] Start: Run in container: test -f '/home/devops/.gnupg/trustdb.gpg'
+[133077 ms] 
+[133077 ms] 
+[133077 ms] Exit code 1
+[133077 ms] Start: Run in container: mkdir -p -m 700 '/home/devops/.gnupg'
+[133077 ms] gpg-agent: Socket in container (/home/devops/.gnupg/S.gpg-agent) forwarded to wsl host (/run/user/1000/gnupg/S.gpg-agent.extra).
+[133079 ms] 
+[133079 ms] 
+[133079 ms] Start: Run in container: (command -v 'docker' || command -v 'oras' || command -v 'skopeo') >/dev/null 2>&1
+[133081 ms] 
+[133081 ms] 
+[133081 ms] Start: Run in Host: docker exec -i -u devops 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b /bin/sh
+[133082 ms] userEnvProbe: loginInteractiveShell (default)
+[133082 ms] Start: Run in container: test -f '/tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913/env-loginInteractiveShell.json'
+[133084 ms] Start: Run in container: echo ~
+[133085 ms] 
+[133085 ms] 
+[133085 ms] Exit code 1
+[133085 ms] userEnvProbe: not found in cache
+[133085 ms] userEnvProbe shell: /bin/bash
+[133089 ms] Start: Run in container: # Test for /home/devops/.ssh/known_hosts and ssh
+[133091 ms] ssh not found
+[133091 ms] 
+[133091 ms] Exit code 1
+[133091 ms] Start: Run in container: # Test for /home/devops/.gnupg/trustdb.gpg and gpg
+[133093 ms] 
+[133093 ms] 
+[133094 ms] Start: Run in container: # Copy /home/mst/.gnupg/trustdb.gpg to /home/devops/.gnupg/trustdb.gpg
+[133096 ms] 
+[133096 ms] 
+[133096 ms] Start: Run in Host: gpg-connect-agent updatestartuptty /bye
+[133104 ms] 
+[133105 ms] 
+[133105 ms] Start: Run in container: command -v git >/dev/null 2>&1 && git config --system --replace-all credential.helper '!f() { /home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/node /tmp/vscode-remote-containers-32134959-8339-4527-a153-12dde3c84a6a.js git-credential-helper $*; }; f' || true
+[133107 ms] 
+[133107 ms] 
+[133107 ms] Start: Run in container: for pid in `cd /proc && ls -d [0-9]*`; do { echo $pid ; readlink /proc/$pid/cwd || echo ; readlink /proc/$pid/ns/mnt || echo ; cat /proc/$pid/stat | tr "
+[133115 ms] /home/devops
+[133115 ms] 
+[133115 ms] Start: Run in container: cat <<'EOF-/tmp/vscode-remote-containers-32134959-8339-4527-a153-12dde3c84a6a.js' >/tmp/vscode-remote-containers-32134959-8339-4527-a153-12dde3c84a6a.js
+[133117 ms] 
+[133117 ms] 
+[133117 ms] Start: Run in container: cat ~/.docker/config.json || echo "{
+[133119 ms] {
+}
+[133119 ms] cat: /home/devops/.docker/config.json: No such file or directory
+[133119 ms] Start: Run in container: mkdir -p /usr/local/bin && cat <<'EOF-/usr/local/bin/docker-credential-dev-containers-32134959-8339-4527-a153-12dde3c84a6a' >/usr/local/bin/docker-credential-dev-containers-32134959-8339-4527-a153-12dde3c84a6a
+[133122 ms] 
+[133122 ms] 
+[133122 ms] Start: Run in container: chmod +x /usr/local/bin/docker-credential-dev-containers-32134959-8339-4527-a153-12dde3c84a6a
+[133123 ms] 
+[133123 ms] 
+[133124 ms] Start: Run in container: mkdir -p ~/.docker && cat <<'EOF-/usr/local/bin/docker-credential-dev-containers-32134959-8339-4527-a153-12dde3c84a6a' >~/.docker/config.json
+[133126 ms] 
+[133126 ms] 
+[133127 ms] Start: Run in container: cat <<'EOF-/tmp/vscode-remote-containers-server-32134959-8339-4527-a153-12dde3c84a6a.js' >/tmp/vscode-remote-containers-server-32134959-8339-4527-a153-12dde3c84a6a.js_1787004005564
+[133130 ms] Start: Run in container: cat '/home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/product.json'
+[133130 ms] 
+[133130 ms] 
+[133132 ms] Start: Run in container: cat '/home/devops/.vscode-server/data/Machine/.connection-token-a5b500951314efd502d07465bd138dfbd714a960' 2>/dev/null || (umask 377 && echo '88c2a0c8-183c-4bae-a717-4cf72299935c' >'/home/devops/.vscode-server/data/Machine/.connection-token-a5b500951314efd502d07465bd138dfbd714a960-57190a01-9afd-44dc-8fbb-89f2c14ea820' && mv -n '/home/devops/.vscode-server/data/Machine/.connection-token-a5b500951314efd502d07465bd138dfbd714a960-57190a01-9afd-44dc-8fbb-89f2c14ea820' '/home/devops/.vscode-server/data/Machine/.connection-token-a5b500951314efd502d07465bd138dfbd714a960' && rm -f '/home/devops/.vscode-server/data/Machine/.connection-token-a5b500951314efd502d07465bd138dfbd714a960-57190a01-9afd-44dc-8fbb-89f2c14ea820' && cat '/home/devops/.vscode-server/data/Machine/.connection-token-a5b500951314efd502d07465bd138dfbd714a960')
+[133136 ms] 88c2a0c8-183c-4bae-a717-4cf72299935c
+[133136 ms] 
+[133137 ms] Start: Starting VS Code Server
+[133137 ms] Start: Preparing Extensions
+[133137 ms] Start: Run in container: test ! -f '/home/devops/.vscode-server/data/Machine/.installExtensionsMarker' && set -o noclobber && mkdir -p '/home/devops/.vscode-server/data/Machine' && { > '/home/devops/.vscode-server/data/Machine/.installExtensionsMarker' ; } 2> /dev/null
+[133139 ms] 
+[133139 ms] 
+[133141 ms] Extensions cache, install extensions: ms-azuretools.vscode-containers, dbaeumer.vscode-eslint
+[133141 ms] Start: Run in container: test -d /home/devops/.vscode-server/extensionsCache && ls /home/devops/.vscode-server/extensionsCache || true
+[133142 ms] 
+[133142 ms] 
+[133142 ms] Start: Run in container: test -d /vscode/vscode-server/extensionsCache && ls /vscode/vscode-server/extensionsCache || true
+[133145 ms] dbaeumer.vscode-eslint-3.0.34
+ms-azuretools.vscode-containers-2.4.5
+[133145 ms] 
+[133145 ms] Extensions cache, link in container: dbaeumer.vscode-eslint-3.0.34, ms-azuretools.vscode-containers-2.4.5
+[133145 ms] Start: Run in container: mkdir -p '/home/devops/.vscode-server/extensionsCache' && ln -s '/vscode/vscode-server/extensionsCache'/* '/home/devops/.vscode-server/extensionsCache' || true
+[133148 ms] 
+[133148 ms] 
+[133149 ms] Optimizing extensions for quality: stable
+[133149 ms] Start: Run in container: cd /vscode/vscode-server/extensionsCache && touch 'dbaeumer.vscode-eslint-3.0.34' 'ms-azuretools.vscode-containers-2.4.5'
+[133149 ms] Start: Run in Host: docker exec -i -u devops -e SHELL=/bin/bash -w /home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b /home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/bin/code-server --log debug --force-disable-user-env --server-data-dir /home/devops/.vscode-server --use-host-proxy --telemetry-level all --accept-server-license-terms --host 127.0.0.1 --port 0 --connection-token-file /home/devops/.vscode-server/data/Machine/.connection-token-a5b500951314efd502d07465bd138dfbd714a960 --extensions-download-dir /home/devops/.vscode-server/extensionsCache --install-extension ms-azuretools.vscode-containers --install-extension dbaeumer.vscode-eslint --start-server --disable-websocket-compression --skip-requirements-check
+[133151 ms] 
+[133151 ms] 
+[133254 ms] *
+* Visual Studio Code Server
+*
+* By using the software, you agree to
+* the Visual Studio Code Server License Terms (https://aka.ms/vscode-server-license) and
+* the Microsoft Privacy Statement (https://privacy.microsoft.com/en-US/privacystatement).
+*
+[133258 ms] Server bound to 127.0.0.1:44811 (IPv4)
+Extension host agent listening on 44811
+
+[133258 ms] Start: Run in container: echo 44811 >'/home/devops/.vscode-server/data/Machine/.devport-a5b500951314efd502d07465bd138dfbd714a960'
+[133259 ms] 
+[133259 ms] 
+[133260 ms] Port forwarding for container port 44811 starts listening on local port.
+[133261 ms] Port forwarding local port 44811 to container port 44811
+[133261 ms] Start: Run in container: test -f '/home/devops/.vscode-server/data/Machine/.dotfilesMarker' && test ! -e '/home/devops/.devcontainer/.dotfilesMarker' && mkdir -p '/home/devops/.devcontainer' && cp '/home/devops/.vscode-server/data/Machine/.dotfilesMarker' '/home/devops/.devcontainer/.dotfilesMarker'
+[133262 ms] 
+[133263 ms] 
+[133263 ms] Exit code 1
+[133263 ms] Running Dev Containers CLI:   run-user-commands --container-session-data-folder /tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 --workspace-folder /home/mst/vcs/personal/mt-devops-framework --id-label devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework --id-label devcontainer.config_file=/home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --container-id 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b --log-level debug --log-format json --config /home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --default-user-env-probe loginInteractiveShell --skip-non-blocking-commands false --prebuild false --stop-for-personalization true --remote-env REMOTE_CONTAINERS_IPC=/tmp/vscode-remote-containers-ipc-32134959-8339-4527-a153-12dde3c84a6a.sock --remote-env DISPLAY=:0 --remote-env REMOTE_CONTAINERS_DISPLAY_SOCK=/tmp/.X11-unix/X0 --remote-env REMOTE_CONTAINERS=true --mount-workspace-git-root --terminal-columns 198 --terminal-rows 28 --dotfiles-repository git@bitbucket.org:rentokilinitial/ri-ccon-devops-utils.git --dotfiles-install-command cp wsl-debian-config/bashrc/.terraform_aliases ~/ && cp wsl-debian-config/bashrc/.kubectl_aliases ~/ && cp wsl-debian-config/bashrc/.bashrc ~/.bashrc_host && echo 'source ~/.bashrc_host' >> ~/.bashrc --dotfiles-target-path ~/dotfiles
+[133263 ms] Start: Checking for Dev Containers CLI
+[133266 ms] Start: Run in Host: /home/mst/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/node /home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js run-user-commands --container-session-data-folder /tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 --workspace-folder /home/mst/vcs/personal/mt-devops-framework --id-label devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework --id-label devcontainer.config_file=/home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --container-id 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b --log-level debug --log-format json --config /home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --default-user-env-probe loginInteractiveShell --skip-non-blocking-commands false --prebuild false --stop-for-personalization true --remote-env REMOTE_CONTAINERS_IPC=/tmp/vscode-remote-containers-ipc-32134959-8339-4527-a153-12dde3c84a6a.sock --remote-env DISPLAY=:0 --remote-env REMOTE_CONTAINERS_DISPLAY_SOCK=/tmp/.X11-unix/X0 --remote-env REMOTE_CONTAINERS=true --mount-workspace-git-root --terminal-columns 198 --terminal-rows 28 --dotfiles-repository git@bitbucket.org:rentokilinitial/ri-ccon-devops-utils.git --dotfiles-install-command cp wsl-debian-config/bashrc/.terraform_aliases ~/ && cp wsl-debian-config/bashrc/.kubectl_aliases ~/ && cp wsl-debian-config/bashrc/.bashrc ~/.bashrc_host && echo 'source ~/.bashrc_host' >> ~/.bashrc --dotfiles-target-path ~/dotfiles
+[133300 ms] Ignoring option 'skip-requirements-check': not supported for server.
+[133303 ms] [22:00:05] 
+
+
+
+
+[133339 ms] @devcontainers/cli 0.88.0. Node.js v24.18.0. linux 6.6.114.1-microsoft-standard-WSL2 x64.
+[133339 ms] Start: Run: docker buildx version
+[133348 ms] [reconnection-grace-time] No CLI argument provided, using default: 10800000ms (10800s)
+[133349 ms] [22:00:05] [AgentHostChannel] Registered lazy IPC channel 'agentHostProxy' (upstream: /tmp/vscode-ipc-c52ccc7e-696a-46ad-88a8-595d4faddef5.sock)
+[133350 ms] [22:00:05] Installing extensions...
+[133352 ms] [22:00:05] Extension host agent started.
+[133372 ms] [22:00:05] Started initializing default profile extensions in extensions installation folder. file:///home/devops/.vscode-server/extensions
+[133378 ms] github.com/docker/buildx v0.36.1 1d8dde89b8aba914e05e45366770736fea1fd690
+[133378 ms] 
+[133378 ms] Start: Run: docker -v
+[133388 ms] Start: Run: docker version --format {{.Server.Version}}
+[133394 ms] [22:00:05] ComputeTargetPlatform: linux-x64
+[133402 ms] 29.7.2
+[133402 ms] 
+[133403 ms] Start: Run: git rev-parse --show-cdup
+[133405 ms] Start: Run: docker inspect --type container 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b
+[133414 ms] [22:00:05] Completed initializing default profile extensions in extensions installation folder. file:///home/devops/.vscode-server/extensions
+[133418 ms] Start: Inspecting container
+[133418 ms] Start: Run: docker inspect --type container 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b
+[133422 ms] [22:00:05] ComputeTargetPlatform: linux-x64
+[133429 ms] Start: Run in container: /bin/sh
+[133431 ms] Start: Run in container: uname -m
+[133460 ms] x86_64
+[133460 ms] 
+[133461 ms] Start: Run in container: (cat /etc/os-release || cat /usr/lib/os-release) 2>/dev/null
+[133461 ms] PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+VERSION_ID="12"
+VERSION="12 (bookworm)"
+VERSION_CODENAME=bookworm
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+[133461 ms] 
+[133462 ms] Start: Run in container:  (command -v getent >/dev/null 2>&1 && getent passwd 'devops' || grep -E '^devops|^[^:]*:[^:]*:devops:' /etc/passwd || true)
+[133463 ms] userEnvProbe: loginInteractiveShell (default)
+[133463 ms] Start: Run in container: test -f '/tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913/env-loginInteractiveShell.json'
+[133463 ms] 
+[133463 ms] 
+[133463 ms] Exit code 1
+[133463 ms] Start: Run in container: mkdir -p '/home/devops/.devcontainer' && CONTENT="$(cat '/home/devops/.devcontainer/.onCreateCommandMarker' 2>/dev/null || echo ENOENT)" && [ "${CONTENT:-2026-08-17T22:00:05.019257623Z}" != '2026-08-17T22:00:05.019257623Z' ] && echo '2026-08-17T22:00:05.019257623Z' > '/home/devops/.devcontainer/.onCreateCommandMarker'
+[133463 ms] userEnvProbe: not found in cache
+[133464 ms] userEnvProbe shell: /bin/bash
+[133464 ms] Start: Run in container: /bin/bash -lic echo -n 9a2ce007-4a3e-4b45-8f5e-1399cd943de0; cat /proc/self/environ; echo -n 9a2ce007-4a3e-4b45-8f5e-1399cd943de0
+[133465 ms] 
+[133465 ms] 
+[133465 ms] Start: Run in container: mkdir -p '/home/devops/.devcontainer' && CONTENT="$(cat '/home/devops/.devcontainer/.updateContentCommandMarker' 2>/dev/null || echo ENOENT)" && [ "${CONTENT:-2026-08-17T22:00:05.019257623Z}" != '2026-08-17T22:00:05.019257623Z' ] && echo '2026-08-17T22:00:05.019257623Z' > '/home/devops/.devcontainer/.updateContentCommandMarker'
+[133467 ms] 
+[133467 ms] 
+[133467 ms] Start: Run in container: mkdir -p '/home/devops/.devcontainer' && CONTENT="$(cat '/home/devops/.devcontainer/.postCreateCommandMarker' 2>/dev/null || echo ENOENT)" && [ "${CONTENT:-2026-08-17T22:00:05.019257623Z}" != '2026-08-17T22:00:05.019257623Z' ] && echo '2026-08-17T22:00:05.019257623Z' > '/home/devops/.devcontainer/.postCreateCommandMarker'
+[133469 ms] 
+[133469 ms] 
+Running the postCreateCommand from devcontainer.json...
+
+[133471 ms] userEnvProbe PATHs:
+Probe:     '/home/devops/.local/bin:/usr/local/share/nvm/current/bin:/home/devops/.local/bin:/usr/local/share/nvm/versions/node/v24.19.0/bin:/home/devops/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/devops/.local/bin'
+Container: '/usr/local/share/nvm/current/bin:/home/devops/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+[133471 ms] Start: Run in container: mkdir -p '/tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913' && cat > '/tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913/env-loginInteractiveShell.json' << 'envJSON'
+[133474 ms] 
+[133474 ms] 
+[133474 ms] Start: Run in container: umask 077 && XRD="/tmp/user/$(id -u)" && mkdir -p $XRD && echo $XRD
+[133477 ms] /tmp/user/1000
+[133477 ms] 
+[133477 ms] Start: Run in container: test -e /tmp/user/1000/vscode-wayland-1d0d0735-f57d-4564-9bb2-c1623ab25773.sock || ln -sf /tmp/vscode-wayland-1d0d0735-f57d-4564-9bb2-c1623ab25773.sock /tmp/user/1000/vscode-wayland-1d0d0735-f57d-4564-9bb2-c1623ab25773.sock
+[133478 ms] 
+[133478 ms] 
+[133485 ms] Initializing configuration support...
+[133485 ms] Internal initialization of dev container support package...
+[133537 ms] Port forwarding connection from 2462 > 44811 > 44811 in the container.
+[133538 ms] Start: Run in Host: docker exec -i -u devops -e VSCODE_REMOTE_CONTAINERS_SESSION=56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b /home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/node -e 
+[133587 ms] Port forwarding 2462 > 44811 > 44811 stderr: Connection established
+[133590 ms] (node:325) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[133601 ms] Port forwarding connection from 9370 > 44811 > 44811 in the container.
+[133601 ms] Start: Run in Host: docker exec -i -u devops -e VSCODE_REMOTE_CONTAINERS_SESSION=56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b /home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/node -e 
+[133605 ms] [22:00:06] [127.0.0.1][9675b631][ManagementConnection] New connection established.
+[133621 ms] [22:00:06] Log level changed to info
+[133627 ms] userEnvProbe PATHs:
+Probe:     '/home/devops/.local/bin:/usr/local/share/nvm/current/bin:/home/devops/.local/bin:/usr/local/share/nvm/versions/node/v24.19.0/bin:/home/devops/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/devops/.local/bin'
+Container: '/usr/local/share/nvm/current/bin:/home/devops/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin'
+[133627 ms] Start: Run in container: mkdir -p '/tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913' && cat > '/tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913/env-loginInteractiveShell.json' << 'envJSON'
+[133629 ms] 
+[133629 ms] 
+[133629 ms] Start: Run in container: /bin/sh -c npm install -g --allow-scripts=@anthropic-ai/claude-code @anthropic-ai/claude-code && python3 ~/.bash.d/lib/python/config_manager.py update paths sync_repo "/workspaces/mt-devops-framework" && bash -ic 'mt-refresh-caches'
+[133650 ms] Port forwarding 9370 > 44811 > 44811 stderr: Connection established
+[133678 ms] [22:00:06] [127.0.0.1][01919e03][ExtensionHostConnection] New connection established.
+[133679 ms] [22:00:06] [127.0.0.1][01919e03][ExtensionHostConnection] Starting extension host process...
+[133681 ms] [22:00:06] [127.0.0.1][01919e03][ExtensionHostConnection] <710> Launched Extension Host Process.
+[133891 ms] [22:00:06] [127.0.0.1][01919e03][ExtensionHostConnection] <710> [reconnection-grace-time] Extension host: read VSCODE_RECONNECTION_GRACE_TIME=10800000ms (10800s)
+
+[133897 ms] [22:00:06] Installing extension 'dbaeumer.vscode-eslint'...
+\[133921 ms] [22:00:06] Installing extension 'ms-azuretools.vscode-containers'...
+[133922 ms] [22:00:06] Getting Manifest... dbaeumer.vscode-eslint
+[22:00:06] Getting Manifest... ms-azuretools.vscode-containers
+[133990 ms] [22:00:06] Installing extension: dbaeumer.vscode-eslint {
+  isMachineScoped: false,
+  installPreReleaseVersion: false,
+  isApplicationScoped: true,
+  isBuiltin: false,
+  installGivenVersion: false,
+  profileLocation: ya {
+    scheme: 'file',
+    authority: '',
+    path: '/home/devops/.vscode-server/extensions/extensions.json',
+    query: '',
+    fragment: '',
+    _formatted: 'file:///home/devops/.vscode-server/extensions/extensions.json',
+    _fsPath: '/home/devops/.vscode-server/extensions/extensions.json'
+  },
+  productVersion: { version: '1.133.0', date: '2026-08-11T22:14:08Z' }
+}
+[133992 ms] [22:00:06] Installing extension: ms-azuretools.vscode-containers {
+  isMachineScoped: false,
+  installPreReleaseVersion: false,
+  isApplicationScoped: true,
+  isBuiltin: false,
+  installGivenVersion: false,
+  profileLocation: ya {
+    scheme: 'file',
+    authority: '',
+    path: '/home/devops/.vscode-server/extensions/extensions.json',
+    query: '',
+    fragment: '',
+    _formatted: 'file:///home/devops/.vscode-server/extensions/extensions.json',
+    _fsPath: '/home/devops/.vscode-server/extensions/extensions.json'
+  },
+  productVersion: { version: '1.133.0', date: '2026-08-11T22:14:08Z' }
+}
+/[135226 ms] [22:00:07] Extension signature verification result for ms-azuretools.vscode-containers: Success. Internal Code: 0. Executed: true. Duration: 867ms.
+[135232 ms] [22:00:07] Extension signature verification result for dbaeumer.vscode-eslint: Success. Internal Code: 0. Executed: true. Duration: 881ms.
+[135260 ms] [22:00:07] Extracted extension to file:///home/devops/.vscode-server/extensions/dbaeumer.vscode-eslint-3.0.34: dbaeumer.vscode-eslint
+[135269 ms] [22:00:07] Renamed to /home/devops/.vscode-server/extensions/dbaeumer.vscode-eslint-3.0.34
+[135309 ms] [22:00:07] Extracted extension to file:///home/devops/.vscode-server/extensions/ms-azuretools.vscode-containers-2.4.5: ms-azuretools.vscode-containers
+[135318 ms] [22:00:07] Renamed to /home/devops/.vscode-server/extensions/ms-azuretools.vscode-containers-2.4.5
+[135331 ms] [22:00:07] Extension installed successfully: dbaeumer.vscode-eslint file:///home/devops/.vscode-server/extensions/extensions.json
+[22:00:07] Extension installed successfully: ms-azuretools.vscode-containers file:///home/devops/.vscode-server/extensions/extensions.json
+[135332 ms] [22:00:07] Extension 'dbaeumer.vscode-eslint' v3.0.34 was successfully installed.
+[22:00:07] Extension 'ms-azuretools.vscode-containers' v2.4.5 was successfully installed.
+-[135377 ms] Port forwarding connection from 2484 > 44811 > 44811 in the container.
+[135379 ms] Start: Run in Host: docker exec -i -u devops -e VSCODE_REMOTE_CONTAINERS_SESSION=56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b /home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/node -e 
+[135441 ms] Port forwarding 2484 > 44811 > 44811 stderr: Connection established
+
+added 2 packages in 3s
+npm notice
+npm notice New major version of npm available! 11.17.0 -> 12.0.2
+npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.0.2
+npm notice To update run: npm install -g npm@12.0.2
+npm notice
+No Gemini API Key provided in config.yaml. Add one via:
+    mt-add-gemini-key 'your-api-key'
+
+🚀 Terminal profile update available! (v0.18.4 -> v0.20.0)
+   Run mt-get-update to apply the latest changes.
+
+
+⚠️  Missing required dependencies detected in your environment.
+
+bash: kubectl: command not found
+✅ Custom Bash Environment Loaded
+🧹 Clearing background caches...
+🔄 Rebuilding configurations and tool indexes...
+No Gemini API Key provided in config.yaml. Add one via:
+    mt-add-gemini-key 'your-api-key'
+
+⚠️  Missing required dependencies detected in your environment.
+
+bash: kubectl: command not found
+✅ Custom Bash Environment Loaded
+✅ All system caches refreshed successfully.
+[136648 ms] Start: Run in container: # Clone & install dotfiles via 'cp wsl-debian-config/bashrc/.terraform_aliases ~/ && cp wsl-debian-config/bashrc/.kubectl_aliases ~/ && cp wsl-debian-config/bashrc/.bashrc ~/.bashrc_host && echo 'source ~/.bashrc_host' >> ~/.bashrc'
+[136650 ms] Cloning into '/home/devops/dotfiles'...
+[136652 ms] error: cannot run ssh: No such file or directory
+fatal: unable to fork
+[136653 ms] 
+[136653 ms] 
+[136653 ms] Exit code 128
+[136661 ms] Start: Run in container: # Test for /home/devops/.gitconfig and git
+[136663 ms] 
+[136663 ms] 
+[136664 ms] Start: Run in container: # Copy /home/mst/.gitconfig to /home/devops/.gitconfig
+[136667 ms] 
+[136667 ms] 
+[136669 ms] Start: Run in container: # Cleaning up git config
+[136677 ms] Removing Git config key: core.sshCommand = ssh -i ~/.ssh/ri-bb-ssh
+[136677 ms] 
+[136677 ms] Start: Run in Host: git config --global --get gpg.ssh.allowedSignersFile
+[136677 ms] Start: Run in container: command -v git >/dev/null 2>&1 && git config --global --replace-all credential.helper '!f() { /home/devops/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/node /tmp/vscode-remote-containers-32134959-8339-4527-a153-12dde3c84a6a.js git-credential-helper $*; }; f' || true
+[136679 ms] 
+[136679 ms] 
+[136680 ms] Running Dev Containers CLI:   run-user-commands --container-session-data-folder /tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 --workspace-folder /home/mst/vcs/personal/mt-devops-framework --id-label devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework --id-label devcontainer.config_file=/home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --container-id 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b --log-level debug --log-format json --config /home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --default-user-env-probe loginInteractiveShell --skip-non-blocking-commands false --prebuild false --stop-for-personalization false --remote-env REMOTE_CONTAINERS_IPC=/tmp/vscode-remote-containers-ipc-32134959-8339-4527-a153-12dde3c84a6a.sock --remote-env DISPLAY=:0 --remote-env REMOTE_CONTAINERS_DISPLAY_SOCK=/tmp/.X11-unix/X0 --remote-env REMOTE_CONTAINERS=true --mount-workspace-git-root --terminal-columns 176 --terminal-rows 28 --dotfiles-repository git@bitbucket.org:rentokilinitial/ri-ccon-devops-utils.git --dotfiles-install-command cp wsl-debian-config/bashrc/.terraform_aliases ~/ && cp wsl-debian-config/bashrc/.kubectl_aliases ~/ && cp wsl-debian-config/bashrc/.bashrc ~/.bashrc_host && echo 'source ~/.bashrc_host' >> ~/.bashrc --dotfiles-target-path ~/dotfiles
+[136680 ms] Start: Checking for Dev Containers CLI
+[136682 ms] Start: Run in Host: /home/mst/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/node /home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js run-user-commands --container-session-data-folder /tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 --workspace-folder /home/mst/vcs/personal/mt-devops-framework --id-label devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework --id-label devcontainer.config_file=/home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --container-id 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b --log-level debug --log-format json --config /home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --default-user-env-probe loginInteractiveShell --skip-non-blocking-commands false --prebuild false --stop-for-personalization false --remote-env REMOTE_CONTAINERS_IPC=/tmp/vscode-remote-containers-ipc-32134959-8339-4527-a153-12dde3c84a6a.sock --remote-env DISPLAY=:0 --remote-env REMOTE_CONTAINERS_DISPLAY_SOCK=/tmp/.X11-unix/X0 --remote-env REMOTE_CONTAINERS=true --mount-workspace-git-root --terminal-columns 176 --terminal-rows 28 --dotfiles-repository git@bitbucket.org:rentokilinitial/ri-ccon-devops-utils.git --dotfiles-install-command cp wsl-debian-config/bashrc/.terraform_aliases ~/ && cp wsl-debian-config/bashrc/.kubectl_aliases ~/ && cp wsl-debian-config/bashrc/.bashrc ~/.bashrc_host && echo 'source ~/.bashrc_host' >> ~/.bashrc --dotfiles-target-path ~/dotfiles
+[136746 ms] @devcontainers/cli 0.88.0. Node.js v24.18.0. linux 6.6.114.1-microsoft-standard-WSL2 x64.
+[136746 ms] Start: Run: docker buildx version
+[136788 ms] github.com/docker/buildx v0.36.1 1d8dde89b8aba914e05e45366770736fea1fd690
+[136788 ms] 
+[136788 ms] Start: Run: docker -v
+[136797 ms] Start: Run: docker version --format {{.Server.Version}}
+[136810 ms] 29.7.2
+[136810 ms] 
+[136811 ms] Start: Run: git rev-parse --show-cdup
+[136814 ms] Start: Run: docker inspect --type container 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b
+[136824 ms] Start: Inspecting container
+[136824 ms] Start: Run: docker inspect --type container 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b
+[136835 ms] Start: Run in container: /bin/sh
+[136836 ms] Start: Run in container: uname -m
+[136865 ms] x86_64
+[136865 ms] 
+[136865 ms] Start: Run in container: (cat /etc/os-release || cat /usr/lib/os-release) 2>/dev/null
+[136866 ms] PRETTY_NAME="Debian GNU/Linux 12 (bookworm)"
+NAME="Debian GNU/Linux"
+VERSION_ID="12"
+VERSION="12 (bookworm)"
+VERSION_CODENAME=bookworm
+ID=debian
+HOME_URL="https://www.debian.org/"
+SUPPORT_URL="https://www.debian.org/support"
+BUG_REPORT_URL="https://bugs.debian.org/"
+[136866 ms] 
+[136866 ms] Start: Run in container:  (command -v getent >/dev/null 2>&1 && getent passwd 'devops' || grep -E '^devops|^[^:]*:[^:]*:devops:' /etc/passwd || true)
+[136867 ms] userEnvProbe: loginInteractiveShell (default)
+[136867 ms] Start: Run in container: test -f '/tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913/env-loginInteractiveShell.json'
+[136868 ms] 
+[136868 ms] 
+[136868 ms] Start: Run in container: mkdir -p '/home/devops/.devcontainer' && CONTENT="$(cat '/home/devops/.devcontainer/.onCreateCommandMarker' 2>/dev/null || echo ENOENT)" && [ "${CONTENT:-2026-08-17T22:00:05.019257623Z}" != '2026-08-17T22:00:05.019257623Z' ] && echo '2026-08-17T22:00:05.019257623Z' > '/home/devops/.devcontainer/.onCreateCommandMarker'
+[136869 ms] 
+[136869 ms] 
+[136869 ms] Exit code 1
+[136869 ms] Start: Run in container: cat '/tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913/env-loginInteractiveShell.json'
+[136870 ms] {
+        "NVM_INC": "/usr/local/share/nvm/versions/node/v24.19.0/include/node",
+        "HOSTNAME": "9395bd3726d7",
+        "SCRIPTS_IAM_DIR": "/home/devops/vcs/scripts/iam",
+        "OS_FAMILY": "wsl",
+        "C_RED": "\u001b[31m",
+        "VCS_PERSONAL": "/home/devops/vcs/personal",
+        "C_BLUE": "\u001b[34m",
+        "CB_BLUE": "\u001b[01;34m",
+        "AUTO_CLEANUP_DAYS": "7",
+        "CLAUDE_VERSION": "claude-3-7-sonnet-latest",
+        "C_DIM": "\u001b[2;37m",
+        "AI_SYSTEM_PROMPT": "You are a Senior Cloud Software and Devops Engineer. You write DRY, fully complete, production-ready code with no placeholders. Respond ONLY with a valid JSON object using this exact schema: { \"category\": \"gcloud\" | \"script\" | \"project\" | \"chat\", \"language\": \"bash, python, terraform, etc (null if chat)\", \"extension\": \"sh, py, tf, etc (null if chat)\", \"title\": \"generate-a-kebab-case-title-if-not-provided\", \"code\": \"the fully complete working code string without markdown wrapping (null if chat)\", \"message\": \"Your brief explanation or answer\" }",
+        "DEFAULT_AI": "gemini",
+        "VCS_ROOT": "/home/devops/vcs",
+        "DOCKER_ROOT_DIR": "/home/devops/.docker",
+        "GEMINI_EXTENDED": "false",
+        "C_RESET": "\u001b[0m",
+        "BAT_BIN": "batcat",
+        "HOME": "/home/devops",
+        "LS_COLORS": "",
+        "NVM_SYMLINK_CURRENT": "true",
+        "C_CYAN": "\u001b[36m",
+        "SYNC_REPO_DIR": "/home/devops/vcs/personal/gcp-devops-wsl-debian-terminal",
+        "THEMES_DIR": "/home/devops/.bash.d/config/themes",
+        "CB_CYAN": "\u001b[01;36m",
+        "C_GREEN": "\u001b[32m",
+        "EXPORT_BLOCKLIST": "(secret|token|credential|password|passwd|id_rsa|id_ed25519|\\.pem$|\\.p12$|\\.pfx$|\\.npmrc$|\\.netrc$|kubeconfig|service.?account.*\\.json$|.*-key.*\\.json$|\\.tfvars(\\.json)?$|(^|/)\\.env(\\..+)?$|lock\\.hcl|__pycache__)",
+        "NVM_DIR": "/home/devops/.nvm",
+        "C_WHITE": "\u001b[0;37m",
+        "CB_GREEN": "\u001b[01;32m",
+        "BASH_THEME": "default",
+        "CB_YELLOW": "\u001b[01;33m",
+        "LOCAL_AI_MODEL": "llama3.2",
+        "CB_RED": "\u001b[01;31m",
+        "SHLVL": "1",
+        "NVM_CD_FLAGS": "",
+        "LOCAL_AI_API_KEY": "ollama",
+        "C_YELLOW": "\u001b[33m",
+        "AI_WORKSPACE_DIR": "/home/devops/vcs/ai-workspace",
+        "VCS_EXPORTS": "/home/devops/vcs/personal/exports",
+        "AUTO_CLEANUP_EXPORTS": "true",
+        "GIT_FEATURE_PREFIX": "feature/",
+        "SYNC_REPO_URL": "YOUR_SYNC_REPO_URL",
+        "AI_ENABLED": "true",
+        "UPDATE_CHECK_TTL_SEC": "43200",
+        "AI_MAX_DIFF_BYTES": "4000",
+        "PATH": "/home/devops/.local/bin:/usr/local/share/nvm/current/bin:/home/devops/.local/bin:/usr/local/share/nvm/versions/node/v24.19.0/bin:/home/devops/.local/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/home/devops/.local/bin",
+        "GEMINI_VERSION": "gemini-3.6-flash",
+        "DEFAULT_IDE": "vscode",
+        "DOCKER_BLOCKLIST": "redis,postgres,local-db",
+        "NVM_BIN": "/usr/local/share/nvm/versions/node/v24.19.0/bin",
+        "MAX_PARALLEL_THREADS": "8",
+        "LOCAL_AI_BASE_URL": "http://localhost:11434/v1",
+        "DEBIAN_FRONTEND": "noninteractive",
+        "_": "/usr/bin/batcat"
+}
+[136870 ms] 
+[136870 ms] Start: Run in container: mkdir -p '/home/devops/.devcontainer' && CONTENT="$(cat '/home/devops/.devcontainer/.updateContentCommandMarker' 2>/dev/null || echo ENOENT)" && [ "${CONTENT:-2026-08-17T22:00:05.019257623Z}" != '2026-08-17T22:00:05.019257623Z' ] && echo '2026-08-17T22:00:05.019257623Z' > '/home/devops/.devcontainer/.updateContentCommandMarker'
+[136871 ms] 
+[136871 ms] 
+[136871 ms] Exit code 1
+[136871 ms] Start: Run in container: mkdir -p '/home/devops/.devcontainer' && CONTENT="$(cat '/home/devops/.devcontainer/.postCreateCommandMarker' 2>/dev/null || echo ENOENT)" && [ "${CONTENT:-2026-08-17T22:00:05.019257623Z}" != '2026-08-17T22:00:05.019257623Z' ] && echo '2026-08-17T22:00:05.019257623Z' > '/home/devops/.devcontainer/.postCreateCommandMarker'
+[136873 ms] 
+[136873 ms] 
+[136873 ms] Exit code 1
+[136873 ms] Start: Run in container: # Clone & install dotfiles via 'cp wsl-debian-config/bashrc/.terraform_aliases ~/ && cp wsl-debian-config/bashrc/.kubectl_aliases ~/ && cp wsl-debian-config/bashrc/.bashrc ~/.bashrc_host && echo 'source ~/.bashrc_host' >> ~/.bashrc'
+[136874 ms] dotfiles marker found
+[136874 ms] 
+[136874 ms] 
+[136874 ms] Start: Run in container: mkdir -p '/home/devops/.devcontainer' && CONTENT="$(cat '/home/devops/.devcontainer/.postStartCommandMarker' 2>/dev/null || echo ENOENT)" && [ "${CONTENT:-2026-08-17T22:00:05.077694444Z}" != '2026-08-17T22:00:05.077694444Z' ] && echo '2026-08-17T22:00:05.077694444Z' > '/home/devops/.devcontainer/.postStartCommandMarker'
+[136876 ms] 
+[136876 ms] 
+Running the postAttachCommand from devcontainer.json...
+
+[136876 ms] Start: Run in container: /bin/sh -c bash .devcontainer/install-vsix.sh
+⏳ Waiting for VS Code CLI...
+[141449 ms] Port forwarding 2484 > 44811 > 44811 stderr: Remote close
+[141453 ms] Port forwarding 2484 > 44811 > 44811 terminated with code 0 and signal null.
+[164848 ms] Running Dev Containers CLI:   outdated --workspace-folder C:\Users\matst\AppData\Local\Programs\Microsoft VS Code --config c:\Users\matst\AppData\Local\Temp\dev-container-tmp-54f51a8f-6d1b-4efb-a7e3-d8eda61a7200\.devcontainer.json --output-format json --log-level debug --log-format json --terminal-columns 176 --terminal-rows 28
+[164852 ms] ProxyResolver#loadSystemCertificates count (3ms)
+[164853 ms] ProxyResolver#filterExpiredCertificates count filtered
+[164853 ms] Start: Run: C:\Users\matst\AppData\Local\Programs\Microsoft VS Code\Code.exe c:\Users\matst\.vscode\extensions\ms-vscode-remote.remote-containers-0.466.0\dist\spec-node\devContainersSpecCLI.js outdated --workspace-folder C:\Users\matst\AppData\Local\Programs\Microsoft VS Code --config c:\Users\matst\AppData\Local\Temp\dev-container-tmp-54f51a8f-6d1b-4efb-a7e3-d8eda61a7200\.devcontainer.json --output-format json --log-level debug --log-format json --terminal-columns 176 --terminal-rows 28
+[164969 ms] @devcontainers/cli 0.88.0. Node.js v24.18.0. win32 10.0.26200 x64.
+[164969 ms] Start: Run: git rev-parse --show-cdup
+[165007 ms] Loading 49 extra certificates from C:\Users\matst\AppData\Local\Temp\vsch\certificates-1ab6eee87ee31129c27d7f002adffd09b416f755071e426bbbef2d0298a33d85.pem.
+[165022 ms] (node:45068) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+[165022 ms] (Use `Code --trace-deprecation ...` to show where the warning was created)
+[165187 ms] Start: Run: docker-credential-desktop get
+[165188 ms] Start: Run: docker-credential-desktop get
+[165199 ms] Start: Run: docker-credential-desktop get
+🚨 Error: 'code' CLI not found. VS Code Server is too slow to start.
+[166922 ms] postAttachCommand from devcontainer.json failed with exit code 1. Skipping any further user-provided commands.
+[166923 ms] Error: Command failed: /bin/sh -c bash .devcontainer/install-vsix.sh
+[166923 ms]     at Q (/home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js:233:157)
+[166923 ms]     at async Promise.allSettled (index 0)
+[166924 ms]     at async Qq (/home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js:235:119)
+[166924 ms]     at async Td (/home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js:224:4668)
+[166924 ms]     at async Eq (/home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js:224:4475)
+[166924 ms]     at async Pd (/home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js:224:3460)
+[166924 ms]     at async D5 (/home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js:670:2823)
+[166924 ms]     at async p5 (/home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js:669:8991)
+[166924 ms]     at async /home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js:486:1917
+[166927 ms] Exit code 1
+[166927 ms] Command failed: /home/mst/.vscode-server/bin/a5b500951314efd502d07465bd138dfbd714a960/node /home/mst/.vscode-remote-containers/dist/dev-containers-cli-0.466.0/dist/spec-node/devContainersSpecCLI.js run-user-commands --container-session-data-folder /tmp/devcontainers-56af80ca-0759-43bd-b2a8-789b54f4842b1787003871913 --workspace-folder /home/mst/vcs/personal/mt-devops-framework --id-label devcontainer.local_folder=\\wsl.localhost\Debian\home\mst\vcs\personal\mt-devops-framework --id-label devcontainer.config_file=/home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --container-id 9395bd3726d77bbacf98239acd633deb982bc6f597ea6d9b9c68e58214aaa63b --log-level debug --log-format json --config /home/mst/vcs/personal/mt-devops-framework/.devcontainer/devcontainer.json --default-user-env-probe loginInteractiveShell --skip-non-blocking-commands false --prebuild false --stop-for-personalization false --remote-env REMOTE_CONTAINERS_IPC=/tmp/vscode-remote-containers-ipc-32134959-8339-4527-a153-12dde3c84a6a.sock --remote-env DISPLAY=:0 --remote-env REMOTE_CONTAINERS_DISPLAY_SOCK=/tmp/.X11-unix/X0 --remote-env REMOTE_CONTAINERS=true --mount-workspace-git-root --terminal-columns 176 --terminal-rows 28 --dotfiles-repository git@bitbucket.org:rentokilinitial/ri-ccon-devops-utils.git --dotfiles-install-command cp wsl-debian-config/bashrc/.terraform_aliases ~/ && cp wsl-debian-config/bashrc/.kubectl_aliases ~/ && cp wsl-debian-config/bashrc/.bashrc ~/.bashrc_host && echo 'source ~/.bashrc_host' >> ~/.bashrc --dotfiles-target-path ~/dotfiles
+[224999 ms] Port forwarding 2484 > 44811 > 44811: Local close

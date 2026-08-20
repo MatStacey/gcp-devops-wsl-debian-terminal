@@ -1,0 +1,6 @@
+add option to specify directory with mt-export functions
+add some helpful maven functions
+mt-mvn-check-dependencies: analyse dependency tree in pom, check for conflicts/collisions. look for graceful, simple and safe resolution. propose pom update in Y/n prompt. if Y then make change to pom. validate pom. rollback if error
+mt-mvn-cloudrun-pom: generate a foundation pom for creating java springboot cloud run function APIs. Add flags for v1/v2 and cloud run function vs cloud function. set v2 and cloud run function as defaults if none specified
+make export blocklist a yaml formatted list
+create a system.prompt.txt file in root instead of text in config. change config var to path
