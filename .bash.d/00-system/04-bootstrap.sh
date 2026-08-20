@@ -108,6 +108,9 @@ __bootstrap_yq() {
   fi
 }
 
+#######################################
+# System: Imstall Ookla Speedtest CLI
+#######################################
 __install_speedtest() {
   echo -e "\n📦 Installing Ookla Speedtest CLI..."
 
@@ -128,7 +131,7 @@ __install_speedtest() {
       return 1
     fi
 
-    # We hard coded version to 1.2.0.84-1.ea6b6773cf because the Ookla packagecloud.io repository was returning 404s for Ubuntu Noble/Jammy, so we switched to downloading a known-good .deb directly.  
+    # We hard coded version to 1.2.0.84-1.ea6b6773cf because the Ookla packagecloud.io repository was returning 404s for Ubuntu Noble/Jammy, so we switched to downloading a known-good .deb directly.
     local version="1.2.0.84-1.ea6b6773cf"
     local url="https://packagecloud.io/ookla/speedtest-cli/packages/ubuntu/jammy/speedtest_${version}_amd64.deb/download.deb"
     local tmpdir
@@ -166,6 +169,9 @@ __install_speedtest() {
   fi
 }
 
+#######################################
+# System: Check and report missing external dependencies
+#######################################
 __bootstrap_external() {
   local missing_external=($(__get_missing_deps "${EXTERNAL_DEPENDENCIES[@]}"))
 
