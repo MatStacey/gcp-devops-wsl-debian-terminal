@@ -4,6 +4,16 @@ A high-performance, fully modular Bash environment engineered specifically for S
 
 This configuration adheres to DRY principles, relies on native Bash and standalone Python script execution for zero-latency loading, and aggregates modern CLI tools for Google Cloud Platform, Kubernetes, Terraform, and Python development.
 
+## 🚀 Recent Updates & Enhancements
+
+* **Local ShellCheck Validation:** Added a `-s` flag to `mt-push-update` allowing users to run strict static analysis locally before pushing to remote CI/CD pipelines.
+* **Markdown Linting Compliance:** Rewrote `mt-dump` spacing logic to generate 100% compliant `TECHNICAL_REFERENCE.md` files (resolving MD012, MD022, and MD032).
+* **Pylance Strict Typing:** Enriched Python helpers with Google-style docstrings and strict `typing` imports (e.g., `Any`, `Optional`) to cleanly resolve static analysis warnings.
+* **AWK Parser Repair:** Fixed regex boundaries in `mt_help.awk` to properly extract function bodies formatted by `shfmt`.
+* **ShellCheck Hardening:** Resolved various POSIX compliance warnings (SC2295, SC2181) and formatting bugs across the Bash framework.
+
+---
+
 ## 📋 Prerequisites
 
 Before installing this terminal environment, ensure your local workstation meets the following baseline requirements:
