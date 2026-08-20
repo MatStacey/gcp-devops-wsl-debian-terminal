@@ -15,6 +15,9 @@ if [ ! -s "$CONFIG_FILE" ]; then
 fi
 chmod 600 "$CONFIG_FILE" 2> /dev/null
 
+#######################################
+# System: Intercept shell prompt to intelligently reload config.yaml if modified
+#######################################
 __reload_config_if_modified() {
   if [ -f "$CONFIG_MANAGER" ]; then
     if [ ! -f "$ENV_CACHE" ] || [ "$CONFIG_FILE" -nt "$ENV_CACHE" ]; then
@@ -60,7 +63,7 @@ if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CL
 fi
 
 #######################################
-# Prints the current Gemini API model version and extended reasoning mode toggle.
+# AI: Print current Gemini API model version and extended reasoning mode toggle
 #######################################
 mt-get-gemini-status() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -77,7 +80,7 @@ mt-get-gemini-status() {
 }
 
 #######################################
-# Config: Toggle format-on-push true/false
+# Config: Toggle global format-on-push behavior (true/false)
 #######################################
 mt-toggle-format-on-push() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -104,16 +107,19 @@ mt-set-upstream-path() {
     return 0
   fi
   if [ -z "$1" ]; then
-    echo "Usage: mt-add-sync-url <url>"
+    echo "Usage: mt-set-upstream-path <MatStacey/mt-devops-framework>"
     return 1
   fi
-  python3 "$CONFIG_MANAGER" update "git" "sync_repo_url" "$1"
-  export SYNC_REPO_URL="$1"
-  echo "✅ Sync URL added to $CONFIG_FILE."
+  python3 "$CONFIG_MANAGER" update "git" "upstream_repo_path" "$1"
+  export UPSTREAM_REPO_PATH="$1"
+  echo "✅ Upstream repository path set to $1."
 }
 
 #######################################
-# Config: Set default IDE [Usage: mt-set-default-ide "vscode|intellij"]
+# Config: Set default terminal IDE launcher
+# Usage: mt-set-default-ide "vscode|intellij"
+# Arguments:
+#   $1 - IDE identifier (vscode or intellij)
 #######################################
 mt-set-default-ide() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -130,7 +136,10 @@ mt-set-default-ide() {
 }
 
 #######################################
-# Config: Set default AI model [Usage: mt-set-default-ai "gemini|claude|local"]
+# Config: Set default AI model provider
+# Usage: mt-set-default-ai "gemini|claude|local"
+# Arguments:
+#   $1 - AI provider identifier
 #######################################
 mt-set-default-ai() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -147,7 +156,7 @@ mt-set-default-ai() {
 }
 
 #######################################
-# Config: Toggle global AI prompt and integration true/false
+# Config: Toggle global AI prompt and workflow integration (true/false)
 #######################################
 mt-toggle-ai() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -162,7 +171,10 @@ mt-toggle-ai() {
 }
 
 #######################################
-# Config: Open bash.d directory and config.yaml in IDE [Usage: mt-open-config [-ide vscode|intellij]]
+# Config: Open bash.d directory and config.yaml in IDE
+# Usage: mt-open-config [-ide vscode|intellij]
+# Options:
+#   -ide <name>   Override default IDE launcher
 #######################################
 mt-open-config() {
   local selected_ide="${DEFAULT_IDE:-vscode}"
@@ -201,7 +213,10 @@ mt-open-config() {
 }
 
 #######################################
-# Config: Set terminal color theme [Usage: mt-set-theme "theme_name"]
+# Config: Set terminal color theme
+# Usage: mt-set-theme "theme_name"
+# Arguments:
+#   $1 - Valid theme name (e.g. default, dracula, monokai)
 #######################################
 mt-set-theme() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -210,17 +225,17 @@ mt-set-theme() {
   fi
   local theme="${1:-default}"
 
-  if [ ! -f "$THEMES_DIR/$theme.sh" ]; then
-    echo "🚨 Invalid theme. Ensure $theme.sh exists in $THEMES_DIR"
+  if [ ! -f "$HOME/.bash.d/config/themes/$theme.sh" ]; then
+    echo "🚨 Invalid theme. Ensure $theme.sh exists in $HOME/.bash.d/config/themes/"
     return 1
   fi
-  python3 "$CONFIG_MANAGER" update "git" "upstream_repo_path" "$1"
-  export UPSTREAM_REPO_PATH="$1"
-  echo "✅ Upstream repository path set to $1."
+  python3 "$CONFIG_MANAGER" update "system" "theme" "$theme"
+  export BASH_THEME="$theme"
+  echo "✅ Terminal theme set to $theme."
 }
 
 #######################################
-# Config: Interactive Master Setup Wizard Menu
+# Config: Launch the interactive Master Setup Wizard Menu
 #######################################
 mt-setup() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -267,7 +282,7 @@ mt-setup() {
 }
 
 #######################################
-# Config: Quick First-Time Setup
+# Config: Internal Quick First-Time Setup workflow
 #######################################
 __mt_setup_quick() {
   echo -e "${CB_BLUE}--- Quick Setup ---${C_RESET}"
@@ -297,9 +312,13 @@ __mt_setup_quick() {
 }
 
 #######################################
-# Config: Interactive System Setup
+# Config: Interactive System Setup Menu
 #######################################
 mt-setup-system() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
   echo -e "${CB_BLUE}--- System Configuration ---${C_RESET}"
   read -r -p "Default IDE (vscode/intellij) [${DEFAULT_IDE:-vscode}]: " ide
   [ -n "$ide" ] && python3 "$CONFIG_MANAGER" update "system" "default_ide" "$ide"
@@ -311,9 +330,13 @@ mt-setup-system() {
 }
 
 #######################################
-# Config: Interactive AI Setup
+# Config: Interactive AI Setup Menu
 #######################################
 mt-setup-ai() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
   echo -e "${CB_BLUE}--- AI Configuration ---${C_RESET}"
   read -r -p "Enable AI Features? (true/false) [${AI_ENABLED:-true}]: " enabled
   [ -n "$enabled" ] && python3 "$CONFIG_MANAGER" update "ai" "enabled" "$enabled"
@@ -344,9 +367,13 @@ mt-setup-ai() {
 }
 
 #######################################
-# Config: Interactive Exports Setup
+# Config: Interactive Exports Setup Menu
 #######################################
 mt-setup-exports() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
   echo -e "${CB_BLUE}--- Exports Configuration ---${C_RESET}"
   read -r -p "Auto Cleanup Exports? (true/false) [${AUTO_CLEANUP_EXPORTS:-true}]: " cln
   [ -n "$cln" ] && python3 "$CONFIG_MANAGER" update "exports" "auto_cleanup" "$cln"
@@ -358,9 +385,13 @@ mt-setup-exports() {
 }
 
 #######################################
-# Config: Interactive Paths Setup
+# Config: Interactive Paths Setup Menu
 #######################################
 mt-setup-paths() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
   echo -e "${CB_BLUE}--- Paths Configuration ---${C_RESET}"
   read -r -p "VCS Root [${VCS_ROOT:-~/vcs}]: " p1
   [ -n "$p1" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_root" "$p1"
@@ -368,8 +399,8 @@ mt-setup-paths() {
   [ -n "$p2" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_personal" "$p2"
   read -r -p "VCS Exports [${VCS_EXPORTS:-~/vcs/personal/exports}]: " p3
   [ -n "$p3" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_exports" "$p3"
-  read -r -p "Sync Repo [${SYNC_REPO_DIR:-~/vcs/personal/mt-devops-framework}]: " p4
-  [ -n "$p4" ] && python3 "$CONFIG_MANAGER" update "paths" "sync_repo" "$p4"
+  read -r -p "Dotfiles Repo [${DOTFILES_DIR:-~/vcs/personal/mt-devops-framework}]: " p4
+  [ -n "$p4" ] && python3 "$CONFIG_MANAGER" update "paths" "dotfiles_dir" "$p4"
   read -r -p "AI Workspace [${AI_WORKSPACE_DIR:-~/vcs/ai-workspace}]: " p5
   [ -n "$p5" ] && python3 "$CONFIG_MANAGER" update "paths" "ai_workspace" "$p5"
   read -r -p "IAM Scripts [${SCRIPTS_IAM_DIR:-~/vcs/scripts/iam}]: " p6
@@ -380,9 +411,13 @@ mt-setup-paths() {
 }
 
 #######################################
-# Config: Interactive Git Setup
+# Config: Interactive Git Setup Menu
 #######################################
 mt-setup-git() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
   echo -e "${CB_BLUE}--- Git Configuration ---${C_RESET}"
   local default_sync="${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"
   read -r -p "Sync Repo URL [${SYNC_REPO_URL:-$default_sync}]: " sync_url
@@ -403,9 +438,13 @@ mt-setup-git() {
 }
 
 #######################################
-# Config: Interactive CI/CD Setup
+# Config: Interactive CI/CD Setup Menu
 #######################################
 mt-setup-cicd() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
   echo -e "${CB_BLUE}--- CI/CD Configuration ---${C_RESET}"
   read -r -p "Default Provider (github/bitbucket/gitlab/azure/jenkins) [${CICD_PROVIDER:-github}]: " prov
   [ -n "$prov" ] && python3 "$CONFIG_MANAGER" update "cicd" "provider" "$prov"
@@ -413,11 +452,45 @@ mt-setup-cicd() {
 }
 
 #######################################
-# Config: Interactive Docker Setup
+# Config: Interactive Docker Setup Menu
 #######################################
 mt-setup-docker() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
   echo -e "${CB_BLUE}--- Docker Configuration ---${C_RESET}"
   read -r -p "Restart Blocklist (comma-separated) [${DOCKER_BLOCKLIST:-redis,postgres,local-db}]: " blk
   [ -n "$blk" ] && python3 "$CONFIG_MANAGER" update "docker" "restart_blocklist" "$blk"
   echo -e "${CB_GREEN}✅ Docker config updated.${C_RESET}"
 }
+
+#######################################
+# Config: Forcefully re-parse config.yaml and reload environment variables
+#######################################
+mt-load-config() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  echo -e "${CB_BLUE}🔄 Forcefully re-parsing config.yaml...${C_RESET}"
+
+  local env_cache="$HOME/.bash.d/data/cache/.env.cache"
+  rm -f "$env_cache" "$HOME/.bash.d/config/.env.cache" 2> /dev/null
+
+  if [ -f "$CONFIG_MANAGER" ]; then
+    python3 "$CONFIG_MANAGER" load-env > "$env_cache"
+    chmod 600 "$env_cache" 2> /dev/null
+    source "$env_cache"
+    echo -e "${CB_GREEN}✅ Config reloaded! Active variables updated.${C_RESET}"
+  else
+    echo -e "${CB_RED}🚨 Error: config_manager.py not found.${C_RESET}"
+    return 1
+  fi
+}
+
+#######################################
+# Config: Forcefully re-parse config.yaml and reload environment variables
+#######################################
+alias mt-reload-config='mt-load-config'

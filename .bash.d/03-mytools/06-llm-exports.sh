@@ -123,7 +123,26 @@ __mt_do_export() {
   fi
 }
 
+# ------------------------------------------
+# LLM Context & Export Utilities
+# ------------------------------------------
+
+#######################################
+# LLM: Export codebase to text/zip for LLM context window
+#######################################
 mt-export() { __mt_do_export "Generic Code Export" ".*" "$@"; }
+
+#######################################
+# LLM: Export shell scripts (.sh, .bash, .zsh)
+#######################################
 mt-export-shell() { __mt_do_export "Shell Scripts Export" "sh|bash|zsh" "$@"; }
+
+#######################################
+# LLM: Export Terraform & YAML infrastructure code
+#######################################
 mt-export-terraform() { __mt_do_export "Terraform Code Export" "tf|tfvars|yaml|yml" "$@"; }
+
+#######################################
+# LLM: Export Cloud Run / Python microservice codebase
+#######################################
 mt-export-cloudrun() { __mt_do_export "Cloud Run Python Export" "py|txt|yaml|yml|Dockerfile|sh" "$@"; }

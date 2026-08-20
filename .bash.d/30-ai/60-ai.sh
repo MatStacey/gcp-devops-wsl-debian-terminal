@@ -1,16 +1,19 @@
 # shellcheck shell=bash
+# ------------------------------------------
+# AI Workflows & LLM API Integration
+# ------------------------------------------
 # ~/.bash.d/30-ai/60-ai.sh
 
 if [[ -z "${URI_GEMINI_MODELS:-}" ]]; then readonly URI_GEMINI_MODELS="https://generativelanguage.googleapis.com/v1beta/models"; fi
 if [[ -z "${URI_CLAUDE_MESSAGES:-}" ]]; then readonly URI_CLAUDE_MESSAGES="https://api.anthropic.com/v1/messages"; fi
 
 #######################################
-# Calculates the next available minor patch version for a generated file.
+# AI: Calculate next available minor patch version for a generated file
 # Arguments:
-#   $1 - The base file path without extension.
-#   $2 - The file extension.
+#   $1 - Base file path without extension
+#   $2 - File extension
 # Outputs:
-#   Writes the semantic version string (e.g. v1.0.3) to STDOUT.
+#   Prints semantic version string (e.g. v1.0.3) to STDOUT
 #######################################
 _ai_get_next_version() {
   local base_path="$1" ext="$2" major=1 minor=0 patch=0
@@ -19,16 +22,16 @@ _ai_get_next_version() {
 }
 
 #######################################
-# Compiles local codebase files into a single context document for LLMs.
+# AI: Compile local codebase files into a single context payload
 # Globals:
-#   PWD
+#   EXPORT_BLOCKLIST
 # Arguments:
-#   $1 - Explicit target file to serialize.
-#   $2 - Boolean flag to serialize entire active directory.
+#   $1 - Explicit target file to serialize
+#   $2 - Boolean flag to serialize entire active directory
 # Outputs:
-#   Writes path of temporary context file to STDOUT.
+#   Prints temporary context file path to STDOUT
 # Returns:
-#   0 on success, 1 if target file is not found.
+#   0 on success, 1 on error or user abort
 #######################################
 __ai_build_context() {
   local target_file="$1" export_context="$2" context_file=""
@@ -55,7 +58,7 @@ __ai_build_context() {
     echo -e "\n\e[33m⚠️  Warning: This directory contains 1000+ files. AI context may exceed limits.\e[0m" >&2
     read -p "Proceed anyway? [y/N] " -n 1 -r < /dev/tty
     echo > /dev/tty
-    [[ ! $REPLY =~ ^[Yy]$ ]] && {
+    [ "$REPLY" != "y" ] && [ "$REPLY" != "Y" ] && {
       echo "🛑 Aborted." >&2
       return 1
     }
@@ -79,19 +82,19 @@ __ai_build_context() {
 }
 
 #######################################
-# Formats payload and queries the Google Gemini API.
+# AI: Query Google Gemini API with retries and rate-limit handling
 # Globals:
-#   URI_GEMINI_MODELS, GEMINI_API_KEY, GEMINI_VERSION, GEMINI_EXTENDED, AI_SYSTEM_PROMPT
+#   GEMINI_API_KEY, GEMINI_VERSION, GEMINI_EXTENDED, URI_GEMINI_MODELS, AI_SYSTEM_PROMPT
 # Arguments:
-#   $1 - The user prompt string.
-#   $2 - The generated output title context.
-#   $3 - Path to the compiled context file.
-#   $4 - Override model version argument.
-#   $5 - Boolean flag to force extended reasoning model.
+#   $1 - User prompt string
+#   $2 - Output title context
+#   $3 - Path to compiled context file
+#   $4 - Override model version
+#   $5 - Boolean flag to force extended reasoning model
 # Outputs:
-#   Writes raw JSON response payload from Gemini to STDOUT.
+#   Prints API text response to STDOUT
 # Returns:
-#   0 on success, 1 on curl failure or missing API key.
+#   0 on success, 99 on user skip, 100 on hard failure
 #######################################
 __ai_query_gemini() {
   local prompt="$1" title="$2" context_file="$3" req_version="$4" req_extended="$5"
@@ -198,18 +201,18 @@ __ai_query_gemini() {
 }
 
 #######################################
-# Formats payload and queries the Anthropic Claude API.
+# AI: Query Anthropic Claude API with retries and rate-limit handling
 # Globals:
-#   URI_CLAUDE_MESSAGES, CLAUDE_API_KEY, CLAUDE_VERSION, AI_SYSTEM_PROMPT
+#   CLAUDE_API_KEY, CLAUDE_VERSION, URI_CLAUDE_MESSAGES, AI_SYSTEM_PROMPT
 # Arguments:
-#   $1 - The user prompt string.
-#   $2 - The generated output title context.
-#   $3 - Path to the compiled context file.
-#   $4 - Override model version argument.
+#   $1 - User prompt string
+#   $2 - Output title context
+#   $3 - Path to compiled context file
+#   $4 - Override model version
 # Outputs:
-#   Writes raw JSON response payload from Claude to STDOUT.
+#   Prints API text response to STDOUT
 # Returns:
-#   0 on success, 1 on curl failure or missing API key.
+#   0 on success, 99 on user skip, 100 on hard failure
 #######################################
 __ai_query_claude() {
   local prompt="$1" title="$2" context_file="$3" req_version="$4"
@@ -298,18 +301,18 @@ __ai_query_claude() {
 }
 
 #######################################
-# Formats and saves the generated code from LLMs into standard directories.
+# AI: Save generated LLM code payloads into structured directory trees
 # Globals:
 #   AI_WORKSPACE_DIR
 # Arguments:
-#   $1 - Explicit out file path if provided.
-#   $2 - JSON category field (determines subfolder).
-#   $3 - JSON language field.
-#   $4 - JSON extension field.
-#   $5 - Kebab-case title string.
-#   $6 - The raw code payload.
+#   $1 - Explicit out file path
+#   $2 - JSON category field
+#   $3 - JSON language field
+#   $4 - JSON extension field
+#   $5 - Kebab-case title string
+#   $6 - Raw code payload
 # Outputs:
-#   Writes the absolute saved file path to STDOUT.
+#   Prints final saved file path to STDOUT
 #######################################
 __ai_save_output() {
   local explicit_out_file="$1" category="$2" lang="$3" ext="$4" final_title="$5" code="$6" target_file_path=""
@@ -345,12 +348,12 @@ __ai_save_output() {
 }
 
 #######################################
-# AI: Parses standard single JSON object response and saves if needed.
+# AI: Parse standard single JSON object response and save if required
 # Arguments:
 #   $1 - Content string
 #   $2 - Provider name
-#   $3 - Original Title
-#   $4 - Explicit Out File
+#   $3 - Original title
+#   $4 - Explicit out file
 #######################################
 __ai_parse_response() {
   local content="$1" provider="$2" title="$3" explicit_out_file="$4"
@@ -384,22 +387,30 @@ __ai_parse_response() {
 }
 
 #######################################
-# AI: Extracts a JSON array from raw LLM output text
+# AI: Extract a JSON array from raw LLM output text
 # Arguments:
 #   $1 - Raw LLM text payload
 # Outputs:
-#   Writes parsed JSON array string to STDOUT.
+#   Prints parsed JSON array string to STDOUT
 #######################################
 __ai_extract_json_array() {
   echo "$1" | python3 "$HOME/.bash.d/lib/python/ai_extract_json_array.py" 2> /dev/null
 }
 
 #######################################
-# AI: Send a prompt to the currently configured LLM
+# AI: Query configured LLM with prompt and optional context
+# Globals:
+#   DEFAULT_AI
+# Usage: ai [OPTIONS] <prompt>
 # Options:
-#   -f <file>   Attach a single file as context
-#   -e          Attach the entire active directory as context
-#   -h, --help  Show this help message
+#   -m <model>     Override provider model (gemini, claude, local)
+#   -t <title>     Set context title
+#   -e             Attach entire active directory as context
+#   -f <file>      Attach a single file as context
+#   -o <out_file>  Save output directly to specified file
+#   -v <version>   Override model version
+#   -x             Force extended reasoning mode
+#   -h, --help     Show this help menu
 #######################################
 ai() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
@@ -436,7 +447,6 @@ ai() {
 
   local context_file
   context_file=$(__ai_build_context "$target_file" "$export_context")
-  # shellcheck disable=SC2181
   [ $? -ne 0 ] && return 1
 
   local content=""
@@ -450,7 +460,6 @@ ai() {
     echo "🚨 Error: Invalid provider '$provider'." >&2
     return 1
   fi
-  # shellcheck disable=SC2181
   [ $? -ne 0 ] && return 1
 
   [ -f "$context_file" ] && rm -f "$context_file"
@@ -459,18 +468,18 @@ ai() {
 }
 
 #######################################
-# Formats payload and queries a local LLM endpoint (OpenAI-compatible).
+# AI: Query local LLM endpoint (OpenAI-compatible)
 # Globals:
 #   LOCAL_AI_BASE_URL, LOCAL_AI_API_KEY, LOCAL_AI_MODEL, AI_SYSTEM_PROMPT
 # Arguments:
-#   $1 - The user prompt string.
-#   $2 - The generated output title context.
-#   $3 - Path to the compiled context file.
-#   $4 - Override model version argument.
+#   $1 - User prompt string
+#   $2 - Output title context
+#   $3 - Path to compiled context file
+#   $4 - Override model version
 # Outputs:
-#   Writes raw JSON response payload from the local LLM to STDOUT.
+#   Prints API text response to STDOUT
 # Returns:
-#   0 on success, 1 on curl failure.
+#   0 on success, 1 on curl failure or timeout
 #######################################
 __ai_query_local() {
   local prompt="$1" title="$2" context_file="$3" req_version="$4"
@@ -542,7 +551,10 @@ __ai_query_local() {
 }
 
 #######################################
-# AI: Explain a shell command
+# AI: Explain a terminal command in detail
+# Usage: ai-explain "<command>"
+# Arguments:
+#   $1 - Command string to explain
 #######################################
 ai-explain() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -558,7 +570,7 @@ ai-explain() {
 }
 
 #######################################
-# AI: Debug the last failed command
+# AI: Debug and explain the last failed terminal command
 #######################################
 mt-ai-debug() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then

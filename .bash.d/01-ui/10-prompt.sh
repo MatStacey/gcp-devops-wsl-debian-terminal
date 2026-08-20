@@ -1,7 +1,16 @@
 # shellcheck shell=bash
-# ~/.bash.d/10-prompt.sh
-# Generate dynamic zero-lag prompt with clickable links and color-coded Git status
+# ------------------------------------------
+# Dynamic Shell Prompt (PS1) Generation
+# ------------------------------------------
+# ~/.bash.d/01-ui/10-prompt.sh
 
+#######################################
+# UI: Extract active GCP project and account for the prompt
+# Globals:
+#   __prompt_gcp_proj (Output)
+#   __prompt_gcp_acct (Output)
+#   __prompt_gcp_color (Output)
+#######################################
 __prompt_gcp_info() {
   local gcp_active="default"
   [ -f "$HOME/.config/gcloud/active_config" ] && read -r gcp_active < "$HOME/.config/gcloud/active_config"
@@ -23,6 +32,11 @@ __prompt_gcp_info() {
   fi
 }
 
+#######################################
+# UI: Extract active Kubernetes context for the prompt
+# Globals:
+#   __prompt_k8s_ctx (Output)
+#######################################
 __prompt_k8s_info() {
   local kube_cfg="${KUBECONFIG:-$HOME/.kube/config}"
   if [ -f "$kube_cfg" ]; then
@@ -35,6 +49,12 @@ __prompt_k8s_info() {
   fi
 }
 
+#######################################
+# UI: Extract Git branch, status color, and remote URL for the prompt
+# Globals:
+#   __prompt_git_branch, __prompt_git_color, __prompt_git_url (Outputs)
+#   __prompt_git_last_pwd, __prompt_git_url_cache (Internal Cache)
+#######################################
 __prompt_git_info() {
   local git_stat
   # Early exit if not a git repository
@@ -77,6 +97,11 @@ __prompt_git_info() {
   __prompt_git_url="https://${clean_url}${branch_path}"
 }
 
+#######################################
+# UI: Generate dynamic zero-lag prompt with clickable links and Git status
+# Outputs:
+#   Prints formatted prompt string to STDOUT
+#######################################
 __cloud_ps1() {
   local e=$'\e' np_start=$'\001' np_end=$'\002'
   local color_reset="${np_start}${C_RESET}${np_end}"

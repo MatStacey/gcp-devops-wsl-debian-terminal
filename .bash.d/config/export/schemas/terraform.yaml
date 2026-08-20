@@ -1,0 +1,4 @@
+name: "Terraform & IaC Export"
+aliases: ["terraform", "tf", "iac"]
+include_extensions: "tf|tfvars|hcl|yaml|yml"
+exclude_patterns: "\\.tfstate.*|\\.terraform.*|lock\\.hcl"

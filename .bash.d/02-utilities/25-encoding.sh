@@ -2,9 +2,10 @@
 # ------------------------------------------
 # Base64 Encoding & Decoding Utilities
 # ------------------------------------------
+# ~/.bash.d/02-utilities/25-encoding.sh
 
 #######################################
-# Base64: Encode a string, file, or stream to Base64
+# System: Encode a string, file, or stream to Base64
 # Arguments:
 #   -f <file>   Path to local input file
 #   -o <file>   Path to write output file (defaults to stdout)
@@ -60,7 +61,7 @@ base64-enc() {
 }
 
 #######################################
-# Base64: Decode a Base64 string, file, or stream
+# System: Decode a Base64 string, file, or stream
 # Arguments:
 #   -f <file>   Path to local input file containing Base64 text
 #   -o <file>   Path to write output file (defaults to stdout)
