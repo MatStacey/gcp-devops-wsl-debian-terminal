@@ -437,3 +437,48 @@ git-push-all() {
   echo -e "${CB_BLUE}🚀 Pushing changes to remote...${C_RESET}"
   git push
 }
+
+#######################################
+# Git: Language-aware automatic code formatter
+#######################################
+__git_auto_format() {
+  local target_dir="${1:-.}"
+
+  if [ "${GIT_FORMAT_ON_PUSH:-true}" = "false" ]; then
+    return 0
+  fi
+
+  echo "🧹 Running language auto-formatters..."
+
+  # 1. Shell Scripts
+  if command -v shfmt > /dev/null 2>&1; then
+    if find "$target_dir" -type f \( -name "*.sh" -o -name "*.bash" \) | read -r; then
+      shfmt -i 2 -ci -sr -w "$target_dir" > /dev/null 2>&1 || true
+    fi
+  fi
+
+  # 2. Python
+  if find "$target_dir" -type f -name "*.py" | read -r; then
+    if command -v ruff > /dev/null 2>&1; then
+      ruff check --select I --fix "$target_dir" > /dev/null 2>&1 || true
+      ruff format "$target_dir" > /dev/null 2>&1 || true
+    fi
+    if command -v yapf > /dev/null 2>&1; then
+      yapf -r -i --style="{based_on_style: google, column_limit: 88, spaces_before_comment: 2}" "$target_dir" > /dev/null 2>&1 || true
+    fi
+  fi
+
+  # 3. Terraform
+  if command -v terraform > /dev/null 2>&1; then
+    if find "$target_dir" -type f -name "*.tf" | read -r; then
+      terraform fmt -recursive "$target_dir" > /dev/null 2>&1 || true
+    fi
+  fi
+
+  # 4. Web / Markup (Prettier)
+  if command -v prettier > /dev/null 2>&1; then
+    if find "$target_dir" -type f \( -name "*.yml" -o -name "*.yaml" -o -name "*.json" -o -name "*.md" \) | read -r; then
+      prettier --write "$target_dir/**/*.{yml,yaml,json,md}" > /dev/null 2>&1 || true
+    fi
+  fi
+}
