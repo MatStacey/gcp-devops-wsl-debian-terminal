@@ -12,13 +12,13 @@ tf-iam() {
     return 0
   fi
   local generate_script=false
-  local override_ai=""
+  local override_ai=()
 
   local OPTIND opt
   while getopts "gm:" opt; do
     case ${opt} in
       g) generate_script=true ;;
-      m) override_ai="-m $OPTARG" ;;
+      m) override_ai=("-m" "$OPTARG") ;;
       \?)
         echo "Usage: tf-iam [-g] [-m gemini|claude]" >&2
         return 1
@@ -50,14 +50,12 @@ tf-iam() {
     prompt="${prompt}\n\n${script_prompt}"
 
     echo "🤖 Analyzing Terraform codebase and generating IAM provisioning script..."
-    # shellcheck disable=SC2086
-    ai $override_ai -e -t "${repo_name}-iam-provisioning" -o "$target_script" "$prompt"
+    ai "${override_ai[@]}" -e -t "${repo_name}-iam-provisioning" -o "$target_script" "$prompt"
   else
     local chat_prompt
     chat_prompt=$(__get_prompt "tf_iam_chat")
     prompt="${prompt}\n\n${chat_prompt}"
     echo "🤖 Analyzing Terraform codebase for IAM requirements..."
-    # shellcheck disable=SC2086
-    ai $override_ai -e "$prompt"
+    ai "${override_ai[@]}" -e "$prompt"
   fi
 }
