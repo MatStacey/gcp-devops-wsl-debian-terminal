@@ -70,8 +70,11 @@ __git_sync_ai_commit() {
 
       while read -r file_path; do
         if [ -e "$repo_dir/$file_path" ] || git -C "$repo_dir" ls-files --error-unmatch "$file_path" > /dev/null 2>&1; then
-          git -C "$repo_dir" add "$file_path"
-          files_staged=1
+          # Prevent AI from attempting to stage ignored files or directories
+          if ! git -C "$repo_dir" check-ignore -q "$file_path"; then
+            git -C "$repo_dir" add "$file_path" > /dev/null 2>&1
+            files_staged=1
+          fi
         fi
       done < <(echo "$commit_obj" | jq -r '.files[]')
 
