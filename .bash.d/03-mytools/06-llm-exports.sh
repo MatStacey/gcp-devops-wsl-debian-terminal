@@ -57,12 +57,12 @@ __mt_do_export() {
 
   # Find files, exclude global blocklist, include specified extensions
   eval "find \"$target_dir\" $maxdepth -type f" 2> /dev/null |
-    egrep -vi "(${EXPORT_BLOCKLIST})" |
-    egrep -i "\.(${ext_pattern})$" > "$file_list"
+  grep -E -vi "(${EXPORT_BLOCKLIST})" |
+  grep -E -i "\.(${ext_pattern})$" > "$file_list"
 
   # Optionally filter out excluded extensions
   if [ -n "$exc_pattern" ]; then
-    egrep -vi "\.(${exc_pattern})$" "$file_list" > "${file_list}.filtered"
+    grep -E -vi "\.(${exc_pattern})$" "$file_list" > "${file_list}.filtered"
     mv "${file_list}.filtered" "$file_list"
   fi
 
@@ -77,11 +77,12 @@ __mt_do_export() {
   done < "$file_list"
 
   if [ "$zip_out" = true ]; then
-    local zip_name="export_$(date +%s).zip"
+    local zip_name
+    zip_name="export_$(date +%s).zip"
     zip -qj "$zip_name" "$tmp_file"
     echo "✅ Export saved to $zip_name"
   else
-    cat "$tmp_file" | clip
+    clip < "$tmp_file"
     echo "✅ Export copied to clipboard!"
   fi
 

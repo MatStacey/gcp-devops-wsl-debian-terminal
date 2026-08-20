@@ -291,7 +291,8 @@ MARKDOWN_EOF
   if [ -z "$diff_content" ]; then return 0; fi
 
   echo "🤖 Asking $provider to summarize changes for README.md..."
-  local base_prompt=$(__get_prompt "git_readme_summary")
+  local base_prompt
+  base_prompt=$(__get_prompt "git_readme_summary")
 
   $diff_content
 
