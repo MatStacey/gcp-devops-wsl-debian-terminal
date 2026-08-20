@@ -118,6 +118,8 @@ __cloud_ps1() {
       ai_text="AI: Gemini (${GEMINI_VERSION#gemini-})"
     elif [ "$provider" = "claude" ]; then
       ai_text="AI: Claude (${CLAUDE_VERSION#claude-})"
+    elif [ "$provider" = "local" ]; then
+      ai_text="AI: Local (${LOCAL_AI_MODEL})"
     fi
     out="${out}${np_start}${CB_CYAN}${np_end}${ai_text}${color_reset}"
   fi
