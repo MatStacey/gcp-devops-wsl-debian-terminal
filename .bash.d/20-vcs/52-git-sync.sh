@@ -95,9 +95,10 @@ __git_sync_copy_files() {
 
 #######################################
 # System: Sync local bash configs to terminal dotfiles repo and create a Pull Request
-# Usage: mt-push-update [-i issue_num] [optional_message]
+# Usage: mt-push-update [-i issue_num] [-s] [optional_message]
 # Options:
 #   -i <issue>  Optional issue number to link to the Pull Request
+#   -s          Run ShellCheck locally before pushing to catch errors early
 #   $@          Optional commit message string
 #######################################
 mt-push-update() {
@@ -107,17 +108,32 @@ mt-push-update() {
   fi
 
   local issue_num=""
+  local run_shellcheck=false
   local OPTIND opt
-  while getopts "i:" opt; do
+  while getopts "i:s" opt; do
     case ${opt} in
       i) issue_num="$OPTARG" ;;
+      s) run_shellcheck=true ;;
       \?)
-        echo "Usage: mt-push-update [-i <issue_number>] [optional message]" >&2
+        echo "Usage: mt-push-update [-i <issue_number>] [-s] [optional message]" >&2
         return 1
         ;;
     esac
   done
   shift $((OPTIND - 1))
+
+  if [ "$run_shellcheck" = true ]; then
+    echo -e "${CB_BLUE}🔍 Running local ShellCheck...${C_RESET}"
+    if command -v shellcheck > /dev/null 2>&1; then
+      if ! find "$HOME/.bash.d" -type f -name "*.sh" -print0 | xargs -0 shellcheck -e SC1090,SC1091,SC2119,SC2120,SC2207,SC2015,SC2317,SC2016,SC2129,SC2028,SC1003; then
+        echo -e "${CB_RED}🚨 ShellCheck failed! Please fix the errors above before syncing.${C_RESET}"
+        return 1
+      fi
+      echo -e "${CB_GREEN}✅ ShellCheck passed!${C_RESET}"
+    else
+      echo -e "${CB_YELLOW}⚠️ ShellCheck is not installed locally. Skipping...${C_RESET}"
+    fi
+  fi
 
   local user_msg="$*"
   local repo_dir="${DOTFILES_DIR:-$SYNC_REPO_DIR}"
@@ -148,14 +164,14 @@ mt-push-update() {
     if [ "$current_branch" != "$default_branch" ] && command -v gh > /dev/null 2>&1; then
       local pr_state
       pr_state=$(gh pr view "$current_branch" --json state -q .state 2> /dev/null || echo "NONE")
-      if [[ "$pr_state" == "MERGED" || "$pr_state" == "CLOSED" ]]; then
+      if [ "$pr_state" = "MERGED" ] || [ "$pr_state" = "CLOSED" ]; then
         echo -e "${CB_YELLOW}⚠️  Current branch '$current_branch' has a $pr_state PR and is considered dead.${C_RESET}"
         read -r -p "Delete '$current_branch' locally and checkout a new branch from $default_branch? [Y/n] " -n 1
         echo
-        if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+        if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
           read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
           echo
-          if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+          if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
             echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
             git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
           fi
@@ -307,9 +323,9 @@ mt-get-update() {
 
   local repo_path="${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"
 
-  local api_url="[https://api.github.com/repos/$](https://api.github.com/repos/$){repo_path}/releases/latest"
+  local api_url="https://api.github.com/repos/${repo_path}/releases/latest"
   if [ -n "$target_version" ]; then
-    api_url="[https://api.github.com/repos/$](https://api.github.com/repos/$){repo_path}/releases/tags/${target_version}"
+    api_url="https://api.github.com/repos/${repo_path}/releases/tags/${target_version}"
   fi
 
   local release_data
@@ -423,9 +439,9 @@ mt-download-release() {
 
   local repo_path="${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"
 
-  local api_url="[https://api.github.com/repos/$](https://api.github.com/repos/$){repo_path}/releases/latest"
+  local api_url="https://api.github.com/repos/${repo_path}/releases/latest"
   if [ -n "$target_version" ]; then
-    api_url="[https://api.github.com/repos/$](https://api.github.com/repos/$){repo_path}/releases/tags/${target_version}"
+    api_url="https://api.github.com/repos/${repo_path}/releases/tags/${target_version}"
   fi
 
   local release_data

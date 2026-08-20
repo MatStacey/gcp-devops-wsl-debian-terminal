@@ -249,6 +249,14 @@ Complex bash functions, framework utilities, and automated workflows.
 |---|---|
 | `tf-val-all` | Terraform: Recursively validate and scan all Terraform directories |
 
+### LLM Context & Export Utilities
+| Command | Description |
+|---|---|
+| `mt-export` | LLM: Export codebase to text/zip for LLM context window |
+| `mt-export-cloudrun` | LLM: Export Cloud Run / Python microservice codebase |
+| `mt-export-shell` | LLM: Export shell scripts (.sh, .bash, .zsh) |
+| `mt-export-terraform` | LLM: Export Terraform & YAML infrastructure code |
+
 ### MyTools Documentation & Runner
 | Command | Description |
 |---|---|
@@ -257,8 +265,6 @@ Complex bash functions, framework utilities, and automated workflows.
 | `mt-cats` | MyTools: List all available command categories |
 | `mt-config` | MyTools: Display active framework configuration variables |
 | `mt-dump` | MyTools: Generate a detailed technical Markdown dump of all functions and aliases |
-| `mt-export` | LLM: Export codebase to text/zip for LLM context window using dynamic schemas |
-| `mt-export-cleanup` | LLM: Cleans up all generated context export files |
 | `mt-funcs` | MyTools: List all documented shell functions |
 | `mt-fzf` | MyTools: Interactive fuzzy-finder to search for a command |
 | `mt-get-version` | System: Print the current local version of the terminal profile |
