@@ -109,7 +109,11 @@ docker-shell() {
 # Docker: Aggressive cleanup of all unused containers, images, and volumes
 #######################################
 docker-nuke() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+  if [[ "$1" == "--dry-run" ]]; then
+    echo "🔍 Simulating destruction of unused Docker resources..."
+    docker system prune -a --volumes
+    return 0
+  elif [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
