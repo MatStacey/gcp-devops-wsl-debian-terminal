@@ -47,7 +47,8 @@ BEGIN {
     if (in_doc && doc_desc != "") {
         match($1, /^[a-zA-Z0-9_-]+/)
         name = substr($1, 1, RLENGTH)
-        if (name !~ /^__/) {
+        # Filters out any function starting with an underscore
+        if (name !~ /^_/) {
             print "func\t" cat "\t" name "\t" doc_desc
         }
     }
