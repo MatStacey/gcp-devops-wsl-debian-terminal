@@ -412,3 +412,37 @@ mt-set-local-ai-api-key() {
   export LOCAL_AI_API_KEY="$key"
   echo "✅ Local AI API Key added to $CONFIG_FILE."
 }
+
+#######################################
+# Config: Interactive First-Time Setup Wizard
+#######################################
+mt-setup() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+  echo -e "${CB_BLUE}           MT DEVOPS FRAMEWORK - SETUP WIZARD             ${C_RESET}"
+  echo -e "${CB_BLUE}==========================================================${C_RESET}\n"
+
+  read -r -p "1️⃣  Default IDE (vscode/intellij) [vscode]: " ide
+  mt-set-default-ide "${ide:-vscode}"
+
+  read -r -p "2️⃣  Default AI Provider (gemini/claude/local) [gemini]: " provider
+  mt-set-default-ai "${provider:-gemini}"
+
+  if [[ "${provider:-gemini}" == "gemini" ]]; then
+    read -r -s -p "🔑 Enter Gemini API Key (Enter to skip): " key
+    echo
+    [ -n "$key" ] && mt-add-gemini-key "$key"
+  elif [[ "$provider" == "claude" ]]; then
+    read -r -s -p "🔑 Enter Claude API Key (Enter to skip): " key
+    echo
+    [ -n "$key" ] && mt-add-claude-key "$key"
+  fi
+
+  read -r -p "3️⃣  Git Sync Repo URL (e.g. git@github.com:user/repo.git) [skip]: " sync_url
+  [ -n "$sync_url" ] && mt-add-sync-url "$sync_url"
+
+  echo -e "\n${CB_GREEN}✅ Setup Complete! Run 'reload' to apply changes.${C_RESET}"
+}
