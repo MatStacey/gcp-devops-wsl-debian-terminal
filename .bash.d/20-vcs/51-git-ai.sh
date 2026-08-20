@@ -293,8 +293,7 @@ MARKDOWN_EOF
   echo "🤖 Asking $provider to summarize changes for README.md..."
   local base_prompt
   base_prompt=$(__get_prompt "git_readme_summary")
-
-  $diff_content
+  base_prompt="${base_prompt}\n\n${diff_content}"
 
   local response=""
   if [ "$provider" = "gemini" ]; then
