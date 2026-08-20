@@ -158,7 +158,7 @@ __ai_query_gemini() {
     if [[ "$err_msg" == *"Quota exceeded"* || "$err_msg" == *"429"* ]]; then
       local wait_time=25
       if [[ "$err_msg" =~ retry[[:space:]]in[[:space:]]([0-9]+) ]]; then
-        wait_time=$((${BASH_REMATCH[1]} + 2))
+        wait_time=$((BASH_REMATCH[1] + 2))
       fi
 
       echo -e "\n\033[01;33m⏳ AI Rate limit hit! Required cooldown: ${wait_time}s (Attempt $attempt/$max_retries)\033[0m" >&2
