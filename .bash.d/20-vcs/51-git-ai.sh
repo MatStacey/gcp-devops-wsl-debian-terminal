@@ -2,18 +2,16 @@
 # ------------------------------------------
 # Version Control (Git) - AI Workflows
 # ------------------------------------------
+# ~/.bash.d/20-vcs/51-git-ai.sh
 
 #######################################
-# Analyzes git diffs and calls the Gemini API to systematically generate
-# separate commits for each logical feature/change.
+# Git: Analyze git diff and generate feature-grouped AI commits
 # Globals:
-#   GEMINI_API_KEY, AI_MAX_DIFF_BYTES, GEMINI_VERSION
+#   GEMINI_API_KEY, CLAUDE_API_KEY, DEFAULT_AI, AI_MAX_DIFF_BYTES
 # Arguments:
-#   $1 - The target repository directory path.
-# Outputs:
-#   Executes git add and git commit commands sequentially.
+#   $1 - Target repository directory
 # Returns:
-#   0 on success or graceful fallback bypass.
+#   0 on success, 1 on failure/missing keys, 99/100 on bypass/rate limit
 #######################################
 __git_sync_ai_commit() {
   local repo_dir="$1"
@@ -59,15 +57,13 @@ __git_sync_ai_commit() {
     return 1
   fi
 
-  if [ $query_status -eq 99 ]; then return 0; fi    # User bypassed via manual commit
-  if [ $query_status -eq 100 ]; then return 100; fi # Hard fail limit
+  if [ $query_status -eq 99 ]; then return 0; fi
+  if [ $query_status -eq 100 ]; then return 100; fi
 
-  # Extract JSON Array using modular AI helper
   local generated_json
   generated_json=$(__ai_extract_json_array "$response")
 
   if [ -n "$generated_json" ] && echo "$generated_json" | jq -e . > /dev/null 2>&1; then
-    # Reset the staging area so we can stage groups individually
     git -C "$repo_dir" reset HEAD > /dev/null 2>&1
 
     echo "$generated_json" | jq -c '.[]' | while read -r commit_obj; do
@@ -77,7 +73,6 @@ __git_sync_ai_commit() {
 
       while read -r file_path; do
         if [ -e "$repo_dir/$file_path" ] || git -C "$repo_dir" ls-files --error-unmatch "$file_path" > /dev/null 2>&1; then
-          # Prevent AI from attempting to stage ignored files or directories
           if ! git -C "$repo_dir" check-ignore -q "$file_path"; then
             git -C "$repo_dir" add "$file_path" > /dev/null 2>&1
             files_staged=1
@@ -98,7 +93,10 @@ __git_sync_ai_commit() {
 }
 
 #######################################
-# Git: Add all files, intelligently group via AI, and push [Usage: git-ai-push-all [optional message]]
+# Git: Auto-format, stage, generate AI commits, and push all changes
+# Usage: git-ai-push-all [optional_commit_message]
+# Arguments:
+#   $1 - Optional user commit message (bypasses AI)
 #######################################
 git-ai-push-all() {
   __git_auto_format "."
@@ -123,18 +121,15 @@ git-ai-push-all() {
     local loop_count=0
     local max_loops=10
 
-    # 🔄 Loop to process all chunks of the diff until the staging area is clean
     while ! git diff --staged --quiet; do
       ((loop_count++))
 
-      # Failsafe to prevent runaway API loops
       if [ "$loop_count" -gt "$max_loops" ]; then
         echo "⚠️ AI loop limit reached. Batch committing remaining files..."
         git commit -m "chore: automated changes (batch remainder)"
         break
       fi
 
-      # Snapshot staged count to detect stalled AI progress
       local prev_staged
       prev_staged=$(git diff --staged --name-only | wc -l)
 
@@ -150,10 +145,8 @@ git-ai-push-all() {
         break
       fi
 
-      # __git_sync_ai_commit runs `git reset HEAD`. We must re-stage the leftovers for the next loop.
       git add .
 
-      # Break out if the AI got stuck and didn't process any new files
       local next_staged
       next_staged=$(git diff --staged --name-only | wc -l)
       if [ "$prev_staged" -eq "$next_staged" ]; then
@@ -169,9 +162,9 @@ git-ai-push-all() {
 }
 
 #######################################
-# Git: Preflight safety checks for AI file generation
+# Git: Preflight safety checks for AI file generation (.gitignore, README)
 # Arguments:
-#   $1 - The target filename (e.g., .gitignore, README.md)
+#   $1 - Target filename (e.g., .gitignore, README.md)
 #######################################
 __git_ai_preflight_check() {
   local target_file="$1"
@@ -189,7 +182,6 @@ __git_ai_preflight_check() {
   local file_count
   file_count=$(find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" 2> /dev/null | head -n 1000 | wc -l)
   if [ "$file_count" -ge 1000 ]; then
-    # Direct read from /dev/tty ensures the prompt works even if stdin is piped
     echo -e "${CB_YELLOW}⚠️  Warning: This directory contains 1000+ files. AI context may exceed limits.${C_RESET}" >&2
     read -p "Proceed anyway? [y/N] " -n 1 -r < /dev/tty
     echo > /dev/tty
@@ -213,7 +205,7 @@ __git_ai_preflight_check() {
 }
 
 #######################################
-# Git: Ask AI to generate a comprehensive .gitignore for the current project
+# AI: Generate a comprehensive .gitignore for the active repository
 #######################################
 mt-ai-gitignore() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -231,7 +223,7 @@ mt-ai-gitignore() {
 }
 
 #######################################
-# Git: Ask AI to generate a comprehensive README.md for the current project
+# AI: Generate a comprehensive README.md for the active repository
 #######################################
 mt-ai-readme() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -249,7 +241,9 @@ mt-ai-readme() {
 }
 
 #######################################
-# Git: Automatically generate COMMANDS.md and use AI to update README.md
+# Git: Generate COMMANDS.md reference and ask AI to update README.md summary
+# Arguments:
+#   $1 - Target repository directory path
 #######################################
 __git_sync_ai_docs() {
   local repo_dir="$1"
@@ -265,12 +259,10 @@ This document is automatically generated on every sync and lists all available f
 Shortcuts for common commands and CLI replacements.
 MARKDOWN_EOF
 
-  # Use the cached TSV data to deterministically build the markdown table
   if [ -f "$HOME/.bash.d/data/cache/.mt_data.tsv" ]; then
     local awk_script="$HOME/.bash.d/lib/awk/commands_md.awk"
     local tsv_data="$HOME/.bash.d/data/cache/.mt_data.tsv"
 
-    # Generate Aliases section grouped by Category
     awk -v target_type="alias" -f "$awk_script" <(sort -t$'	' -k2,2 -k3,3 "$tsv_data") >> "$repo_dir/COMMANDS.md"
 
     echo -e "
@@ -279,7 +271,6 @@ MARKDOWN_EOF
 ## 🛠️ Functions
 Complex bash functions, framework utilities, and automated workflows." >> "$repo_dir/COMMANDS.md"
 
-    # Generate Functions section grouped by Category
     awk -v target_type="func" -f "$awk_script" <(sort -t$'	' -k2,2 -k3,3 "$tsv_data") >> "$repo_dir/COMMANDS.md"
   fi
 
@@ -287,7 +278,6 @@ Complex bash functions, framework utilities, and automated workflows." >> "$repo
   if [ "$provider" = "gemini" ] && [[ -z "${GEMINI_API_KEY:-}" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" ]]; then return 0; fi
   if [ "$provider" = "claude" ] && [[ -z "${CLAUDE_API_KEY:-}" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" ]]; then return 0; fi
 
-  # Stage files to capture the true diff of what is about to be committed
   git -C "$repo_dir" add --all
   local diff_content
   diff_content=$(git -C "$repo_dir" diff --staged -- ':!COMMANDS.md' ':!README.md' | head -c 8000)
@@ -312,17 +302,14 @@ Complex bash functions, framework utilities, and automated workflows." >> "$repo
     query_status=$?
   fi
 
-  if [ $query_status -eq 99 ]; then return 0; fi    # User skipped docs
-  if [ $query_status -eq 100 ]; then return 100; fi # Hard fail
+  if [ $query_status -eq 99 ]; then return 0; fi
+  if [ $query_status -eq 100 ]; then return 100; fi
 
-  # Clean potential markdown wrappers from the AI output
   local raw_text
   raw_text=$(echo "$response" | sed 's/```json//gi; s/```markdown//gi; s/```//g')
 
   local clean_updates
-  # Safely parse JSON if present, otherwise fallback to the raw text
   if echo "$raw_text" | jq -e . > /dev/null 2>&1; then
-    # Extract the message, fallback to code, and if all else fails, use the raw text
     clean_updates=$(echo "$raw_text" | jq -r '.message // .code')
   else
     clean_updates="$raw_text"

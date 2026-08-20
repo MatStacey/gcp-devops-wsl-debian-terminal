@@ -1,0 +1,4 @@
+name: "Shell Scripts Export"
+aliases: ["shell", "sh", "bash", "zsh"]
+include_extensions: "sh|bash|zsh"
+exclude_patterns: ""

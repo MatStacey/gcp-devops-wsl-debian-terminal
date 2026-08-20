@@ -2,11 +2,14 @@
 # ------------------------------------------
 # MyTools Documentation & Runner
 # ------------------------------------------
+# ~/.bash.d/03-mytools/05-mytools.sh
 
 #######################################
-# Prints the most recent mtime across all .bash.d/*.sh files, used to
-# invalidate the mytools cache. GNU find's `-printf` isn't available on
-# macOS/BSD find, so fall back to `stat -f %m` there.
+# System: Get latest modification timestamp across all shell scripts
+# Arguments:
+#   $1 - Base directory path (.bash.d)
+# Outputs:
+#   Prints highest epoch timestamp to STDOUT
 #######################################
 __bashd_latest_mod() {
   local bashd_dir="$1"
@@ -17,6 +20,9 @@ __bashd_latest_mod() {
   fi
 }
 
+#######################################
+# System: Rebuild mytools TSV index and formatted cache
+#######################################
 __rebuild_mytools_cache() {
   local bashd_dir="$HOME/.bash.d"
   mkdir -p "$bashd_dir/data/cache" 2> /dev/null
@@ -24,7 +30,6 @@ __rebuild_mytools_cache() {
   local tsv_index="$bashd_dir/data/cache/.mt_data.tsv"
   local time_file="${cache_file}.time"
 
-  # Natively parse all sh files with AWK to handle multi-line blocks
   local raw_tsv
   raw_tsv=$(find "$bashd_dir" -type f -name "*.sh" -exec awk -f "$bashd_dir/lib/awk/mytools.awk" {} +)
 
@@ -170,22 +175,38 @@ mt-run() {
 }
 
 #######################################
-# Framework: Search through available mytools commands
+# MyTools: Search through available mytools commands with tab-completion
 # Arguments:
-#   $1 - (Optional) Search term
+#   $1 - Search term or command name
 #######################################
-mt-search() {
+mt-lookup() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
   }
   [ -z "$1" ] && {
-    echo "Usage: mt-search <keyword>"
+    echo "Usage: mt-lookup <keyword|command>"
     return 1
   }
   mytools > /dev/null
   awk -F'\t' -v q="${1,,}" 'tolower($0) ~ q { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
 }
+
+#######################################
+# MyTools: Search through available mytools commands (Alias)
+#######################################
+alias mt-search='mt-lookup'
+
+_mt_lookup_completions() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local tsv="$HOME/.bash.d/data/cache/.mt_data.tsv"
+  if [ -f "$tsv" ]; then
+    local candidates
+    candidates=$(awk -F'\t' '{print $3 "\n" $2}' "$tsv" | sort -u)
+    COMPREPLY=($(compgen -W "$candidates" -- "$cur"))
+  fi
+}
+complete -F _mt_lookup_completions mt-lookup mt-search
 
 #######################################
 # MyTools: Interactive fuzzy-finder to search for a command
@@ -217,7 +238,7 @@ mt-config() {
   echo -e " ${CB_CYAN}CLAUDE_VERSION    ${C_RESET}: ${CLAUDE_VERSION:-claude-3-7-sonnet-latest}"
   echo -e " ${CB_CYAN}VCS_ROOT          ${C_RESET}: ${VCS_ROOT}"
   echo -e " ${CB_CYAN}VCS_PERSONAL      ${C_RESET}: ${VCS_PERSONAL}"
-  echo -e " ${CB_CYAN}SYNC_REPO_DIR     ${C_RESET}: ${SYNC_REPO_DIR}"
+  echo -e " ${CB_CYAN}DOTFILES_DIR      ${C_RESET}: ${DOTFILES_DIR:-$SYNC_REPO_DIR}"
   echo -e " ${CB_CYAN}AI_WORKSPACE      ${C_RESET}: ${AI_WORKSPACE_DIR}"
   echo -e " ${CB_CYAN}AUTO_CLEANUP      ${C_RESET}: ${AUTO_CLEANUP_EXPORTS:-false} (${AUTO_CLEANUP_DAYS:-7} days)"
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
@@ -226,7 +247,7 @@ mt-config() {
 #######################################
 # MyTools: Display detailed help and source code for a command
 # Arguments:
-#   $1 - Command name
+#   $1 - Command name or keyword
 #######################################
 mt-help() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
@@ -239,28 +260,56 @@ mt-help() {
     return 1
   }
 
+  __render_help() {
+    local cmd="$1"
+    local fpath="$2"
+    echo -e "\033[1;34m==========================================================\033[0m"
+    echo -e "\033[1;36m 🛠️  ${cmd}\033[0m"
+    echo -e "\033[1;34m==========================================================\033[0m"
+    echo -e "\033[1;33m 📄 File: \033[0m $(wslpath -m "$fpath" 2> /dev/null || echo "$fpath")"
+    echo -e "\033[1;34m----------------------------------------------------------\033[0m"
+    awk -v target="$cmd" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$fpath" | "$BAT_BIN" --language=bash --style=plain 2> /dev/null ||
+      awk -v target="$cmd" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$fpath"
+    echo -e "\033[1;34m==========================================================\033[0m"
+  }
+
   local file_path
   file_path=$(grep -rlE "^(alias ${target}=|${target}\(\)[ \t]*\{)" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
-
-  if [ -z "$file_path" ]; then
-    if ! type -t "$target" > /dev/null 2>&1; then
-      echo "🚨 Error: '$target' is not a recognized command, alias, or function."
-      return 1
-    fi
-    echo "⚠️  '$target' is not a custom MyTools command. Falling back to native help..."
-    "$target" --help 2> /dev/null || man "$target" || "$target" -h
-    return $?
+  if [ -n "$file_path" ]; then
+    __render_help "$target" "$file_path"
+    return 0
   fi
 
-  echo -e "\033[1;34m==========================================================\033[0m"
-  echo -e "\033[1;36m 🛠️  ${target}\033[0m"
-  echo -e "\033[1;34m==========================================================\033[0m"
-  echo -e "\033[1;33m 📄 File: \033[0m $(wslpath -m "$file_path" 2> /dev/null || echo "$file_path")"
-  echo -e "\033[1;34m----------------------------------------------------------\033[0m"
-  awk -v target="$target" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$file_path" | "$BAT_BIN" --language=bash --style=plain 2> /dev/null ||
-    awk -v target="$target" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$file_path"
+  mytools > /dev/null
+  local tsv_file="$HOME/.bash.d/data/cache/.mt_data.tsv"
+  local candidates=()
 
-  echo -e "\033[1;34m==========================================================\033[0m"
+  if [ -f "$tsv_file" ]; then
+    while read -r match; do
+      [ -n "$match" ] && candidates+=("$match")
+    done < <(awk -F'\t' -v q="${target,,}" 'tolower($3) ~ q { print $3 }' "$tsv_file" | sort -u)
+  fi
+
+  local count="${#candidates[@]}"
+
+  if [ "$count" -eq 1 ]; then
+    local single_target="${candidates[0]}"
+    file_path=$(grep -rlE "^(alias ${single_target}=|${single_target}\(\)[ \t]*\{)" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
+    if [ -n "$file_path" ]; then
+      __render_help "$single_target" "$file_path"
+      return 0
+    fi
+  elif [ "$count" -gt 1 ]; then
+    echo -e "${CB_YELLOW}⚠️  No exact match found for '${target}'. Did you mean one of these?${C_RESET}\n"
+    for cand in "${candidates[@]}"; do
+      echo -e "  ${C_DIM}•${C_RESET} ${CB_CYAN}${cand}${C_RESET}"
+    done
+    echo ""
+    return 0
+  fi
+
+  echo -e "${CB_RED}🚨 Error: '${target}' is not a recognized custom MyTools command.${C_RESET}"
+  return 1
 }
 
 _mt_cat_completions() {
@@ -290,6 +339,10 @@ mt-get-version() {
   if [ -f "$HOME/.bash.d/data/.current_version" ]; then
     local current_version
     current_version=$(command cat "$HOME/.bash.d/data/.current_version")
+    echo -e "${CB_CYAN}Profile Version:${C_RESET} ${current_version}"
+  elif [ -n "$DOTFILES_DIR" ] && [ -d "$DOTFILES_DIR/.git" ] && command -v git > /dev/null 2>&1; then
+    local current_version
+    current_version=$(git -C "$DOTFILES_DIR" describe --tags --abbrev=0 2> /dev/null || echo "Local")
     echo -e "${CB_CYAN}Profile Version:${C_RESET} ${current_version}"
   elif [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
     local current_version
@@ -341,7 +394,6 @@ mt-status() {
   echo -e "${CB_BLUE}                 MT DEVOPS DASHBOARD                      ${C_RESET}"
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
 
-  # 1. Framework & AI
   local current_version="Local"
   [ -f "$HOME/.bash.d/data/.current_version" ] && current_version=$(tr -d '[:space:]' < "$HOME/.bash.d/data/.current_version")
   echo -e "${CB_YELLOW}▶ FRAMEWORK${C_RESET}"
@@ -349,14 +401,14 @@ mt-status() {
   echo -e "  ${CB_CYAN}Theme         ${C_RESET}: ${BASH_THEME:-default}"
   echo -e "  ${CB_CYAN}AI Enabled    ${C_RESET}: ${AI_ENABLED:-true} (${DEFAULT_AI:-gemini})"
 
-  # 2. Sync Repository Status
   echo -e "\n${CB_YELLOW}▶ PROFILE SYNC REPO${C_RESET}"
-  if [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ]; then
+  local repo_dir="${DOTFILES_DIR:-$SYNC_REPO_DIR}"
+  if [ -n "$repo_dir" ] && [ -d "$repo_dir/.git" ]; then
     local branch
-    branch=$(git -C "$SYNC_REPO_DIR" branch --show-current 2> /dev/null)
+    branch=$(git -C "$repo_dir" branch --show-current 2> /dev/null)
     local changes
-    changes=$(git -C "$SYNC_REPO_DIR" status --porcelain 2> /dev/null | wc -l)
-    echo -e "  ${CB_CYAN}Path          ${C_RESET}: ${SYNC_REPO_DIR}"
+    changes=$(git -C "$repo_dir" status --porcelain 2> /dev/null | wc -l)
+    echo -e "  ${CB_CYAN}Path          ${C_RESET}: ${repo_dir}"
     echo -e "  ${CB_CYAN}Branch        ${C_RESET}: ${branch}"
     if [ "$changes" -gt 0 ]; then
       echo -e "  ${CB_CYAN}Uncommitted   ${C_RESET}: ${CB_RED}${changes} file(s) (Run mt-push-update)${C_RESET}"
@@ -367,7 +419,6 @@ mt-status() {
     echo -e "  ${CB_RED}Not initialized or not a Git repository. Run mt-setup to configure.${C_RESET}"
   fi
 
-  # 3. Docker Health
   echo -e "\n${CB_YELLOW}▶ DOCKER ENVIRONMENT${C_RESET}"
   if command -v docker > /dev/null 2>&1 && docker info > /dev/null 2>&1; then
     local running
@@ -380,7 +431,6 @@ mt-status() {
     echo -e "  ${CB_CYAN}Daemon        ${C_RESET}: ${CB_RED}Stopped or Not Installed${C_RESET}"
   fi
 
-  # 4. Updates & Maintenance
   echo -e "\n${CB_YELLOW}▶ SYSTEM UPDATES${C_RESET}"
   if [ -f "$HOME/.bash.d/data/cache/.update_pending" ]; then
     local sys_updates
@@ -400,3 +450,117 @@ mt-status() {
 
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
 }
+
+#######################################
+# MyTools: Generate a detailed technical Markdown dump of all functions and aliases
+# Usage: mt-dump [OPTIONS]
+# Options:
+#   -d, --dir <path>       Specify export directory (default: ~/.bash.d/docs)
+#   --private              Include private/internal framework functions (starting with _ or __)
+#   -h, --help             Show this help menu
+#######################################
+mt-dump() {
+  local export_dir="$HOME/.bash.d/docs"
+  local include_private=false
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -d | --dir)
+        export_dir="$2"
+        shift
+        ;;
+      --private)
+        include_private=true
+        ;;
+      -h | --help)
+        mt-help "${FUNCNAME[0]}"
+        return 0
+        ;;
+      *)
+        echo "Usage: mt-dump [-d <export_dir>] [--private]"
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  mkdir -p "$export_dir"
+  local out_file="${export_dir}/TECHNICAL_REFERENCE.md"
+
+  echo -e "${CB_BLUE}📝 Generating technical reference manual...${C_RESET}"
+
+  cat << 'HDR' > "$out_file"
+# 🛠️ MT DevOps Framework - Technical Command Reference
+
+> **Auto-generated Reference Document**  
+> Generated: $(date)  
+> Environment: $(uname -s) ($(uname -m))
+
+---
+
+HDR
+
+  local tsv_index="$HOME/.bash.d/data/cache/.mt_data.tsv"
+  mytools > /dev/null
+
+  if [ -f "$tsv_index" ]; then
+    echo "## 🔗 Shell Aliases" >> "$out_file"
+    awk -F'\t' '$1 == "alias" { printf "- **`%s`** *(%s)*: %s\n", $3, $2, $4 }' "$tsv_index" >> "$out_file"
+    echo -e "\n---" >> "$out_file"
+
+    echo -e "\n## 🛠️ Public Functions\n" >> "$out_file"
+
+    local current_cat=""
+    while IFS=$'\t' read -r type cat name desc; do
+      [ "$type" != "func" ] && continue
+
+      if [ "$cat" != "$current_cat" ]; then
+        current_cat="$cat"
+        echo -e "\n### 📂 ${current_cat}\n" >> "$out_file"
+      fi
+
+      echo -e "#### \`$name\`" >> "$out_file"
+      echo -e "> $desc\n" >> "$out_file"
+
+      local src_file
+      src_file=$(grep -rlE "^${name}\(\)[ \t]*\{" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
+      if [ -n "$src_file" ]; then
+        echo "\`\`\`bash" >> "$out_file"
+        awk -v target="$name" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$src_file" >> "$out_file"
+        echo -e "\`\`\`\n" >> "$out_file"
+      fi
+    done < <(sort -t$'\t' -k2,2 -k3,3 "$tsv_index")
+  fi
+
+  if [ "$include_private" = true ]; then
+    echo -e "\n---\n\n## 🔒 Internal Framework Helpers (Private Functions)\n" >> "$out_file"
+    echo "Private functions prefixed with \`_\` or \`__\` used internally by the framework." >> "$out_file"
+
+    find "$HOME/.bash.d" -type f -name "*.sh" -exec grep -HnE "^_{1,2}[a-zA-Z0-9_-]+\(\)[ \t]*\{" {} + | while read -r line; do
+      local fpath
+      fpath=$(echo "$line" | cut -d: -f1)
+      local func_name
+      func_name=$(echo "$line" | grep -oE "_{1,2}[a-zA-Z0-9_-]+")
+
+      [ -z "$func_name" ] && continue
+      local rel_fpath="${fpath#"$HOME"/.bash.d/}"
+
+      echo -e "\n### \`$func_name\` *(File: \`00-system/${rel_fpath}\`)*" >> "$out_file"
+      echo "\`\`\`bash" >> "$out_file"
+      awk -v target="$func_name" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$fpath" >> "$out_file"
+      echo -e "\`\`\`\n" >> "$out_file"
+    done
+  fi
+
+  echo -e "${CB_GREEN}✅ Technical reference generated at:${C_RESET} ${out_file}"
+
+  if type __open_path_gui > /dev/null 2>&1; then
+    __open_path_gui "$export_dir" 2> /dev/null || true
+  fi
+}
+
+_mt_dump_completions() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  COMPREPLY=($(compgen -W "-d --dir --private -h --help" -- "$cur"))
+}
+complete -F _mt_dump_completions mt-dump

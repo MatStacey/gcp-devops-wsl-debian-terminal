@@ -1,0 +1,4 @@
+name: "Python Microservice Export"
+aliases: ["python", "py"]
+include_extensions: "py|toml|ini|requirements\\.txt|Dockerfile|yaml|yml"
+exclude_patterns: "__pycache__|venv|\\.venv|\\.pytest_cache|\\.ruff_cache|\\.egg-info"

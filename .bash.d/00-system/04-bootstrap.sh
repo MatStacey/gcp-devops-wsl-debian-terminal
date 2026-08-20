@@ -2,12 +2,19 @@
 # ------------------------------------------
 # System & Environment Bootstrap
 # ------------------------------------------
+# ~/.bash.d/00-system/04-bootstrap.sh
 
-# Source dependencies config safely
 if [ -f "$HOME/.bash.d/config/dependencies.sh" ]; then
   source "$HOME/.bash.d/config/dependencies.sh"
 fi
 
+#######################################
+# System: Filter list of dependencies to return missing packages
+# Arguments:
+#   $@ - Dependency definitions (command:package)
+# Outputs:
+#   Prints space-separated missing packages to STDOUT
+#######################################
 __get_missing_deps() {
   local missing=()
   for dep in "$@"; do
@@ -23,6 +30,9 @@ __get_missing_deps() {
   echo "${missing[@]}"
 }
 
+#######################################
+# System: Bootstrap APT dependencies on Debian/WSL
+#######################################
 __bootstrap_apt() {
   local apt_deps=($(__get_missing_deps "${APT_DEPENDENCIES[@]}"))
 
@@ -34,12 +44,14 @@ __bootstrap_apt() {
   fi
 }
 
+#######################################
+# System: Bootstrap Homebrew dependencies on macOS
+#######################################
 __bootstrap_brew() {
   if ! command -v brew > /dev/null 2>&1; then
     echo -e "\n🍺 Homebrew not found. Installing Homebrew..."
     NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-    # Homebrew isn't on PATH yet in this shell after a fresh install.
     if [ -x /opt/homebrew/bin/brew ]; then
       eval "$(/opt/homebrew/bin/brew shellenv)"
     elif [ -x /usr/local/bin/brew ]; then
@@ -61,10 +73,12 @@ __bootstrap_brew() {
     echo "✅ All standard Homebrew dependencies are satisfied."
   fi
 
-  # bat installed fresh via Homebrew resolves as 'bat', not 'batcat'.
   command -v bat > /dev/null 2>&1 && export BAT_BIN="bat"
 }
 
+#######################################
+# System: Bootstrap Python tooling dependencies via pipx/pip3
+#######################################
 __bootstrap_python() {
   local pip_deps=($(__get_missing_deps "${PYTHON_DEPENDENCIES[@]}"))
 
@@ -80,8 +94,10 @@ __bootstrap_python() {
   fi
 }
 
+#######################################
+# System: Download and install yq binary on Linux
+#######################################
 __bootstrap_yq() {
-  # macOS installs yq via Homebrew; this binary download is Linux-specific
   [ "$OS_FAMILY" = "macos" ] && return 0
 
   if ! command -v yq > /dev/null 2>&1; then
@@ -92,6 +108,9 @@ __bootstrap_yq() {
   fi
 }
 
+#######################################
+# System: Check and report missing complex dependencies
+#######################################
 __bootstrap_check_complex() {
   local missing_complex=($(__get_missing_deps "${COMPLEX_DEPENDENCIES[@]}"))
 
@@ -102,7 +121,10 @@ __bootstrap_check_complex() {
 }
 
 #######################################
-# System: Bootstrap missing dependencies for bash aliases (Debian/WSL via APT, macOS via Homebrew)
+# System: Bootstrap missing dependencies (Debian/WSL via APT, macOS via Homebrew)
+# Usage: bootstrap [OPTIONS]
+# Options:
+#   -h, --help    Show this help menu
 #######################################
 bootstrap() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -122,7 +144,6 @@ bootstrap() {
 
   echo -e "\n🎉 Environment bootstrap complete!"
 
-  # Install GitHub CLI (gh)
   if ! command -v gh > /dev/null 2>&1; then
     echo -e "${CB_BLUE}📦 Installing GitHub CLI...${C_RESET}"
     if command -v apt-get > /dev/null 2>&1; then
@@ -136,7 +157,6 @@ bootstrap() {
     fi
   fi
 
-  # Install Claude Code (claude)
   if ! command -v claude > /dev/null 2>&1; then
     if command -v npm > /dev/null 2>&1; then
       echo -e "${CB_BLUE}📦 Installing Claude Code...${C_RESET}"
@@ -147,6 +167,9 @@ bootstrap() {
   fi
 }
 
+#######################################
+# System: Prompt user to run bootstrap if missing dependencies are detected
+#######################################
 __check_missing_deps() {
   if [[ $- != *i* ]]; then return; fi
 
@@ -155,7 +178,7 @@ __check_missing_deps() {
     to_check=("${BREW_DEPENDENCIES[@]}")
   else
     to_check=("${APT_DEPENDENCIES[@]}")
-    to_check+=("yq:yq") # Linux manually checks yq since it bypasses APT
+    to_check+=("yq:yq")
   fi
   to_check+=("${PYTHON_DEPENDENCIES[@]}" "${COMPLEX_DEPENDENCIES[@]}")
 
@@ -174,6 +197,9 @@ __check_missing_deps() {
 
 #######################################
 # System: Updates system packages (APT on Debian/WSL, Homebrew on macOS)
+# Usage: sys-update [OPTIONS]
+# Options:
+#   -h, --help    Show this help menu
 #######################################
 sys-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -192,7 +218,10 @@ sys-update() {
 }
 
 #######################################
-# System: Updates system packages and clears the pending-update marker
+# System: Updates system packages and clears pending-update marker
+# Usage: sys-install [OPTIONS]
+# Options:
+#   -h, --help    Show this help menu
 #######################################
 sys-install() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then

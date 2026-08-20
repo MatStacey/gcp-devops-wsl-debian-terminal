@@ -1,22 +1,22 @@
 # shellcheck shell=bash
 # ------------------------------------------
-# Version Control (Git)
+# Version Control (Git) - Core Helpers
 # ------------------------------------------
+# ~/.bash.d/20-vcs/50-git.sh
 
 #######################################
 # Git: Create and checkout a new feature branch
 # Globals:
 #   GIT_FEATURE_PREFIX
 # Arguments:
-#   $1 - Jira ticket ID or branch descriptor suffix.
-# Returns:
-#   0 on success, 1 on empty argument input.
+#   $1 - Jira ticket ID or branch descriptor suffix
+# Usage: git-new-feature <CCON-123|suffix>
 #######################################
 git-new-feature() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
+  fi
   [ -z "$1" ] && {
     echo -e "🚨 Error: Jira ID / branch suffix cannot be empty.\nUsage: git-new-feature CCON-123"
     return 1
@@ -26,13 +26,11 @@ git-new-feature() {
 }
 
 #######################################
-# Git: Wrapper to force 'clone' into ~/vcs/ from anywhere
+# Git: Intercept 'clone' to automatically route repositories into ~/vcs/
 # Globals:
 #   VCS_ROOT
-# Outputs:
-#   Writes execution path modification data to STDOUT.
-# Returns:
-#   Passes through standard git return codes.
+# Arguments:
+#   $@ - Standard git clone options and URL
 #######################################
 git() {
   if [ "$1" != "clone" ]; then
@@ -51,17 +49,13 @@ git() {
 }
 
 #######################################
-# Git: Open the current repository in the default web browser
-# Outputs:
-#   Opens the remote URL via the platform's default browser launcher.
-# Returns:
-#   0 on success, 1 if no upstream origin is found.
+# Git: Open current repository remote URL in default web browser
 #######################################
 git-view-remote() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
-  }
+  fi
   local origin_url
   origin_url=$(git config --get remote.origin.url 2> /dev/null)
 
@@ -84,14 +78,11 @@ git-view-remote() {
 }
 
 #######################################
-# Git: Clone a repository into ~/vcs/, cd into it, and open in IDE
-# Globals:
-#   DEFAULT_IDE, VCS_ROOT
+# Git: Clone repository into ~/vcs/, navigate into it, and open in default IDE
+# Usage: git-clone-ide [-ide vscode|intellij] <repo-url>
 # Arguments:
-#   -ide <ide_name> Override default IDE variable
-#   <url> The target repository string.
-# Returns:
-#   0 on success, 1 on empty URL parameter or git clone failure.
+#   -ide <name>  Override default IDE (vscode or intelliJ)
+#   <url>        Target repository URL
 #######################################
 git-clone-ide() {
   local selected_ide="${DEFAULT_IDE:-vscode}"
@@ -123,7 +114,7 @@ git-clone-ide() {
   local repo_name
   repo_name=$(basename "$repo_url" .git)
 
-  echo "📥 Cloning $repo_name to $VCS_ROOT/..."
+  echo "📥 Cloning $repo_name to$VCS_ROOT/..."
 
   if ! git clone "$repo_url" "$VCS_ROOT/$repo_name"; then
     echo "🚨 Error: Clone failed."
@@ -140,7 +131,7 @@ git-clone-ide() {
 }
 
 #######################################
-# Git: Print a beautiful, color-coded, single-line graph log
+# Git: Print a clean, color-coded, single-line log graph
 #######################################
 git-pretty-log() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -151,7 +142,7 @@ git-pretty-log() {
 }
 
 #######################################
-# Git: Delete dead or stale branches that have been merged into the default branch
+# Git: Delete local and remote branches merged into the default branch
 #######################################
 git-clean-merged() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -160,7 +151,7 @@ git-clean-merged() {
   fi
 
   local default_branch
-  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print$NF}')
   default_branch="${default_branch:-main}"
 
   echo -e "${CB_BLUE}🧹 Fetching latest remote state and pruning tracking branches...${C_RESET}"
@@ -197,14 +188,19 @@ git-clean-merged() {
     echo -e "${CB_GREEN}✅ Remote cleanup complete.${C_RESET}"
   fi
 }
+
+#######################################
+# Git: Delete local and remote branches merged into default branch
+#######################################
 alias git-clean-local='git-clean-merged'
 
 #######################################
-# Git: Push branch and create a Pull Request (GitHub/Bitbucket/GitLab)
-# Arguments:
-#   -b <branch> : Target branch to merge into (defaults to repository default branch)
-#   -t <title>  : PR title (optional)
-#   -m <message>: PR body/description (optional)
+# Git: Push current branch and raise a Pull Request (GitHub/GitLab/Bitbucket)
+# Usage: git-raise-pr [-b target_branch] [-t pr_title] [-m pr_body]
+# Options:
+#   -b <branch>   Target branch to merge into (defaults to default branch)
+#   -t <title>    Pull Request title
+#   -m <message>  Pull Request body or description
 #######################################
 git-raise-pr() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -229,7 +225,7 @@ git-raise-pr() {
   shift $((OPTIND - 1))
 
   local default_branch
-  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print$NF}')
   default_branch="${default_branch:-main}"
   target_branch="${target_branch:-$default_branch}"
 
@@ -273,14 +269,14 @@ git-raise-pr() {
     echo -e "${CB_BLUE}🚀 Pushing latest changes to origin...${C_RESET}"
     git push origin "$current_branch"
     return 0
-  elif [[ "$pr_state" == "MERGED" || "$pr_state" == "CLOSED" ]]; then
+  elif [ "$pr_state" = "MERGED" ] || [ "$pr_state" = "CLOSED" ]; then
     echo -e "${CB_YELLOW}⚠️  This branch has a ${pr_state} PR (Dead Branch).${C_RESET}"
     read -r -p "Would you like to delete this branch locally and checkout a new one? [Y/n] " -n 1
     echo
-    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+    if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
       read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
       echo
-      if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+      if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
         echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
         git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
       fi
@@ -313,7 +309,7 @@ git-raise-pr() {
 
     read -r -p "🌐 View Pull Request in browser? [Y/n] " -n 1
     echo
-    if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+    if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
       local pr_url
       pr_url=$(gh pr view --json url -q .url)
       __open_url "$pr_url"
@@ -341,7 +337,7 @@ git-raise-pr() {
 }
 
 #######################################
-# Git: Fetch upstream and rebase the current branch onto the default branch
+# Git: Fetch upstream origin and rebase current branch onto default branch
 #######################################
 git-default-rebase() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -353,7 +349,7 @@ git-default-rebase() {
   current_branch=$(git branch --show-current)
 
   local default_branch
-  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print$NF}')
   default_branch="${default_branch:-main}"
 
   if [ "$current_branch" = "$default_branch" ]; then
@@ -368,7 +364,7 @@ git-default-rebase() {
 }
 
 #######################################
-# Git: Hard reset and wipe all untracked files on the current branch
+# Git: Hard reset local branch to upstream state and wipe untracked files
 #######################################
 git-nuke() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -404,10 +400,10 @@ git-nuke() {
 }
 
 #######################################
-# Git: Add all files, commit with provided message, and push
-#
+# Git: Stage all files, commit with provided message, and push
+# Usage: git-push-all "commit message"
 # Arguments:
-#   $1 - The commit message (Required)
+#   $1 - Commit message string (Required)
 #######################################
 git-push-all() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -438,7 +434,9 @@ git-push-all() {
 }
 
 #######################################
-# Git: Language-aware automatic code formatter
+# Git: Language-aware automatic code formatter (Shell, Python, Terraform, Prettier)
+# Arguments:
+#   $1 - Target directory path (default: .)
 #######################################
 __git_auto_format() {
   local target_dir="${1:-.}"
@@ -449,14 +447,12 @@ __git_auto_format() {
 
   echo "🧹 Running language auto-formatters..."
 
-  # 1. Shell Scripts
   if command -v shfmt > /dev/null 2>&1; then
     if find "$target_dir" -type f \( -name "*.sh" -o -name "*.bash" \) | read -r; then
       shfmt -i 2 -ci -sr -w "$target_dir" > /dev/null 2>&1 || true
     fi
   fi
 
-  # 2. Python
   if find "$target_dir" -type f -name "*.py" | read -r; then
     if command -v ruff > /dev/null 2>&1; then
       ruff check --select I --fix "$target_dir" > /dev/null 2>&1 || true
@@ -467,14 +463,12 @@ __git_auto_format() {
     fi
   fi
 
-  # 3. Terraform
   if command -v terraform > /dev/null 2>&1; then
     if find "$target_dir" -type f -name "*.tf" | read -r; then
       terraform fmt -recursive "$target_dir" > /dev/null 2>&1 || true
     fi
   fi
 
-  # 4. Web / Markup (Prettier)
   if command -v prettier > /dev/null 2>&1; then
     if find "$target_dir" -type f \( -name "*.yml" -o -name "*.yaml" -o -name "*.json" -o -name "*.md" \) | read -r; then
       prettier --write "$target_dir/**/*.{yml,yaml,json,md}" > /dev/null 2>&1 || true

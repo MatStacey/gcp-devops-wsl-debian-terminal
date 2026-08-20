@@ -1,46 +1,147 @@
 # shellcheck shell=bash
 # ------------------------------------------
-# Terraform
+# Terraform Aliases
 # ------------------------------------------
+# ~/.bash.d/10-infra/41-terraform-aliases.sh
 
-# Core Execution
+#######################################
+# Terraform: Core Execution
+#######################################
 alias tf='terraform'
+
+#######################################
+# Terraform: Apply changes
+#######################################
 alias tfa='terraform apply'
+
+#######################################
+# Terraform: Apply changes (Auto-Approve)
+#######################################
 alias tfay='terraform apply -auto-approve'
+
+#######################################
+# Terraform: Open interactive console
+#######################################
 alias tfc='terraform console'
+
+#######################################
+# Terraform: Destroy infrastructure
+#######################################
 alias tfd='terraform destroy'
+
+#######################################
+# Terraform: Destroy infrastructure (Auto-Approve)
+#######################################
 alias tfdy='terraform destroy -auto-approve'
+
+#######################################
+# Terraform: Initialize working directory
+#######################################
 alias tfin='terraform init'
+
+#######################################
+# Terraform: Initialize and upgrade modules/providers
+#######################################
 alias tfinu='terraform init -upgrade'
+
+#######################################
+# Terraform: Read outputs from state
+#######################################
 alias tfo='terraform output'
+
+#######################################
+# Terraform: Generate execution plan
+#######################################
 alias tfp='terraform plan'
+
+#######################################
+# Terraform: Generate destruction plan
+#######################################
 alias tfpd='terraform plan -destroy'
+
+#######################################
+# Terraform: Validate configuration files
+#######################################
 alias tfv='terraform validate'
 
-# Formatting (Recursive by default)
+#######################################
+# Terraform: Format all files recursively
+#######################################
 alias tff='terraform fmt -recursive'
 
-# File-based Plan Workflow
+#######################################
+# Terraform: Generate a saved plan file (tfplan)
+#######################################
 alias tfpo='terraform plan -out=tfplan'
+
+#######################################
+# Terraform: Apply the saved plan file
+#######################################
 alias tfap='terraform apply tfplan'
 
-# Modern Terraform Paradigms
+#######################################
+# Terraform: Refresh state without applying changes (Modern)
+#######################################
 alias tf-refresh='terraform apply -refresh-only'
 
-# State Management
+#######################################
+# Terraform: State management commands
+#######################################
 alias tfs='terraform state'
+
+#######################################
+# Terraform: Show current state or plan
+#######################################
 alias tfsh='terraform show'
+
+#######################################
+# Terraform: List resources in state
+#######################################
 alias tfsls='terraform state list'
+
+#######################################
+# Terraform: Move an item in state
+#######################################
 alias tfsmv='terraform state mv'
+
+#######################################
+# Terraform: Remove an item from state
+#######################################
 alias tfsrm='terraform state rm'
+
+#######################################
+# Terraform: Show a single resource in state
+#######################################
 alias tfssw='terraform state show'
 
-# Workspace Management
+#######################################
+# Terraform: Workspace management commands
+#######################################
 alias tfw='terraform workspace'
+
+#######################################
+# Terraform: Delete a workspace
+#######################################
 alias tfwde='terraform workspace delete'
+
+#######################################
+# Terraform: List workspaces
+#######################################
 alias tfwls='terraform workspace list'
+
+#######################################
+# Terraform: Create a new workspace
+#######################################
 alias tfwnw='terraform workspace new'
+
+#######################################
+# Terraform: Select an existing workspace
+#######################################
 alias tfwst='terraform workspace select'
+
+#######################################
+# Terraform: Show the current workspace name
+#######################################
 alias tfwsw='terraform workspace show'
 
 #######################################
@@ -85,7 +186,7 @@ tf-clean() {
 }
 
 #######################################
-# Terraform: Wrapper to execute Terraform using a YAML config file for variables
+# Terraform: Execute Terraform using a YAML config file for variables
 # Arguments:
 #   $1 - Path to the YAML configuration file
 #   $2 - (Optional) Target environment key if YAML is hierarchically structured
@@ -107,7 +208,6 @@ tf-yaml() {
   fi
 
   local env_name=""
-  # If the next argument is not a known TF command or a flag, treat it as the environment key
   if [[ -n "$1" && ! "$1" =~ ^(-.*|plan|apply|destroy|init|validate|output|console|refresh|show|state|workspace|fmt|import)$ ]]; then
     env_name="$1"
     shift
@@ -129,16 +229,12 @@ tf-yaml() {
 
   if [ -n "$env_name" ]; then
     echo -e "${CB_BLUE}🔄 Parsing variables for environment '${env_name}' from ${yaml_file}...${C_RESET}"
-
     local tmp_globals
     tmp_globals=$(mktemp)
     local tmp_env
     tmp_env=$(mktemp)
 
-    # 1. Isolate global configurations (ignoring environments)
     yq 'del(.environments)' "$yaml_file" > "$tmp_globals"
-
-    # 2. Extract specific environment configurations
     yq ".environments[\"${env_name}\"]" "$yaml_file" > "$tmp_env"
 
     if [ "$(command cat "$tmp_env")" = "null" ]; then
@@ -147,7 +243,6 @@ tf-yaml() {
       return 1
     fi
 
-    # 3. Deep merge the globals and the environment together and convert to JSON
     yq -o=json eval-all 'select(fileIndex == 0) * select(fileIndex == 1)' "$tmp_globals" "$tmp_env" > "$tmp_vars"
     rm -f "$tmp_globals" "$tmp_env"
   else
@@ -159,11 +254,11 @@ tf-yaml() {
   terraform "$@" -var-file="$tmp_vars"
   local tf_exit=$?
 
-  # Cleanup temporary json payload
   rm -f "$tmp_vars"
-
   return $tf_exit
 }
 
-# Shortcut alias for tf-yaml
+#######################################
+# Terraform: Shortcut alias for tf-yaml
+#######################################
 alias tfy='tf-yaml'

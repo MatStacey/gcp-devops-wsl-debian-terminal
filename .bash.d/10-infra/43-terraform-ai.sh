@@ -1,10 +1,16 @@
 # shellcheck shell=bash
+# ------------------------------------------
+# Terraform & AI Integrations
+# ------------------------------------------
 # ~/.bash.d/10-infra/43-terraform-ai.sh
 
 #######################################
-# Terraform: Ask AI to list required Service Accounts and least-privilege roles
-# Arguments:
-#   tf-iam [-g
+# AI: Analyze Terraform codebase for IAM requirements and optionally generate script
+# Usage: tf-iam [-g] [-m model]
+# Options:
+#   -g            Generate a provisioning script instead of just outputting a chat analysis
+#   -m <model>    Override the default AI model (e.g., gemini, claude)
+#   -h, --help    Show this help menu
 #######################################
 tf-iam() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then

@@ -1,0 +1,4 @@
+name: "Java Spring Boot Export"
+aliases: ["springboot", "spring", "java", "mvn", "gradle"]
+include_extensions: "java|properties|yml|yaml|xml|gradle|kt"
+exclude_patterns: "target/|build/|\\.gradle/|\\.mvn/|\\.jar$|\\.war$|\\.class$"

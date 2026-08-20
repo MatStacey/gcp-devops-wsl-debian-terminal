@@ -1,0 +1,4 @@
+name: "Generic Code Export"
+aliases: ["default", "all"]
+include_extensions: ".*"
+exclude_patterns: ""

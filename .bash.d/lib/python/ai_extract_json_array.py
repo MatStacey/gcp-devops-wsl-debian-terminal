@@ -1,57 +1,87 @@
+"""
+Extracts and parses a JSON array from raw LLM text input.
+
+Large Language Models may return arrays hidden inside standard dictionaries
+(e.g., {"message": "[...]"}) or wrapped in markdown. This script attempts
+to locate, sanitize, and parse the array payload securely.
+"""
+
 import ast
 import contextlib
 import json
 import re
 import sys
+from typing import Any
 
-text = sys.stdin.read().strip()
 
+def try_parse(val: Any) -> list | None:
+    """
+    Attempts to parse a given value into a JSON list.
 
-def try_parse(val):
+    Args:
+        val (Any): The payload to attempt to parse.
+
+    Returns:
+        Optional[list]: The parsed list, or None if parsing fails.
+    """
     if isinstance(val, list):
         return val
+
     if isinstance(val, str):
         val_clean = val.strip()
+
         with contextlib.suppress(ValueError, TypeError):
             res = json.loads(val_clean)
             if isinstance(res, list):
                 return res
+
         with contextlib.suppress(ValueError, TypeError, SyntaxError):
             res = ast.literal_eval(val_clean)
             if isinstance(res, list):
                 return res
+
     return None
 
 
-with contextlib.suppress(ValueError, TypeError):
-    data = json.loads(text)
-    if isinstance(data, dict):
-        if "message" in data:
-            parsed = try_parse(data["message"])
-            if parsed is not None:
-                print(json.dumps(parsed))
-                sys.exit(0)
-        if "code" in data:
-            parsed = try_parse(data["code"])
-            if parsed is not None:
-                print(json.dumps(parsed))
-                sys.exit(0)
-    elif isinstance(data, list):
-        print(json.dumps(data))
-        sys.exit(0)
-
-match = re.search(r"(\[.*\])", text, re.DOTALL)
-if match:
-    extracted = match.group(1)
+def _extract_from_json(text: str) -> list | None:
+    """Attempts to directly parse the payload as JSON."""
     with contextlib.suppress(ValueError, TypeError):
-        res = json.loads(extracted)
-        if isinstance(res, list):
-            print(json.dumps(res))
-            sys.exit(0)
-    with contextlib.suppress(ValueError, TypeError, SyntaxError):
-        res = ast.literal_eval(extracted)
-        if isinstance(res, list):
-            print(json.dumps(res))
-            sys.exit(0)
+        data = json.loads(text)
+        if isinstance(data, dict):
+            for key in ("message", "code"):
+                if key in data:
+                    parsed = try_parse(data[key])
+                    if parsed is not None:
+                        return parsed
+        elif isinstance(data, list):
+            return data
+    return None
 
-print("[]")
+
+def _extract_from_regex(text: str) -> list | None:
+    """Attempts to extract a JSON array wrapped in text/markdown via Regex."""
+    match = re.search(r"(\[.*\])", text, re.DOTALL)
+    if match:
+        parsed = try_parse(match.group(1))
+        if parsed is not None:
+            return parsed
+    return None
+
+
+def main():
+    """Reads raw text from STDIN and attempts to extract a JSON list payload."""
+    text = sys.stdin.read().strip()
+
+    # Step 1: Attempt direct JSON extraction
+    result = _extract_from_json(text)
+
+    # Step 2: Fallback to regex extraction
+    if result is None:
+        result = _extract_from_regex(text)
+
+    # Output results
+    print(json.dumps(result if result is not None else []))
+
+
+if __name__ == "__main__":
+    main()

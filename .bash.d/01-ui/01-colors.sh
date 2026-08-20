@@ -2,7 +2,7 @@
 # ------------------------------------------
 # Centralized Theme & Colors
 # ------------------------------------------
-# ~/.bash.d/00-core/01-colors.sh
+# ~/.bash.d/01-ui/01-colors.sh
 
 export C_RESET=$'\e[0m'
 
