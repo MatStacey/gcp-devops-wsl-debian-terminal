@@ -21,11 +21,9 @@ Before installing this terminal environment, ensure your local workstation meets
   "category": "chat",
   "language": null,
   "extension": null,
-  "title": "readme-recent-updates-summary",
+  "title": "git-diff-readme-summary",
   "code": null,
-  "message": "* **Modular Setup Wizard**: Reorganized `mt-setup` into an interactive `fzf`-driven menu with specialized setup functions for Paths, Git, System, Docker, and CI/CD settings.
-* **CI/CD Provider Management**: Introduced `mt-set-cicd` function to set and export default CI/CD pipeline providers dynamically.
-* **Repository Blueprinting Utility**: Added `mt-blueprint` command to scaffold new projects using standardized DevOps blueprints, supporting custom templating, dynamic project placeholder replacement, and automatic CI/CD pipeline injection."
+  "message": "* **Improved Whitespace Sanitization**: Standardized string stripping in `mt-status` using POSIX character class `tr '[:space:]'` for parsing framework versions and pending update status files."
 }
 
 ---
