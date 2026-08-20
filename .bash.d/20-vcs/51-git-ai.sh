@@ -231,3 +231,61 @@ mt-ai-readme() {
   echo -e "${CB_BLUE}🤖 Analyzing codebase to generate README.md...${C_RESET}"
   ai -e -o "README.md" -t "project-readme" "$prompt"
 }
+
+#######################################
+# Git: Automatically generate COMMANDS.md and use AI to update README.md
+#######################################
+__git_sync_ai_docs() {
+  local repo_dir="$1"
+  echo "📚 Generating COMMANDS.md reference..."
+  cat << 'MARKDOWN_EOF' > "$repo_dir/COMMANDS.md"
+# MT DevOps Framework - Command Reference
+
+This document is automatically generated on every sync and lists all available framework functions and aliases.
+
+| Type | Category | Command | Description |
+|---|---|---|---|
+MARKDOWN_EOF
+
+  # Use the cached TSV data to deterministically build the markdown table
+  if [ -f "$HOME/.bash.d/.mt_data.tsv" ]; then
+    awk -F'\t' '{ printf "| %s | %s | `%s` | %s |\n", $1, $2, $3, $4 }' "$HOME/.bash.d/.mt_data.tsv" | sort >> "$repo_dir/COMMANDS.md"
+  fi
+
+  local provider="${DEFAULT_AI:-gemini}"
+  if [ "$provider" = "gemini" ] && [[ -z "${GEMINI_API_KEY:-}" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" ]]; then return 0; fi
+  if [ "$provider" = "claude" ] && [[ -z "${CLAUDE_API_KEY:-}" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" ]]; then return 0; fi
+
+  # Stage files to capture the true diff of what is about to be committed
+  git -C "$repo_dir" add --all
+  local diff_content
+  diff_content=$(git -C "$repo_dir" diff --staged -- ':!COMMANDS.md' ':!README.md' | head -c 8000)
+
+  if [ -z "$diff_content" ]; then return 0; fi
+
+  echo "🤖 Asking $provider to summarize changes for README.md..."
+  local base_prompt="Analyze this git diff and write a brief, professional bulleted summary of the updates for a README.md 'Recent Updates' section. Return ONLY the raw markdown bullet points.\n\nDiff:\n$diff_content"
+
+  local response=""
+  if [ "$provider" = "gemini" ]; then
+    response=$(__ai_query_gemini "$base_prompt" "" "" "" "")
+  elif [ "$provider" = "claude" ]; then
+    response=$(__ai_query_claude "$base_prompt" "" "" "")
+  elif [ "$provider" = "local" ]; then
+    response=$(__ai_query_local "$base_prompt" "" "" "")
+  fi
+
+  # Clean potential markdown wrappers from the AI output
+  local clean_updates
+  clean_updates=$(echo "$response" | sed 's/```markdown//gi; s/```//g')
+
+  if [ -n "$clean_updates" ] && [ -f "$repo_dir/README.md" ]; then
+    python3 -c '
+import sys, re
+with open(sys.argv[1], "r", encoding="utf-8") as f: c = f.read()
+updates = "## 🚀 Recent Updates & Enhancements\n\n" + sys.argv[2] + "\n\n---"
+c_new = re.sub(r"## 🚀 Recent Updates & Enhancements.*?---", updates, c, flags=re.DOTALL)
+with open(sys.argv[1], "w", encoding="utf-8") as f: f.write(c_new)
+' "$repo_dir/README.md" "$clean_updates"
+  fi
+}

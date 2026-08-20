@@ -69,7 +69,15 @@ tf-clean() {
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
+  echo -e "${CB_RED}⚠️ WARNING: This will delete .terraform directories, lock files, and saved plans.${C_RESET}"
+  read -r -p "Are you sure you want to proceed? [y/N] " -n 1
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo "🛑 Aborted."
+    return 0
+  fi
   echo "🧹 Cleaning local Terraform caches..."
+
   find . -type d -name ".terraform" -exec rm -rf {} + 2> /dev/null
   find . -type f -name ".terraform.lock.hcl" -delete 2> /dev/null
   find . -type f -name "tfplan" -delete 2> /dev/null

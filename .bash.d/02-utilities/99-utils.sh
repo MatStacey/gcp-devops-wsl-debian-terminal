@@ -217,3 +217,25 @@ docker-tail() {
 __get_prompt() {
   python3 "$HOME/.bash.d/lib/python/get_prompt.py" "$1"
 }
+
+#######################################
+# System: Centralized logging with colored output
+#######################################
+mt-log() {
+  local level="$1"
+  shift
+  local msg="$*"
+  local log_file="$HOME/.bash.d/.mt_log"
+  local timestamp
+  timestamp=$(date +"%Y-%m-%d %H:%M:%S")
+
+  echo "[$timestamp] [$level] $msg" >> "$log_file"
+
+  case "$level" in
+    INFO) echo -e "${CB_BLUE}ℹ️  ${msg}${C_RESET}" ;;
+    WARN) echo -e "${CB_YELLOW}⚠️  ${msg}${C_RESET}" ;;
+    ERROR) echo -e "${CB_RED}🚨 ${msg}${C_RESET}" ;;
+    SUCCESS) echo -e "${CB_GREEN}✅ ${msg}${C_RESET}" ;;
+    *) echo -e "$msg" ;;
+  esac
+}
