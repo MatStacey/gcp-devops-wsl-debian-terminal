@@ -45,11 +45,12 @@ VERSION="${TAG#v}"
 VSIX_URL="https://github.com/MatStacey/mt-devops-vscode-extension-pack/releases/download/${TAG}/mt-devops-vscode-extension-pack-${VERSION}.vsix"
 
 echo "⬇️ Downloading ${VSIX_URL}..."
-curl -L -# --fail "$VSIX_URL" -o /tmp/extension.vsix
+TMP_VSIX=$(mktemp --suffix=.vsix)
+curl -L -# --fail "$VSIX_URL" -o "$TMP_VSIX"
 
 echo "⚙️ Installing extension pack..."
-code --install-extension /tmp/extension.vsix --force
-rm -f /tmp/extension.vsix
+code --install-extension "$TMP_VSIX" --force
+rm -f "$TMP_VSIX"
 
 touch "$LOCK_FILE"
 echo "✅ Extension pack installed successfully!"
