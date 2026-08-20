@@ -239,3 +239,99 @@ mt-log() {
     *) echo -e "$msg" ;;
   esac
 }
+
+#######################################
+# Framework: Scaffold a new repository using standardized DevOps blueprints
+# Arguments:
+#   -t <blueprint> (Optional) Name of the blueprint to use
+#######################################
+mt-blueprint() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local blueprints_dir="$HOME/.bash.d/lib/blueprints"
+  if [ ! -d "$blueprints_dir" ]; then
+    echo -e "${CB_RED}🚨 Error: Blueprints directory not found at $blueprints_dir${C_RESET}"
+    return 1
+  fi
+
+  local target=""
+  local OPTIND opt
+  while getopts "t:" opt; do
+    case ${opt} in
+      t) target="$OPTARG" ;;
+      \?)
+        echo "Usage: mt-blueprint [-t <blueprint_name>]" >&2
+        return 1
+        ;;
+    esac
+  done
+
+  if [ -z "$target" ]; then
+    target=$(ls -1 "$blueprints_dir" | fzf --prompt="🏗️  Select Blueprint > " --height=~10 --layout=reverse --border)
+  fi
+
+  if [ -z "$target" ]; then
+    echo "⚠️  Blueprint selection cancelled."
+    return 0
+  fi
+
+  # Safeguard: Check if the directory is not empty
+  if [ "$(ls -A 2> /dev/null)" ]; then
+    echo -e "\n${CB_YELLOW}⚠️  WARNING: The current directory is not empty.${C_RESET}"
+    echo -e "${CB_YELLOW}Applying this blueprint may overwrite existing files like README.md or .gitignore.${C_RESET}"
+    read -r -p "Are you sure you want to proceed? [y/N] " -n 1
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo "🛑 Aborted."
+      return 0
+    fi
+  fi
+
+  local source_dir="${blueprints_dir}/${target}"
+  if [ ! -d "$source_dir" ]; then
+    echo -e "${CB_RED}🚨 Error: Blueprint '$target' does not exist.${C_RESET}"
+    return 1
+  fi
+
+  local project_name
+  project_name=$(basename "$PWD")
+  echo -e "${CB_BLUE}🏗️  Scaffolding '$target' into $PWD...${C_RESET}"
+
+  # Copy blueprint files into the current directory
+  cp -R "$source_dir/"* . 2> /dev/null || true
+  cp -R "$source_dir/".[!.]* . 2> /dev/null || true
+
+  # Replace placeholders dynamically
+  if [ "$(uname)" = "Darwin" ]; then
+    find . -type f -not -path "*/\.git/*" -print0 | xargs -0 -I {} sed -i '' "s/{{PROJECT_NAME}}/$project_name/g" {} 2> /dev/null
+  else
+    find . -type f -not -path "*/\.git/*" -print0 | xargs -0 -I {} sed -i "s/{{PROJECT_NAME}}/$project_name/g" {} 2> /dev/null
+  fi
+
+  # Initialize Git if not already tracked
+  if [ ! -d ".git" ]; then
+    echo "📦 Initializing Git repository..."
+    git init -q
+  fi
+
+  # Route CI/CD pipelines
+  if [ -d ".cicd_templates" ]; then
+    local provider="${CICD_PROVIDER:-github}"
+    if [ -d ".cicd_templates/$provider" ]; then
+      echo -e "${CB_BLUE}⚙️  Injecting $provider pipeline configuration...${C_RESET}"
+      cp -a ".cicd_templates/$provider/." .
+    else
+      echo -e "${CB_YELLOW}⚠️  No $provider pipeline template available for this blueprint. Skipping CI/CD generation.${C_RESET}"
+    fi
+    rm -rf ".cicd_templates"
+  fi
+
+  if type mt-log > /dev/null 2>&1; then
+    mt-log SUCCESS "Blueprint '$target' applied successfully!"
+  else
+    echo -e "${CB_GREEN}✅ Blueprint '$target' applied successfully!${C_RESET}"
+  fi
+}

@@ -1,0 +1,9 @@
+image: hashicorp/terraform:latest
+pipelines:
+  default:
+    - step:
+        name: Terraform Validate & Format
+        script:
+          - terraform fmt -check
+          - terraform init -backend=false
+          - terraform validate
