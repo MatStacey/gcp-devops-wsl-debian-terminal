@@ -21,11 +21,9 @@ Before installing this terminal environment, ensure your local workstation meets
   "category": "chat",
   "language": null,
   "extension": null,
-  "title": "git-auto-format-updates",
+  "title": "git-diff-readme-summary",
   "code": null,
-  "message": "- **Automated Pre-Push Code Formatting**: Added multi-language auto-formatting support (`shfmt`, `ruff`/`yapf`, `terraform fmt`, `prettier`) executed automatically during `git-ai-push-all` workflow.
-- **Format Toggle Command**: Introduced `mt-toggle-format-on-push` CLI function to enable or disable automatic formatting dynamically.
-- **Config & Environment Integration**: Updated configuration templates and the Python configuration manager to support `GIT_FORMAT_ON_PUSH` with a default setting of `true`."
+  "message": "* **System Configuration**: Updated `mt-set-default-ai` usage documentation to include support for local AI models (`gemini|claude|local`)."
 }
 
 ---
