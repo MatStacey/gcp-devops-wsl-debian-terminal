@@ -28,3 +28,5 @@ __pycache__/
 .dev
 data/cache/
 config/.current_version
+.bash.d/data/cache/.env.cache
+data/.current_version

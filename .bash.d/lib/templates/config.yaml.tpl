@@ -7,7 +7,7 @@ system:
 ai:
   enabled: true
   default_provider: gemini
-  system_prompt_file: ~/.bash.d/config/system_prompt.txt
+  system_prompt_file: ~/.bash.d/config/ai/system_prompt.md
   gemini:
     api_key: YOUR_GEMINI_API_KEY
     version: gemini-3.6-flash
@@ -26,7 +26,8 @@ exports:
   # Precise patterns, not bare substrings: the old (pass|key|env|rsa) blocked
   # legit files like environment.tf while missing GCP service-account JSON
   # keys, .tfvars, and .pem/.p12 certs entirely.
-  blocklist: (secret|token|credential|password|passwd|id_rsa|id_ed25519|\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)?$|(^|/)\.env(\..+)?$|lock\.hcl|__pycache__|\.mt_cache|\.mt_cache\.time|\.mt_data\.tsv|\.profile_update_cache|\.style\.yapf|\.update_check_cache|\.zoxide_cache\.sh|\.env\.cache)
+  blocklist: (secret|token|credential|password|passwd|id_rsa|id_ed25519|\.pem$|\.p12$|\.pfx$|\.npmrc$|\.netrc$|kubeconfig|service.?account.*\.json$|.*-key.*\.json$|\.tfvars(\.json)
+  ignore_dirs: ".git|.dev|.vscode|.idea|node_modules|__pycache__|.terraform|venv|.venv|.mt_cache*"?$|(^|/)\.env(\..+)?$|lock\.hcl|__pycache__|\.mt_cache|\.mt_cache\.time|\.mt_data\.tsv|\.profile_update_cache|\.style\.yapf|\.update_check_cache|\.zoxide_cache\.sh|\.env\.cache)
 
 git:
   format_on_push: true
