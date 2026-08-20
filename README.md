@@ -17,10 +17,14 @@ Before installing this terminal environment, ensure your local workstation meets
 
 ## 🚀 Recent Updates & Enhancements
 
-
-- Updated regular expression to properly handle commands with optional parentheses.
-- Added support for recognizing both functions and aliased commands in a more robust manner.
-- Ensured that the script correctly identifies target declarations regardless of leading or trailing spaces.
+{
+  "category": "chat",
+  "language": null,
+  "extension": null,
+  "title": "git-diff-readme-summary",
+  "code": null,
+  "message": "* **System Configuration**: Updated `mt-set-default-ai` usage documentation to include support for local AI models (`gemini|claude|local`)."
+}
 
 ---
 
