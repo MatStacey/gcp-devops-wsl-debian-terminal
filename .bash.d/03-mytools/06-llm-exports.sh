@@ -57,8 +57,8 @@ __mt_do_export() {
 
   # Find files, exclude global blocklist, include specified extensions
   eval "find \"$target_dir\" $maxdepth -type f" 2> /dev/null |
-  grep -E -vi "(${EXPORT_BLOCKLIST})" |
-  grep -E -i "\.(${ext_pattern})$" > "$file_list"
+    grep -E -vi "(${EXPORT_BLOCKLIST})" |
+    grep -E -i "\.(${ext_pattern})$" > "$file_list"
 
   # Optionally filter out excluded extensions
   if [ -n "$exc_pattern" ]; then
