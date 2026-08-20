@@ -2,19 +2,19 @@
 # ------------------------------------------
 # Terraform & Kubernetes Wrappers
 # ------------------------------------------
+# ~/.bash.d/10-infra/40-terraform-k8s.sh
 
 #######################################
-# Checkov: Scan local terraform directory (./terraform)
+# Terraform: Scan local terraform directory (./terraform) with Checkov
 #######################################
 alias tf-scan='checkov -d terraform/ --framework terraform --quiet'
 
 #######################################
-# Terraform wrapper (preserves args)
+# Terraform: Core wrapper (preserves args)
+# Note: Does NOT intercept --help to preserve native terraform help.
+# Run `mt-help terraform` for framework documentation.
 #######################################
 terraform() {
-  # Deliberately does NOT intercept -h/--help here (unlike other mytools
-  # wrappers) — this wraps a real command with its own --help. Use
-  # `mt-help terraform` for the custom doc block instead.
   echo "+ terraform $*" >&2
   command terraform "$@"
 }
@@ -22,11 +22,13 @@ terraform() {
 # ------------------------------------------
 # Container Orchestration
 # ------------------------------------------
+
 #######################################
-# Kubectl wrapper (preserves args)
+# Kubernetes: Core kubectl wrapper (preserves args)
+# Note: Does NOT intercept --help to preserve native kubectl help.
+# Run `mt-help kubectl` for framework documentation.
 #######################################
 kubectl() {
-  # Deliberately does NOT intercept -h/--help here — see terraform() above.
   echo "+ kubectl $*" >&2
   command kubectl "$@"
 }
@@ -34,6 +36,7 @@ kubectl() {
 # ------------------------------------------
 # Infrastructure as Code
 # ------------------------------------------
+
 #######################################
 # Terraform: Recursively validate and scan all Terraform directories
 #######################################

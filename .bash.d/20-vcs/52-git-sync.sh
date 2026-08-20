@@ -2,16 +2,13 @@
 # ------------------------------------------
 # Version Control (Git) - Profile Synchronization
 # ------------------------------------------
+# ~/.bash.d/20-vcs/52-git-sync.sh
 
 #######################################
-# Clones and initializes a repository into the sync directory.
+# Git: Clone and initialize repository in sync directory
 # Arguments:
-#   $1 - The target repository directory path.
-#   $2 - The remote origin URL to bind to.
-# Outputs:
-#   Writes clone or init status to STDOUT.
-# Returns:
-#   0 on success.
+#   $1 - Target repository directory path
+#   $2 - Remote origin URL
 #######################################
 __git_sync_init_repo() {
   local repo_dir="$1" remote_url="$2"
@@ -32,12 +29,9 @@ __git_sync_init_repo() {
 }
 
 #######################################
-# Synchronizes the active bash config files over to the tracked git directory.
-# Strips sensitive yaml keys dynamically via rsync exclusions.
-# Globals:
-#   HOME
+# Git: Synchronize active bash configuration files into dotfiles repository
 # Arguments:
-#   $1 - The target repository directory path.
+#   $1 - Target repository directory path
 #######################################
 __git_sync_copy_files() {
   local repo_dir="$1"
@@ -51,17 +45,13 @@ __git_sync_copy_files() {
     if [ -f "$syncignore_tpl" ]; then
       cp "$syncignore_tpl" "$syncignore"
     else
-      touch "$syncignore" # Failsafe
+      touch "$syncignore"
     fi
   fi
 
-  # 1. BI-DIRECTIONAL PRE-CHECK: Pull any NEWER files from git repo back into ~/.bash.d/
   rsync -a -u --exclude-from="$syncignore" "$repo_dir/.bash.d/" "$HOME/.bash.d/"
-
-  # 2. SYNC TO REPO: Sync ~/.bash.d/ to git repo, preserving newer repo files (-u)
   rsync -a -u --delete --delete-excluded --exclude-from="$syncignore" "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
-  # 3. Explicitly sync root-level configuration files (preserving newer destination file)
   if [ -f "$HOME/.bashrc" ]; then
     if [ ! -f "$repo_dir/.bashrc" ] || [ "$HOME/.bashrc" -nt "$repo_dir/.bashrc" ]; then
       cp "$HOME/.bashrc" "$repo_dir/.bashrc"
@@ -70,7 +60,6 @@ __git_sync_copy_files() {
     fi
   fi
 
-  # 4. Move standard root-level configuration files to the repo root safely
   for f in install.sh README.md .gitignore .dockerignore Dockerfile .gitleaks.toml; do
     if [ -f "$HOME/.bash.d/$f" ]; then
       cp -u "$HOME/.bash.d/$f" "$repo_dir/$f"
@@ -79,7 +68,6 @@ __git_sync_copy_files() {
     fi
   done
 
-  # 5. Explicitly copy required root directories
   for d in .github .devcontainer; do
     if [ -d "$HOME/.bash.d/$d" ]; then
       cp -r -u "$HOME/.bash.d/$d" "$repo_dir/"
@@ -91,7 +79,6 @@ __git_sync_copy_files() {
   (
     cd "$repo_dir" || exit 1
 
-    # 6. Enforce mandatory .gitignore rules safely
     touch .gitignore
     local template_file="$HOME/.bash.d/lib/templates/gitignore.tpl"
     if [ -f "$template_file" ]; then
@@ -101,24 +88,18 @@ __git_sync_copy_files() {
       done < "$template_file"
     fi
 
-    # 7. Purge index and restage to respect new ignore rules
     git rm -r -q --cached . > /dev/null 2>&1
     git add --all
   )
 }
 
 #######################################
-# Git: Sync local bash configs to terminal repo and create a Pull Request
-# Globals:
-#   SYNC_REPO_DIR
-#   SYNC_REPO_URL
-# Arguments:
-#   -i <issue> - Optional issue number to link to the Pull Request.
-#   $@ - Optional string message. If empty, triggers AI systematic feature grouping.
-# Outputs:
-#   Writes sync, diff, and execution state to STDOUT.
-# Returns:
-#   0 on success, 1 on misconfigured URL path.
+# System: Sync local bash configs to terminal dotfiles repo and create a Pull Request
+# Usage: mt-push-update [-i issue_num] [-s] [optional_message]
+# Options:
+#   -i <issue>  Optional issue number to link to the Pull Request
+#   -s          Run ShellCheck locally before pushing to catch errors early
+#   $@          Optional commit message string
 #######################################
 mt-push-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -127,20 +108,35 @@ mt-push-update() {
   fi
 
   local issue_num=""
+  local run_shellcheck=false
   local OPTIND opt
-  while getopts "i:" opt; do
+  while getopts "i:s" opt; do
     case ${opt} in
       i) issue_num="$OPTARG" ;;
+      s) run_shellcheck=true ;;
       \?)
-        echo "Usage: mt-push-update [-i <issue_number>] [optional message]" >&2
+        echo "Usage: mt-push-update [-i <issue_number>] [-s] [optional message]" >&2
         return 1
         ;;
     esac
   done
   shift $((OPTIND - 1))
 
+  if [ "$run_shellcheck" = true ]; then
+    echo -e "${CB_BLUE}🔍 Running local ShellCheck...${C_RESET}"
+    if command -v shellcheck > /dev/null 2>&1; then
+      if ! find "$HOME/.bash.d" -type f -name "*.sh" -print0 | xargs -0 shellcheck -e SC1090,SC1091,SC2119,SC2120,SC2207,SC2015,SC2317,SC2016,SC2129,SC2028,SC1003; then
+        echo -e "${CB_RED}🚨 ShellCheck failed! Please fix the errors above before syncing.${C_RESET}"
+        return 1
+      fi
+      echo -e "${CB_GREEN}✅ ShellCheck passed!${C_RESET}"
+    else
+      echo -e "${CB_YELLOW}⚠️ ShellCheck is not installed locally. Skipping...${C_RESET}"
+    fi
+  fi
+
   local user_msg="$*"
-  local repo_dir="$SYNC_REPO_DIR"
+  local repo_dir="${DOTFILES_DIR:-$SYNC_REPO_DIR}"
   local remote_url="${SYNC_REPO_URL:-}"
 
   if [[ -z "$remote_url" || "$remote_url" == "YOUR_SYNC_REPO_URL" || "$remote_url" == "null" ]]; then
@@ -165,18 +161,17 @@ mt-push-update() {
     local current_branch
     current_branch=$(git branch --show-current)
 
-    # 1. Pre-flight check: If on a feature branch, is it a dead branch? (Do this BEFORE copying files over)
     if [ "$current_branch" != "$default_branch" ] && command -v gh > /dev/null 2>&1; then
       local pr_state
       pr_state=$(gh pr view "$current_branch" --json state -q .state 2> /dev/null || echo "NONE")
-      if [[ "$pr_state" == "MERGED" || "$pr_state" == "CLOSED" ]]; then
+      if [ "$pr_state" = "MERGED" ] || [ "$pr_state" = "CLOSED" ]; then
         echo -e "${CB_YELLOW}⚠️  Current branch '$current_branch' has a $pr_state PR and is considered dead.${C_RESET}"
         read -r -p "Delete '$current_branch' locally and checkout a new branch from $default_branch? [Y/n] " -n 1
         echo
-        if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+        if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
           read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
           echo
-          if [[ $REPLY =~ ^[Yy]$ ]] || [[ -z $REPLY ]]; then
+          if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
             echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
             git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
           fi
@@ -202,7 +197,6 @@ mt-push-update() {
       fi
     fi
 
-    # 2. Check out main, OR ensure current feature branch is safely merged and up to date
     if [ "$current_branch" = "$default_branch" ]; then
       git checkout "$default_branch" > /dev/null 2>&1 || git checkout -b "$default_branch" > /dev/null 2>&1
       git pull origin "$default_branch" > /dev/null 2>&1 || true
@@ -218,7 +212,6 @@ mt-push-update() {
     fi
   ) || return 1
 
-  # 3. Synchronize modified files over to the repo
   __git_sync_copy_files "$repo_dir"
 
   (
@@ -229,7 +222,6 @@ mt-push-update() {
       shfmt -i 2 -ci -sr -w . > /dev/null 2>&1 || true
     fi
 
-    # Trigger automatic documentation updates
     __git_sync_ai_docs "$repo_dir"
     if [ $? -eq 100 ]; then
       echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
@@ -253,7 +245,6 @@ mt-push-update() {
     local branch_name="$current_branch"
     local pr_title="$user_msg"
 
-    # 4. If we are still on main, we need to generate a new branch for the PR
     if [ "$current_branch" = "$default_branch" ]; then
       if [ -n "$user_msg" ]; then
         local type
@@ -277,14 +268,12 @@ mt-push-update() {
       fi
     fi
 
-    # 5. Build PR body content
     local pr_body="Automated sync of terminal profile configurations."
     if [ -n "$issue_num" ]; then
       issue_num="${issue_num#\#}"
       pr_body="${pr_body}\n\nResolves #${issue_num}"
     fi
 
-    # 6. Commit the changes
     if [ -z "$user_msg" ]; then
       __git_sync_ai_commit "$repo_dir"
       if [ $? -eq 100 ]; then
@@ -302,15 +291,15 @@ mt-push-update() {
       git commit -m "$user_msg" > /dev/null
     fi
 
-    # 7. Delegate all push/PR logic to the new robust function!
     git-raise-pr -b "$default_branch" -t "$pr_title" -m "$(echo -e "$pr_body")"
   ) || return 1
 }
 
 #######################################
-# System: Download and install profile updates from GitHub releases [Usage: mt-get-update [-v version]]
-# Arguments:
-#   -v   Specify a target release version (e.g., v1.1.0)
+# System: Download and install profile updates from GitHub releases
+# Usage: mt-get-update [-v version]
+# Options:
+#   -v <version>  Specify a target release version (e.g., v1.1.0)
 #######################################
 mt-get-update() {
   local target_version=""
@@ -347,13 +336,12 @@ mt-get-update() {
   local tag_name
   tag_name=$(echo "$release_data" | jq -r ".tag_name // empty")
 
-  # --- STRICT VERSION CHECK ---
   local current_version="Local"
+  local repo_dir="${DOTFILES_DIR:-$SYNC_REPO_DIR}"
   if [ -f "$HOME/.bash.d/data/.current_version" ]; then
-    # Strip all newlines and spaces to prevent Bash string mismatch bugs
     current_version=$(command cat "$HOME/.bash.d/data/.current_version" | tr -d '\r\n ')
-  elif [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
-    current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "Local")
+  elif [ -n "$repo_dir" ] && [ -d "$repo_dir/.git" ] && command -v git > /dev/null 2>&1; then
+    current_version=$(git -C "$repo_dir" describe --tags --abbrev=0 2> /dev/null || echo "Local")
     current_version=$(echo "$current_version" | tr -d '\r\n ')
   fi
 
@@ -364,7 +352,6 @@ mt-get-update() {
     echo -e "${CB_GREEN}✅ You are already running the latest version (${current_version}).${C_RESET}"
     return 0
   fi
-  # -----------------------------
 
   if [ -z "$download_url" ] || [ "$download_url" = "null" ]; then
     if [ -n "$target_version" ]; then
@@ -390,7 +377,6 @@ mt-get-update() {
   echo -e "${CB_YELLOW}🔄 Extracting and applying updates...${C_RESET}"
   unzip -q "$zip_path" -d "${tmp_dir}/extracted" > /dev/null 2>&1
 
-  # Locate the root of the extracted zip containing install.sh
   local ext_root="${tmp_dir}/extracted"
   if [ ! -f "$ext_root/install.sh" ]; then
     local nested
@@ -414,10 +400,11 @@ mt-get-update() {
 }
 
 #######################################
-# System: Download a release zip from the remote repository [Usage: mt-download-release [-v version] [-d directory]]
-# Arguments:
-#   -v <version>    Specify a target release version (e.g., v1.1.0). Defaults to latest.
-#   -d <directory>  Specify a destination directory. Defaults to current directory.
+# System: Download a release zip from the remote repository
+# Usage: mt-download-release [-v version] [-d directory]
+# Options:
+#   -v <version>    Specify target release version (defaults to latest)
+#   -d <directory>  Specify destination directory (defaults to current directory)
 #######################################
 mt-download-release() {
   local target_version=""
@@ -476,7 +463,6 @@ mt-download-release() {
     return 1
   fi
 
-  # Fallback if asset name wasn't parsed correctly
   [ -z "$asset_name" ] || [ "$asset_name" = "null" ] && asset_name="mt-devops-framework-${tag_name}.zip"
 
   local dest_file="${dest_dir}/${asset_name}"

@@ -2,50 +2,61 @@
 # ------------------------------------------
 # GCP: Resources & Services
 # ------------------------------------------
+# ~/.bash.d/10-infra/31-gcp-services.sh
 
 #######################################
-# Compute: List all VM instances
+# GCP: Compute - List all VM instances
 #######################################
 alias gce-ls='gcloud compute instances list'
+
 #######################################
-# Compute: SSH into an instance
-# Arguments:
-#   gce-ssh <vm-name>
+# GCP: Compute - SSH into an instance
+# Usage: gce-ssh <vm-name>
 #######################################
 alias gce-ssh='gcloud compute ssh'
+
 #######################################
-# GCS: List buckets or contents
-# Arguments:
-#   gcs-ls gs://bucket
+# GCP: Cloud Storage - List buckets or contents
+# Usage: gcs-ls gs://bucket
 #######################################
 alias gcs-ls='gcloud storage ls'
+
 #######################################
-# BigQuery: List datasets in project
+# GCP: BigQuery - List datasets in project
 #######################################
 alias bq-ls='bq ls'
+
 #######################################
-# Artifacts: List Artifact Registry repos
+# GCP: Artifact Registry - List repositories
 #######################################
 alias gcl-gar-ls='gcloud artifacts repositories list'
+
 #######################################
-# IAM: List service accounts in active project
+# GCP: IAM - List service accounts in active project
 #######################################
 alias gcl-iam-ls='gcloud iam service-accounts list'
+
 #######################################
-# PubSub: List subscriptions
+# GCP: PubSub - List subscriptions
 #######################################
 alias gcl-ps-subs='gcloud pubsub subscriptions list'
+
 #######################################
-# PubSub: List topics
+# GCP: PubSub - List topics
 #######################################
 alias gcl-ps-topics='gcloud pubsub topics list'
+
 #######################################
-# Functions: List Cloud Run Functions
+# GCP: Cloud Run Functions - List functions
 #######################################
 alias gcp-crf-ls='gcloud functions list'
 
 #######################################
-# IAM: View IAM policy for active project
+# GCP: View IAM policy for the active project
+# Globals:
+#   gcl-get-project (Framework Function)
+# Outputs:
+#   Prints tabular IAM policy bindings to STDOUT
 #######################################
 gcp-iam-show() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -56,9 +67,11 @@ gcp-iam-show() {
 }
 
 #######################################
-# Secrets: Read latest payload of a secret
+# GCP: Read the latest payload of a secret
 # Arguments:
-#   gcp-get-secret <secret-name>
+#   $1 - Secret Name
+# Outputs:
+#   Prints secret payload string to STDOUT
 #######################################
 gcp-get-secret() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -69,9 +82,12 @@ gcp-get-secret() {
 }
 
 #######################################
-# Functions: Tail logs of a function
+# GCP: Tail logs of a Cloud Run Function
 # Arguments:
-#   gcp-crf-logs <func-name> [limit]
+#   $1 - Function Name
+#   $2 - Limit (default: 50)
+# Outputs:
+#   Prints log stream to STDOUT
 #######################################
 gcp-crf-logs() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -86,9 +102,11 @@ gcp-crf-logs() {
 }
 
 #######################################
-# BigQuery: Run standard SQL query
+# GCP: Run standard SQL query in BigQuery
 # Arguments:
-#   bq-query "SELECT..."
+#   $1 - SQL query string (e.g., "SELECT...")
+# Outputs:
+#   Prints query results table to STDOUT
 #######################################
 bq-query() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -99,9 +117,9 @@ bq-query() {
 }
 
 #######################################
-# Artifacts: Configure Docker auth
+# GCP: Configure Docker auth for Artifact Registry
 # Arguments:
-#   gcp-gar-docker <region>
+#   $1 - Region (e.g., us-central1)
 #######################################
 gcp-gar-docker() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -112,9 +130,11 @@ gcp-gar-docker() {
 }
 
 #######################################
-# PubSub: Pull and auto-ack one message
+# GCP: Pull and auto-ack one message from a Pub/Sub subscription
 # Arguments:
-#   gcp-ps-pull <sub-name>
+#   $1 - Subscription Name
+# Outputs:
+#   Prints the pulled message to STDOUT
 #######################################
 gcp-ps-pull() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -125,7 +145,11 @@ gcp-ps-pull() {
 }
 
 #######################################
-# Run gcloud command and output as formatted JSON
+# GCP: Run any gcloud command and output as formatted JSON
+# Arguments:
+#   $@ - gcloud command and arguments
+# Outputs:
+#   Prints formatted JSON to STDOUT
 #######################################
 gcl-as-json() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -135,16 +159,25 @@ gcl-as-json() {
   gcloud "$@" --format="json" | jq '.'
 }
 
+#######################################
+# GCP: Autocompletion for gcp-get-secret
+#######################################
 _gcp_sec_read_completions() {
   COMPREPLY=($(compgen -W "$(gcloud secrets list --format="value(name)" 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 complete -F _gcp_sec_read_completions gcp-get-secret
 
+#######################################
+# GCP: Autocompletion for gce-ssh
+#######################################
 _gce_ssh_completions() {
   COMPREPLY=($(compgen -W "$(gcloud compute instances list --format="value(name)" 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 complete -F _gce_ssh_completions gce-ssh
 
+#######################################
+# GCP: Autocompletion for gcp-crf-logs
+#######################################
 _gcp_crf_logs_completions() {
   COMPREPLY=($(compgen -W "$(gcloud functions list --format="value(name)" 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}"))
 }

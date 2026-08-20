@@ -1,58 +1,167 @@
 # shellcheck shell=bash
 # ------------------------------------------
-# Container Orchestration (Kubernetes)
+# Container Orchestration (Kubernetes) Aliases
 # ------------------------------------------
+# ~/.bash.d/10-infra/42-kubectl-aliases.sh
 
-# Core Kubectl Wrapper
+#######################################
+# Kubernetes: Core Kubectl Wrapper
+#######################################
 alias k='kubectl'
 
-# Apply & Delete
+#######################################
+# Kubernetes: Apply configuration from file
+#######################################
 alias ka='kubectl apply -f'
+
+#######################################
+# Kubernetes: Apply configuration using Kustomize
+#######################################
 alias kak='kubectl apply -k'
+
+#######################################
+# Kubernetes: Delete resources by name
+#######################################
 alias krm='kubectl delete'
+
+#######################################
+# Kubernetes: Delete resources from file
+#######################################
 alias krmf='kubectl delete -f'
 
-# Get & Describe Base
+#######################################
+# Kubernetes: Get resources
+#######################################
 alias kg='kubectl get'
+
+#######################################
+# Kubernetes: Get resources across all namespaces
+#######################################
 alias kgall='kubectl get --all-namespaces'
+
+#######################################
+# Kubernetes: Describe resources
+#######################################
 alias kd='kubectl describe'
 
-# Pods
+#######################################
+# Kubernetes: Get pods
+#######################################
 alias kgpo='kubectl get pods'
+
+#######################################
+# Kubernetes: Describe pods
+#######################################
 alias kdpo='kubectl describe pods'
+
+#######################################
+# Kubernetes: Delete pods
+#######################################
 alias krmpo='kubectl delete pods'
 
-# Deployments & StatefulSets
+#######################################
+# Kubernetes: Get deployments
+#######################################
 alias kgdep='kubectl get deployment'
+
+#######################################
+# Kubernetes: Describe deployments
+#######################################
 alias kddep='kubectl describe deployment'
+
+#######################################
+# Kubernetes: Delete deployments
+#######################################
 alias krmdep='kubectl delete deployment'
+
+#######################################
+# Kubernetes: Get statefulsets
+#######################################
 alias kgsts='kubectl get statefulset'
+
+#######################################
+# Kubernetes: Describe statefulsets
+#######################################
 alias kdsts='kubectl describe statefulset'
 
-# Services & Ingress
+#######################################
+# Kubernetes: Get services
+#######################################
 alias kgsvc='kubectl get service'
+
+#######################################
+# Kubernetes: Describe services
+#######################################
 alias kdsvc='kubectl describe service'
+
+#######################################
+# Kubernetes: Get ingresses
+#######################################
 alias kging='kubectl get ingress'
+
+#######################################
+# Kubernetes: Describe ingresses
+#######################################
 alias kding='kubectl describe ingress'
 
-# ConfigMaps & Secrets
+#######################################
+# Kubernetes: Get configmaps
+#######################################
 alias kgcm='kubectl get configmap'
+
+#######################################
+# Kubernetes: Describe configmaps
+#######################################
 alias kdcm='kubectl describe configmap'
+
+#######################################
+# Kubernetes: Get secrets
+#######################################
 alias kgsec='kubectl get secret'
+
+#######################################
+# Kubernetes: Describe secrets
+#######################################
 alias kdsec='kubectl describe secret'
 
-# Nodes & Namespaces
+#######################################
+# Kubernetes: Get nodes
+#######################################
 alias kgno='kubectl get nodes'
+
+#######################################
+# Kubernetes: Describe nodes
+#######################################
 alias kdno='kubectl describe nodes'
+
+#######################################
+# Kubernetes: Get namespaces
+#######################################
 alias kgns='kubectl get namespaces'
 
-# Troubleshooting & Exec
+#######################################
+# Kubernetes: Tail logs for a pod
+#######################################
 alias klo='kubectl logs -f'
+
+#######################################
+# Kubernetes: Tail logs for a previous instance of a pod
+#######################################
 alias klop='kubectl logs -f -p'
+
+#######################################
+# Kubernetes: Exec into a pod interactively
+#######################################
 alias kex='kubectl exec -i -t'
+
+#######################################
+# Kubernetes: Port forward to a pod or service
+#######################################
 alias kpf='kubectl port-forward'
 
-# Kube-System shortcut
+#######################################
+# Kubernetes: Shortcut for the kube-system namespace
+#######################################
 alias ksys='kubectl --namespace=kube-system'
 
 #######################################

@@ -1,0 +1,2 @@
+name: "Cloud Run Python Export"
+extensions: "py|txt|yaml|yml|Dockerfile|sh"

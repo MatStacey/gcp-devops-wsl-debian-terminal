@@ -2,37 +2,49 @@
 # ------------------------------------------
 # Path & URL Launchers (Config-Driven)
 # ------------------------------------------
+# ~/.bash.d/02-utilities/03-launcher.sh
 
 #######################################
-# Config: Change directory to sync repository root
-# Arguments:
-#   cd-mt-git-local
+# System: Change directory to dotfiles repository root
+# Globals:
+#   DOTFILES_DIR, SYNC_REPO_DIR
 #######################################
-cd-mt-git-local() {
+mt-dotfiles() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  cd "$SYNC_REPO_DIR" || echo "🚨 Error: SYNC_REPO_DIR not set."
+  local target="${DOTFILES_DIR:-$SYNC_REPO_DIR}"
+  if [ -n "$target" ] && [ -d "$target" ]; then
+    cd "$target" || return 1
+  else
+    echo "🚨 Error: DOTFILES_DIR is not set or directory does not exist."
+    return 1
+  fi
 }
 
 #######################################
-# Config: Open sync repository in the platform's native file manager
-# Arguments:
-#   win-sync
+# System: Change directory to dotfiles repository root (Alias)
+#######################################
+alias cd-mt-git-local='mt-dotfiles'
+
+#######################################
+# System: Open sync repository in the platform's native file manager
+# Globals:
+#   DOTFILES_DIR, SYNC_REPO_DIR
 #######################################
 win-sync() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __open_path_gui "$SYNC_REPO_DIR"
+  __open_path_gui "${DOTFILES_DIR:-$SYNC_REPO_DIR}"
 }
 
 #######################################
-# Config: Open sync repository remote URL in default web browser
-# Arguments:
-#   web-view-profile-homepage
+# System: Open dotfiles repository remote URL in default web browser
+# Globals:
+#   SYNC_REPO_URL
 #######################################
 mt-open-homepage() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -46,21 +58,21 @@ mt-open-homepage() {
 
   local web_url="$SYNC_REPO_URL"
   if [[ "$web_url" == git@* ]]; then
-    web_url="${web_url#git@}"    # Strip git@
-    web_url="${web_url/:/\/}"    # Swap the domain colon to a slash
-    web_url="https://${web_url}" # Prepend the protocol
+    web_url="${web_url#git@}"
+    web_url="${web_url/:/\/}"
+    web_url="https://${web_url}"
   fi
   web_url="${web_url%.git}"
-  web_url=$(echo "$web_url" | sed -E 's#([^:])//+#\1/#g') # Strip the trailing .git
+  web_url=$(echo "$web_url" | sed -E 's#([^:])//+#\1/#g')
 
   echo "🌐 Opening $web_url in browser..."
   __open_url "$web_url"
 }
 
 #######################################
-# Config: Change directory to unified AI workspace
-# Arguments:
-#   cd-ai
+# AI: Change directory to unified AI workspace
+# Globals:
+#   AI_WORKSPACE_DIR
 #######################################
 cd-ai-workspace() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -71,9 +83,9 @@ cd-ai-workspace() {
 }
 
 #######################################
-# Config: Open unified AI workspace in the platform's native file manager
-# Arguments:
-#   win-ai
+# AI: Open unified AI workspace in the platform's native file manager
+# Globals:
+#   AI_WORKSPACE_DIR
 #######################################
 win-ai-workspace() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -84,9 +96,9 @@ win-ai-workspace() {
 }
 
 #######################################
-# Config: Open Docker root directory in the platform's native file manager
-# Arguments:
-#   win-docker
+# Docker: Open Docker root directory in the platform's native file manager
+# Globals:
+#   DOCKER_ROOT_DIR
 #######################################
 win-docker() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -97,9 +109,9 @@ win-docker() {
 }
 
 #######################################
-# Config: Open current directory in the default IDE (VSCode/IntelliJ)
-# Arguments:
-#   ide
+# System: Open current directory in the default IDE (VSCode/IntelliJ)
+# Globals:
+#   DEFAULT_IDE
 #######################################
 ide() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -121,11 +133,13 @@ ide() {
 # Docker: Change to Docker directory (from config.yaml) and open in Windows Explorer
 #######################################
 cd-win-docker() {
-  # Dynamically pull the path from config.yaml
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
   local docker_path
   docker_path=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("paths", {}).get("docker_root", ""))')
-
-  # Evaluate any tildes (~) or variables in the path
   docker_path=$(eval echo "$docker_path")
 
   if [ -z "$docker_path" ]; then
@@ -138,7 +152,7 @@ cd-win-docker() {
     cd "$docker_path" || return 1
     win-docker
   else
-    echo -e "${CB_RED}🚨 Error: Directory  does not exist on the Linux filesystem.${C_RESET}"
+    echo -e "${CB_RED}🚨 Error: Directory does not exist on the Linux filesystem.${C_RESET}"
     return 1
   fi
 }
