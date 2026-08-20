@@ -164,7 +164,7 @@ __ai_query_gemini() {
       echo -e "\n\033[01;33m⏳ AI Rate limit hit! Required cooldown: ${wait_time}s (Attempt $attempt/$max_retries)\033[0m" >&2
       local user_input=""
 
-      if [[ "$prompt" == *"group the changes into logical features"* ]]; then
+      if [[ "$prompt" == "Analyze this git diff and group the changes"* ]]; then
         read -r -p "   Enter a commit message to bypass AI and push now (or press Enter to wait & retry): " user_input < /dev/tty
         if [ -n "$user_input" ]; then
           echo -e "\033[01;32m💡 Bypassing AI and committing manually...\033[0m" >&2
@@ -264,7 +264,7 @@ __ai_query_claude() {
       echo -e "\n\033[01;33m⏳ AI Rate limit hit! Required cooldown: ${wait_time}s (Attempt $attempt/$max_retries)\033[0m" >&2
       local user_input=""
 
-      if [[ "$prompt" == *"group the changes into logical features"* ]]; then
+      if [[ "$prompt" == "Analyze this git diff and group the changes"* ]]; then
         read -r -p "   Enter a commit message to bypass AI and push now (or press Enter to wait & retry): " user_input < /dev/tty
         if [ -n "$user_input" ]; then
           echo -e "\033[01;32m💡 Bypassing AI and committing manually...\033[0m" >&2
