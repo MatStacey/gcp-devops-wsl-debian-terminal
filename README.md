@@ -15,21 +15,6 @@ Before installing this terminal environment, ensure your local workstation meets
 
 ---
 
-## 🚀 Recent Updates & Enhancements
-
-{
-  "category": "chat",
-  "language": null,
-  "extension": null,
-  "title": "git-auto-format-updates",
-  "code": null,
-  "message": "- **Automated Pre-Push Code Formatting**: Added multi-language auto-formatting support (`shfmt`, `ruff`/`yapf`, `terraform fmt`, `prettier`) executed automatically during `git-ai-push-all` workflow.
-- **Format Toggle Command**: Introduced `mt-toggle-format-on-push` CLI function to enable or disable automatic formatting dynamically.
-- **Config & Environment Integration**: Updated configuration templates and the Python configuration manager to support `GIT_FORMAT_ON_PUSH` with a default setting of `true`."
-}
-
----
-
 ## 🚀 Key Features
 
 * **Cross-Platform Compatibility:** Native OS detection dynamically maps clipboard (`pbcopy`, `clip.exe`), file explorer (`open`, `explorer.exe`), and package manager (`brew`, `apt`) utilities based on your host architecture.

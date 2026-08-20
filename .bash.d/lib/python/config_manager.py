@@ -122,6 +122,10 @@ def load_env():
 
     # Git
     export("SYNC_REPO_URL", git_cfg.get("sync_repo_url", ""))
+    export(
+        "UPSTREAM_REPO_PATH",
+        git_cfg.get("upstream_repo_path", "MatStacey/mt-devops-framework"),
+    )
     export("GIT_FEATURE_PREFIX", git_cfg.get("feature_prefix", "feature/"))
     export("GIT_FORMAT_ON_PUSH", str(git_cfg.get("format_on_push", True)).lower())
     export("AI_MAX_DIFF_BYTES", git_cfg.get("ai_max_diff_bytes", 4000))
