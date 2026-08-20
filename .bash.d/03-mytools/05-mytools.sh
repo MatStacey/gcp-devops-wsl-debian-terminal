@@ -91,7 +91,7 @@ mt-cats() {
   }
   mytools > /dev/null
   echo -e "\n${CB_BLUE}▶ AVAILABLE CATEGORIES${C_RESET}"
-  cut -f2 "$HOME/.bash.d/.mt_data.tsv" 2> /dev/null | sort -u | while read -r cat; do
+  cut -f2 "$HOME/.bash.d/data/cache/.mt_data.tsv" 2> /dev/null | sort -u | while read -r cat; do
     [ -n "$cat" ] && echo -e "  ${CB_YELLOW}[${cat}]${C_RESET}"
   done
   echo ""
@@ -117,7 +117,7 @@ mt-cat() {
   local target_cat="${1,,}"
 
   echo -e "\n${CB_BLUE}▶ CATEGORY: ${1}${C_RESET}\n"
-  awk -F'\t' -v target="$target_cat" 'tolower($2) == target { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $4 }' "$HOME/.bash.d/.mt_data.tsv"
+  awk -F'\t' -v target="$target_cat" 'tolower($2) == target { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
   echo ""
 }
 
@@ -131,7 +131,7 @@ mt-funcs() {
   }
   mytools > /dev/null
   echo -e "\n${CB_BLUE}▶ FUNCTIONS${C_RESET}\n"
-  awk -F'\t' '$1 == "func" { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/.mt_data.tsv"
+  awk -F'\t' '$1 == "func" { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
   echo ""
 }
 
@@ -145,7 +145,7 @@ mt-aliases() {
   }
   mytools > /dev/null
   echo -e "\n${CB_BLUE}▶ ALIASES${C_RESET}\n"
-  awk -F'\t' '$1 == "alias" { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/.mt_data.tsv"
+  awk -F'\t' '$1 == "alias" { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
   echo ""
 }
 
@@ -159,7 +159,7 @@ mt-run() {
   }
   mytools > /dev/null
   local selected
-  selected=$(awk -F'\t' '{ printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$HOME/.bash.d/.mt_data.tsv" | fzf --ansi --prompt="Run Tool > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
+  selected=$(awk -F'\t' '{ printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv" | fzf --ansi --prompt="Run Tool > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
   if [ -n "$selected" ]; then
     local cmd_name
     cmd_name=$(echo "$selected" | awk '{print $1}')
@@ -183,7 +183,7 @@ mt-search() {
     return 1
   }
   mytools > /dev/null
-  awk -F'\t' -v q="${1,,}" 'tolower($0) ~ q { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/.mt_data.tsv"
+  awk -F'\t' -v q="${1,,}" 'tolower($0) ~ q { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
 }
 
 #######################################
@@ -196,7 +196,7 @@ mt-fzf() {
   }
   mytools > /dev/null
   local selected
-  selected=$(awk -F'\t' '{ printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$HOME/.bash.d/.mt_data.tsv" | fzf --ansi --prompt="Search MyTools > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
+  selected=$(awk -F'\t' '{ printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv" | fzf --ansi --prompt="Search MyTools > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
   [ -n "$selected" ] && echo "$selected" | awk '{print $1}'
 }
 
@@ -265,14 +265,14 @@ mt-help() {
 _mt_cat_completions() {
   local IFS=$'\n'
   local cats
-  cats=$(cut -f2 "$HOME/.bash.d/.mt_data.tsv" 2> /dev/null | sort -u)
+  cats=$(cut -f2 "$HOME/.bash.d/data/cache/.mt_data.tsv" 2> /dev/null | sort -u)
   COMPREPLY=($(compgen -W "$cats" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 complete -F _mt_cat_completions mt-cat
 
 _mt_help_completions() {
   local tools
-  tools=$(cut -f3 "$HOME/.bash.d/.mt_data.tsv" 2> /dev/null)
+  tools=$(cut -f3 "$HOME/.bash.d/data/cache/.mt_data.tsv" 2> /dev/null)
   COMPREPLY=($(compgen -W "$tools" -- "${COMP_WORDS[COMP_CWORD]}"))
 }
 complete -F _mt_help_completions mt-help
@@ -310,10 +310,10 @@ mt-refresh-caches() {
 
   echo -e "${CB_YELLOW}🧹 Clearing background caches...${C_RESET}"
   rm -f "$HOME/.bash.d/config/.env.cache"
-  rm -f "$HOME/.bash.d/.mt_cache" "$HOME/.bash.d/.mt_cache.time" "$HOME/.bash.d/.mt_data.tsv"
-  rm -f "$HOME/.bash.d/.update_check_cache" "$HOME/.bash.d/.update_pending"
-  rm -f "$HOME/.bash.d/.zoxide_cache.sh"
-  rm -f "$HOME/.bash.d/.profile_update_cache" "$HOME/.bash.d/.profile_update_pending"
+  rm -f "$HOME/.bash.d/data/cache/.mt_cache" "$HOME/.bash.d/data/cache/.mt_cache.time" "$HOME/.bash.d/data/cache/.mt_data.tsv"
+  rm -f "$HOME/.bash.d/data/cache/.update_check_cache" "$HOME/.bash.d/.update_pending"
+  rm -f "$HOME/.bash.d/data/cache/.zoxide_cache.sh"
+  rm -f "$HOME/.bash.d/data/cache/.profile_update_cache" "$HOME/.bash.d/.profile_update_pending"
 
   echo -e "${CB_BLUE}🔄 Rebuilding configurations and tool indexes...${C_RESET}"
   if [ -f "$HOME/.bash.d/lib/python/config_manager.py" ]; then

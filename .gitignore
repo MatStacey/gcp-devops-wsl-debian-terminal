@@ -24,4 +24,4 @@ __pycache__/
 
 # Build Artifacts & Miscellaneous
 *.zip
-.dev
+.devdata/cache/

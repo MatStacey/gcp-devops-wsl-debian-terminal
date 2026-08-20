@@ -9,7 +9,7 @@ __check_updates() {
   if [[ $- != *i* ]]; then return; fi
 
   local pending_file="$HOME/.bash.d/.update_pending"
-  local cache_file="$HOME/.bash.d/.update_check_cache"
+  local cache_file="$HOME/.bash.d/data/cache/.update_check_cache"
   local current_time
   current_time=$(date +%s)
 
@@ -63,7 +63,7 @@ __check_profile_updates() {
   if [[ $- != *i* ]]; then return; fi
 
   local pending_file="$HOME/.bash.d/.profile_update_pending"
-  local cache_file="$HOME/.bash.d/.profile_update_cache"
+  local cache_file="$HOME/.bash.d/data/cache/.profile_update_cache"
   local current_time
   current_time=$(date +%s)
 

@@ -25,3 +25,5 @@ __pycache__/
 # Build Artifacts & Miscellaneous
 *.zip
 .dev
+# Dynamic Caches
+data/cache/

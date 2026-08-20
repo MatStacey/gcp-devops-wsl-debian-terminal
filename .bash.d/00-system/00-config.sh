@@ -210,7 +210,7 @@ mt-set-theme() {
   fi
   local theme="${1:-default}"
 
-  [ ! -f "$THEMES_DIR/$theme.sh" ] && {
+  if [ ! -f "$THEMES_DIR/$theme.sh" ]; then
     echo "🚨 Invalid theme. Ensure $theme.sh exists in $THEMES_DIR"
     return 1
   fi
