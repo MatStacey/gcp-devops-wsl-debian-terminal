@@ -204,7 +204,7 @@ mt-set-default-ide() {
 }
 
 #######################################
-# Config: Set default AI model [Usage: mt-set-default-ai "gemini|claude"]
+# Config: Set default AI model [Usage: mt-set-default-ai "gemini|claude|local"]
 #######################################
 mt-set-default-ai() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then

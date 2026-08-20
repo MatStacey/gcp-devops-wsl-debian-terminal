@@ -49,7 +49,7 @@ This document is automatically generated on every sync and lists all available f
 | func | Configuration Management | `mt-set-auto-cleanup-days` | Config: Modifies the threshold in days before exports are automatically deleted [Usage: mt-set-auto-cleanup-days 7] |
 | func | Configuration Management | `mt-set-cicd` | Config: Set default CI/CD provider [Usage: mt-set-cicd "github|bitbucket|gitlab|azure|jenkins"] |
 | func | Configuration Management | `mt-set-claude-version` | Config: Set Claude model version [Usage: smt-set-claude-version "claude-3-7-sonnet-latest"] |
-| func | Configuration Management | `mt-set-default-ai` | Config: Set default AI model [Usage: mt-set-default-ai "gemini|claude"] |
+| func | Configuration Management | `mt-set-default-ai` | Config: Set default AI model [Usage: mt-set-default-ai "gemini|claude|local"] |
 | func | Configuration Management | `mt-set-default-ide` | Config: Set default IDE [Usage: mt-set-default-ide "vscode|intellij"] |
 | func | Configuration Management | `mt-set-gemini-version` | Config: Set Gemini model version [Usage: mt-set-gemini-version "gemini-1.5-pro"] |
 | func | Configuration Management | `mt-set-local-ai-api-key` | Config: Set Local AI API key [Usage: mt-set-local-ai-api-key ["key"]] |
