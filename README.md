@@ -21,9 +21,11 @@ Before installing this terminal environment, ensure your local workstation meets
   "category": "chat",
   "language": null,
   "extension": null,
-  "title": "git-diff-readme-summary",
+  "title": "summarize-git-diff",
   "code": null,
-  "message": "* **Improved Whitespace Sanitization**: Standardized string stripping in `mt-status` using POSIX character class `tr '[:space:]'` for parsing framework versions and pending update status files."
+  "message": "* **Bi-Directional Git Sync:** Enhanced `52-git-sync.sh` with bi-directional syncing (`rsync -u` and modification time checks) to pull newer repository files back to `~/.bash.d/` and `~/.bashrc` before pushing.
+* **Safe Overwrite Protections:** Updated file and directory copying routines (`cp -u`) across configuration files and dev directories (`.github`, `.devcontainer`) to prevent clobbering newer local or remote changes.
+* **Blueprint Code Cleanup:** Applied PEP 8 code formatting fixes to the Python microservice template entry point (`main.py`)."
 }
 
 ---
