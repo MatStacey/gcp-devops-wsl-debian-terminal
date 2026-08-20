@@ -48,33 +48,17 @@ This document is automatically generated on every sync and lists all available f
 | func | Base64 Encoding & Decoding Utilities | `docker-tail` | Docker: Concurrently tail logs from multiple selected containers |
 | func | Base64 Encoding & Decoding Utilities | `mt-blueprint` | Framework: Scaffold a new repository using standardized DevOps blueprints |
 | func | Base64 Encoding & Decoding Utilities | `mt-log` | System: Centralized logging with colored output |
-| func | Configuration Management | `mt-add-claude-key` | Config: Add Claude API key to config.yaml [Usage: mt-add-claude-key ["key"]] |
-| func | Configuration Management | `mt-add-gemini-key` | Config: Add Gemini API key to config.yaml [Usage: mt-add-gemini-key ["key"]] |
-| func | Configuration Management | `mt-add-sync-url` | Config: Add remote repository URL for bash sync [Usage: mt-add-sync-url "url"] |
 | func | Configuration Management | `mt-get-gemini-status` | Prints the current Gemini API model version and extended reasoning mode toggle. |
-| func | Configuration Management | `mt-open-config` | Config: Open bash.d directory and config.yaml in IDE [Usage: mt-open-config [-ide vscode|intellij]] |
-| func | Configuration Management | `mt-select-theme` | Config: Interactive menu to select and apply a theme [Usage: mt-select-theme] |
-| func | Configuration Management | `mt-set-auto-cleanup-days` | Config: Modifies the threshold in days before exports are automatically deleted [Usage: mt-set-auto-cleanup-days 7] |
-| func | Configuration Management | `mt-set-cicd` | Config: Set default CI/CD provider [Usage: mt-set-cicd "github|bitbucket|gitlab|azure|jenkins"] |
-| func | Configuration Management | `mt-set-claude-version` | Config: Set Claude model version [Usage: smt-set-claude-version "claude-3-7-sonnet-latest"] |
-| func | Configuration Management | `mt-set-default-ai` | Config: Set default AI model [Usage: mt-set-default-ai "gemini|claude"] |
-| func | Configuration Management | `mt-set-default-ide` | Config: Set default IDE [Usage: mt-set-default-ide "vscode|intellij"] |
-| func | Configuration Management | `mt-set-gemini-version` | Config: Set Gemini model version [Usage: mt-set-gemini-version "gemini-1.5-pro"] |
-| func | Configuration Management | `mt-set-local-ai-api-key` | Config: Set Local AI API key [Usage: mt-set-local-ai-api-key ["key"]] |
-| func | Configuration Management | `mt-set-local-ai-model` | Config: Set Local AI model [Usage: mt-set-local-ai-model "llama3.2"] |
-| func | Configuration Management | `mt-set-local-ai-url` | Config: Set Local AI base URL [Usage: mt-set-local-ai-url "http://localhost:11434/v1"] |
-| func | Configuration Management | `mt-set-theme` | Config: Set terminal color theme [Usage: mt-set-theme "theme_name"] |
-| func | Configuration Management | `mt-setup` | Config: Interactive First-Time Setup Wizard |
-| func | Configuration Management | `mt-setup` | Config: Master Setup Wizard Menu |
-| func | Configuration Management | `mt-setup-docker` | Config: Interactive Docker & Exports Setup |
+| func | Configuration Management | `mt-setup-ai` | Config: Interactive AI Setup |
+| func | Configuration Management | `mt-setup-cicd` | Config: Interactive CI/CD Setup |
+| func | Configuration Management | `mt-setup` | Config: Interactive Master Setup Wizard Menu |
+| func | Configuration Management | `mt-setup-docker` | Config: Interactive Docker Setup |
+| func | Configuration Management | `mt-setup-exports` | Config: Interactive Exports Setup |
 | func | Configuration Management | `mt-setup-git` | Config: Interactive Git Setup |
 | func | Configuration Management | `mt-setup-paths` | Config: Interactive Paths Setup |
 | func | Configuration Management | `mt-set-upstream-path` | Config: Set the upstream repository path for framework updates |
 | func | Configuration Management | `mt-setup-system` | Config: Interactive System Setup |
-| func | Configuration Management | `mt-toggle-ai` | Config: Toggle global AI prompt and integration true/false |
-| func | Configuration Management | `mt-toggle-auto-cleanup` | Config: Toggle export file background cleanup script [Usage: mt-toggle-auto-cleanup] |
 | func | Configuration Management | `mt-toggle-format-on-push` | Config: Toggle format-on-push true/false |
-| func | Configuration Management | `mt-toggle-gemini-extended` | Config: Toggle Gemini extended mode true/false |
 | func | Container Orchestration | `kubectl` | Kubectl wrapper (preserves args) |
 | func | Container Orchestration (Kubernetes) | `kns` | Kubernetes: Get or explicitly set the active namespace in the current context |
 | func | GCP: Configuration & Authentication | `gcl-config` | GCP: List active configuration properties |
