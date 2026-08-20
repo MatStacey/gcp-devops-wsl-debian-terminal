@@ -24,13 +24,9 @@ Before installing this terminal environment, ensure your local workstation meets
   "category": "chat",
   "language": null,
   "extension": null,
-  "title": "git-diff-summary-readme-updates",
+  "title": "git-diff-summary",
   "code": null,
-  "message": "- **Interactive Setup Wizard**: Added `mt-setup` function for first-time configuration of default IDE, AI provider preferences, API keys, and Git sync settings.
-- **Centralized Framework Logging**: Introduced `mt-log` helper for timestamped file logging and level-based colored output.
-- **Terraform Clean Safety Prompt**: Added an interactive confirmation guard to `tf-clean` prior to removing local caches and state files.
-- **Automated Documentation Sync**: Added `__git_sync_ai_docs` to automatically generate `COMMANDS.md` and leverage AI providers to update `README.md` recent updates.
-- **Refactored GUI Path Handling**: Updated LLM export utilities to use `__open_path_gui` for cross-platform target directory opening."
+  "message": "* **Shell Script Refactoring**: Separated `local` variable declarations from command substitution assignments across utility (`99-utils.sh`), VCS (`51-git-ai.sh`), and AI (`60-ai.sh`) modules to adhere to ShellCheck best practices and prevent masked exit codes."
 }
 
 ---
