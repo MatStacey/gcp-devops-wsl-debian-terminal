@@ -345,9 +345,9 @@ mt-get-update() {
 
   # --- STRICT VERSION CHECK ---
   local current_version="Local"
-  if [ -f "$HOME/.bash.d/.current_version" ]; then
+  if [ -f "$HOME/.bash.d/config/.current_version" ]; then
     # Strip all newlines and spaces to prevent Bash string mismatch bugs
-    current_version=$(command cat "$HOME/.bash.d/.current_version" | tr -d '\r\n ')
+    current_version=$(command cat "$HOME/.bash.d/config/.current_version" | tr -d '\r\n ')
   elif [ -n "$SYNC_REPO_DIR" ] && [ -d "$SYNC_REPO_DIR/.git" ] && command -v git > /dev/null 2>&1; then
     current_version=$(git -C "$SYNC_REPO_DIR" describe --tags --abbrev=0 2> /dev/null || echo "Local")
     current_version=$(echo "$current_version" | tr -d '\r\n ')
@@ -401,7 +401,7 @@ mt-get-update() {
       cd "$ext_root" || exit 1
       bash ./install.sh
     )
-    echo "$tag_name" > "$HOME/.bash.d/.current_version"
+    echo "$tag_name" > "$HOME/.bash.d/config/.current_version"
   else
     echo -e "${CB_RED}🚨 Error: install.sh missing from downloaded release.${C_RESET}"
   fi
