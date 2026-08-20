@@ -1,6 +1,3 @@
-Here is the completely updated `README.md` incorporating all the new architecture, safeguard, logging, and AI features we just built. I have updated the **Recent Updates** section and streamlined the **Setup & Installation** instructions to feature your new `mt-setup` wizard.
-
-```markdown
 # MT DevOps Framework
 
 A high-performance, fully modular Bash environment engineered specifically for Senior Cloud, Platform, and DevOps Engineers. Originally built for Windows Subsystem for Linux (WSL2), it now natively supports macOS (Darwin) and standard Linux distributions.
@@ -164,9 +161,3 @@ If you encounter missing commands, broken aliases, or stale environment variable
 
 **Q: I am getting an "Argument list too long" error when using the AI tools.**
 **A:** This issue was resolved by utilizing temporary payload files. If you are experiencing this on an older version, run `mt-get-update` to automatically pull down the latest codebase fixes.
-
-```
-
-Are you planning to deploy these framework updates directly to your Git repository next, or do you have any final tweaks to apply?
-
-```
