@@ -1,0 +1,10 @@
+trigger:
+- main
+pool:
+  vmImage: ubuntu-latest
+steps:
+- script: |
+    terraform fmt -check
+    terraform init -backend=false
+    terraform validate
+  displayName: 'Terraform Validate'

@@ -61,6 +61,10 @@ def load_env():
     git_cfg = d.get("git") or {}
     paths_cfg = d.get("paths") or {}
     docker_cfg = d.get("docker") or {}
+    cicd_cfg = d.get("cicd") or {}
+
+    # CI/CD
+    export("CICD_PROVIDER", cicd_cfg.get("provider", "github"), to_lower=True)
 
     # System
     export("DEFAULT_IDE", sys_cfg.get("default_ide", "vscode"), to_lower=True)
@@ -119,6 +123,7 @@ def load_env():
     # Git
     export("SYNC_REPO_URL", git_cfg.get("sync_repo_url", ""))
     export("GIT_FEATURE_PREFIX", git_cfg.get("feature_prefix", "feature/"))
+    export("GIT_FORMAT_ON_PUSH", str(git_cfg.get("format_on_push", True)).lower())
     export("AI_MAX_DIFF_BYTES", git_cfg.get("ai_max_diff_bytes", 4000))
 
     # Paths

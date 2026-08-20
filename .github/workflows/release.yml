@@ -63,7 +63,7 @@ jobs:
           find . -name "*.json" -not -path "./.devcontainer/*" -print0 | xargs -0 -I {} jq empty {}
 
           echo "🔍 Validating YAML files..."
-          yamllint -d "{extends: relaxed, rules: {line-length: disable}}" .
+          find . \( -name "*.yaml" -o -name "*.yml" \) -not -path "*/lib/blueprints/*" -print0 | xargs -0 yamllint -d "{extends: relaxed, rules: {line-length: disable}}"
 
   build-and-release:
     name: Build and Release

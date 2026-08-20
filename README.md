@@ -21,9 +21,11 @@ Before installing this terminal environment, ensure your local workstation meets
   "category": "chat",
   "language": null,
   "extension": null,
-  "title": "git-diff-summary",
+  "title": "git-auto-format-updates",
   "code": null,
-  "message": "* **Shell Script Refactoring**: Separated `local` variable declarations from command substitution assignments across utility (`99-utils.sh`), VCS (`51-git-ai.sh`), and AI (`60-ai.sh`) modules to adhere to ShellCheck best practices and prevent masked exit codes."
+  "message": "- **Automated Pre-Push Code Formatting**: Added multi-language auto-formatting support (`shfmt`, `ruff`/`yapf`, `terraform fmt`, `prettier`) executed automatically during `git-ai-push-all` workflow.
+- **Format Toggle Command**: Introduced `mt-toggle-format-on-push` CLI function to enable or disable automatic formatting dynamically.
+- **Config & Environment Integration**: Updated configuration templates and the Python configuration manager to support `GIT_FORMAT_ON_PUSH` with a default setting of `true`."
 }
 
 ---

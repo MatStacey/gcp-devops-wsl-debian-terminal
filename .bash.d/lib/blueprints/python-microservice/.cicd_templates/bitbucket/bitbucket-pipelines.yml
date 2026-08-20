@@ -1,0 +1,9 @@
+image: docker:20.10.14
+pipelines:
+  default:
+    - step:
+        name: Build Docker Image
+        services:
+          - docker
+        script:
+          - docker build -t {{PROJECT_NAME}}:latest .

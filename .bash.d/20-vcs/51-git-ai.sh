@@ -91,6 +91,7 @@ __git_sync_ai_commit() {
 # Git: Add all files, intelligently group via AI, and push [Usage: git-ai-push-all [optional message]]
 #######################################
 git-ai-push-all() {
+  __git_auto_format "."
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
