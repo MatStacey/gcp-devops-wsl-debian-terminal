@@ -359,51 +359,85 @@ mt-logs() {
 }
 
 #######################################
-# System: Interactively create and document a new alias
-# Usage: mt-alias
+# System: Interactively create or update an alias
+# Usage: mt-alias [-u alias_name] [-i]
+# Options:
+#   -u, --update <name>   Update a specific existing alias
+#   -i, --interactive     Select an existing alias to update via fzf
 #######################################
 mt-alias() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-
+  local update_name="" interactive=false
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -u | --update)
+        update_name="$2"
+        shift 2
+        ;;
+      -i | --interactive)
+        interactive=true
+        shift
+        ;;
+      *)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+    esac
+  done
+  if [ "$interactive" = true ]; then
+    update_name=$(awk -F'\t' '$1 == "alias" { printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv" | fzf --ansi --prompt="Select Alias to Update > " | awk '{print $1}')
+    [ -z "$update_name" ] && return 0
+  fi
+  local alias_name="$update_name" default_cmd="" default_cat="User Custom" default_desc="" aliases_file="$HOME/.bash.d/02-utilities/20-aliases.sh"
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
-  echo -e "${CB_CYAN} 🛠️  Create New Alias${C_RESET}"
+  if [ -n "$alias_name" ]; then
+    if ! grep -qE "^[ \t]*alias ${alias_name}=" "$aliases_file"; then
+      echo -e "${CB_RED}🚨 Error: Alias '${alias_name}' not found.${C_RESET}"
+      return 1
+    fi
+    echo -e "${CB_CYAN} 🛠️  Update Existing Alias: ${alias_name}${C_RESET}"
+    default_cmd=$(grep -E "^[ \t]*alias ${alias_name}=" "$aliases_file" | sed -E "s/^[ \t]*alias ${alias_name}=['\"]?//;s/['\"]?$//")
+    local tsv_line
+    tsv_line=$(awk -F'\t' -v n="$alias_name" '$1=="alias" && $3==n {print $2 "|" $4}' "$HOME/.bash.d/data/cache/.mt_data.tsv" | head -n 1)
+    if [ -n "$tsv_line" ]; then
+      default_cat=$(echo "$tsv_line" | cut -d'|' -f1)
+      default_desc=$(echo "$tsv_line" | cut -d'|' -f2)
+    fi
+  else
+    echo -e "${CB_CYAN} 🛠️  Create New Alias${C_RESET}"
+    read -r -p "1️⃣  Alias Name (e.g., kgpo)     : " alias_name
+    [ -z "$alias_name" ] && return 1
+    if grep -qE "^[ \t]*alias ${alias_name}=" "$aliases_file"; then
+      echo -e "${CB_RED}🚨 Alias already exists. Use -u to update.${C_RESET}"
+      return 1
+    fi
+  fi
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
-
-  local alias_name=""
-  local alias_cmd=""
-  local alias_cat=""
-  local alias_desc=""
-
-  read -r -p "1️⃣  Alias Name (e.g., kgpo)     : " alias_name
-  if [ -z "$alias_name" ]; then
-    echo -e "${CB_RED}🚨 Alias name is required. Aborting.${C_RESET}"
-    return 1
-  fi
-
-  local aliases_file="$HOME/.bash.d/02-utilities/20-aliases.sh"
-  if grep -qE "^alias ${alias_name}=" "$aliases_file"; then
-    echo -e "${CB_RED}🚨 Error: Alias '${alias_name}' already exists in 20-aliases.sh.${C_RESET}"
-    return 1
-  fi
-
-  read -r -p "2️⃣  Target Command             : " alias_cmd
-  if [ -z "$alias_cmd" ]; then
-    echo -e "${CB_RED}🚨 Target command is required. Aborting.${C_RESET}"
-    return 1
-  fi
-
-  read -r -p "3️⃣  Category (e.g., Docker)    : " alias_cat
+  local alias_cmd="" alias_cat="" alias_desc=""
+  read -r -e -i "$default_cmd" -p "2️⃣  Target Command             : " alias_cmd
+  [ -z "$alias_cmd" ] && return 1
+  read -r -e -i "$default_cat" -p "3️⃣  Category (e.g., Docker)    : " alias_cat
   [ -z "$alias_cat" ] && alias_cat="User Custom"
-
-  read -r -p "4️⃣  Description                : " alias_desc
+  read -r -e -i "$default_desc" -p "4️⃣  Description                : " alias_desc
   [ -z "$alias_desc" ] && alias_desc="Custom shortcut for ${alias_cmd}"
-
-  echo -e "
-${CB_BLUE}Generating and saving alias...${C_RESET}"
-
+  if [ -n "$update_name" ]; then
+    python3 -c "import sys; p, n = sys.argv[1], sys.argv[2]
+with open(p, 'r') as f: l = f.read().split('\n')
+o, i = [], 0
+while i < len(l):
+    if l[i].startswith('#######################################'):
+        if any(x.startswith(f'alias {n}=') for x in l[i+1:i+10]):
+            while not l[i].startswith(f'alias {n}='): i += 1
+            i += 1
+            continue
+    if l[i].startswith(f'alias {n}='): i += 1; continue
+    o.append(l[i]); i += 1
+while o and o[-1].strip() == '': o.pop()
+with open(p, 'w') as f: f.write('\n'.join(o) + '\n')" "$aliases_file" "$alias_name"
+  fi
   cat << ALIASEOF >> "$aliases_file"
 
 #######################################
@@ -411,15 +445,334 @@ ${CB_BLUE}Generating and saving alias...${C_RESET}"
 #######################################
 alias ${alias_name}='${alias_cmd}'
 ALIASEOF
-
-  echo -e "${CB_GREEN}✅ Alias saved to 20-aliases.sh!${C_RESET}"
-
-  # Source the updated file to make it available immediately in the current shell
   source "$aliases_file"
-
-  # Quietly rebuild the mytools cache so mt-lookup and mt-help recognize it
-  echo -e "${CB_YELLOW}🔄 Rebuilding MyTools index...${C_RESET}"
   mt-refresh-caches > /dev/null 2>&1
+  echo -e "${CB_GREEN}🎉 Success! You can now use '${alias_name}'.${C_RESET}"
+}
 
-  echo -e "${CB_GREEN}🎉 Success! You can now use '${alias_name}' or look it up via 'mt-help ${alias_name}'.${C_RESET}"
+#######################################
+# System: Submit a task to the background job registry
+#######################################
+#######################################
+# System: Submit a task to the background job registry
+#######################################
+__mt_bg_run() {
+  local job_name="$1" log_file="$2" cmd_string="$3"
+  local job_id
+  job_id="job_$(date +%s)_${RANDOM}"
+  local jobs_file="$HOME/.bash.d/data/cache/.mt_jobs.tsv"
+
+  # Ensure log directory and job tracking directories exist BEFORE subshell redirects
+  mkdir -p "$(dirname "$log_file")" "$(dirname "$jobs_file")"
+  touch "$jobs_file"
+
+  (
+    local start_time
+    start_time=$(date +%s)
+    echo "${job_id}|${BASHPID}|${job_name}|${start_time}||RUNNING|${log_file}|${cmd_string}" >> "$jobs_file"
+    eval "$cmd_string" > "$log_file" 2>&1
+    local exit_code=$?
+    local end_time
+    end_time=$(date +%s)
+    local status="SUCCESS"
+    [ $exit_code -ne 0 ] && status="FAILED"
+    local tmp
+    tmp=$(mktemp)
+    awk -F'|' -v id="$job_id" -v e="$end_time" -v s="$status" 'BEGIN{OFS="|"} $1==id { $5=e; $6=s } {print $0}' "$jobs_file" > "$tmp" && mv "$tmp" "$jobs_file"
+  ) &
+  disown
+  echo -e "${CB_GREEN}🚀 Background job started: ${job_name}${C_RESET}"
+  echo -e "${C_DIM}Monitor logs: tail -f $log_file${C_RESET}"
+  echo -e "${C_DIM}Manage jobs : mt-jobs -i${C_RESET}"
+}
+
+#######################################
+# System: List and manage MT background jobs
+# Usage: mt-jobs [-i|--interactive] [-p|--purge] [-c|--clean]
+#######################################
+mt-jobs() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local jobs_file="$HOME/.bash.d/data/cache/.mt_jobs.tsv"
+
+  local interactive=false do_purge=false do_clean=false
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -i | --interactive) interactive=true ;;
+      -p | --purge) do_purge=true ;;
+      -c | --clean) do_clean=true ;;
+      *)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  if [ ! -f "$jobs_file" ] || [ ! -s "$jobs_file" ]; then
+    echo -e "${CB_YELLOW}⚠️ No background jobs found.${C_RESET}"
+    return 0
+  fi
+
+  local current_time
+  current_time=$(date +%s)
+
+  if [ "$do_purge" = true ]; then
+    echo -e "${CB_RED}🛑 Purging all running background jobs...${C_RESET}"
+    local tmp_m
+    tmp_m=$(mktemp)
+    local count=0
+    while IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd; do
+      [ -z "$j_id" ] && continue
+      if [ "$j_status" = "RUNNING" ]; then
+        kill -9 "$j_pid" 2> /dev/null
+        j_status="CANCELLED"
+        j_end=$current_time
+        ((count++))
+      fi
+      echo "${j_id}|${j_pid}|${j_name}|${j_start}|${j_end}|${j_status}|${j_log}|${j_cmd}" >> "$tmp_m"
+    done < "$jobs_file"
+    mv "$tmp_m" "$jobs_file"
+    echo -e "${CB_GREEN}✅ Purged ${count} running job(s).${C_RESET}"
+    return 0
+  fi
+
+  if [ "$do_clean" = true ]; then
+    echo -e "${CB_YELLOW}🧹 Cleaning completed job history...${C_RESET}"
+    local tmp_c
+    tmp_c=$(mktemp)
+    local count=0
+    while IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd; do
+      [ -z "$j_id" ] && continue
+      if [ "$j_status" != "RUNNING" ]; then
+        [ -f "$j_log" ] && rm -f "$j_log"
+        ((count++))
+      else
+        echo "${j_id}|${j_pid}|${j_name}|${j_start}|${j_end}|${j_status}|${j_log}|${j_cmd}" >> "$tmp_c"
+      fi
+    done < "$jobs_file"
+    mv "$tmp_c" "$jobs_file"
+    echo -e "${CB_GREEN}✅ Removed ${count} finished job(s) from history.${C_RESET}"
+    return 0
+  fi
+
+  # Clean Orphans
+  local tmp_jobs
+  tmp_jobs=$(mktemp)
+  while IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd; do
+    [ -z "$j_id" ] && continue
+    if [ "$j_status" = "RUNNING" ]; then
+      if ! kill -0 "$j_pid" 2> /dev/null; then
+        j_status="ORPHANED"
+        j_end=$current_time
+      fi
+    fi
+    echo "${j_id}|${j_pid}|${j_name}|${j_start}|${j_end}|${j_status}|${j_log}|${j_cmd}" >> "$tmp_jobs"
+  done < "$jobs_file"
+  mv "$tmp_jobs" "$jobs_file"
+
+  # Build Table
+  local tmp_out
+  tmp_out=$(mktemp)
+
+  while IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd; do
+    [ -z "$j_id" ] && continue
+
+    local t_start="-"
+    [ -n "$j_start" ] && t_start=$(date -d "@$j_start" +"%H:%M:%S" 2> /dev/null || date -r "$j_start" +"%H:%M:%S" 2> /dev/null)
+    local t_end="-"
+    [ -n "$j_end" ] && t_end=$(date -d "@$j_end" +"%H:%M:%S" 2> /dev/null || date -r "$j_end" +"%H:%M:%S" 2> /dev/null)
+
+    local end_calc="${j_end:-$current_time}"
+    local diff=$((end_calc - j_start))
+    local dur
+    dur=$(printf "%02dm %02ds" $((diff / 60)) $((diff % 60)))
+
+    local color="${CB_CYAN}"
+    [ "$j_status" = "SUCCESS" ] && color="${CB_GREEN}"
+    [ "$j_status" = "FAILED" ] || [ "$j_status" = "ORPHANED" ] && color="${CB_RED}"
+    [ "$j_status" = "CANCELLED" ] && color="${CB_YELLOW}"
+
+    local p_name
+    p_name=$(printf "%-22s" "${j_name:0:22}")
+    local p_start
+    p_start=$(printf "%-10s" "$t_start")
+    local p_end
+    p_end=$(printf "%-10s" "$t_end")
+    local p_dur
+    p_dur=$(printf "%-10s" "$dur")
+
+    # Store RAW j_id first separated by tabs so fzf can extract it perfectly
+    echo -e "${j_id}	${p_name} ${C_DIM}${p_start}${C_RESET} ${C_DIM}${p_end}${C_RESET} ${C_DIM}${p_dur}${C_RESET} ${color}${j_status}${C_RESET}" >> "$tmp_out"
+  done < "$jobs_file"
+
+  if [ "$interactive" = false ]; then
+    printf "
+${CB_BLUE}%-22s %-10s %-10s %-10s %-12s${C_RESET}
+" "NAME" "START" "END" "DURATION" "STATUS"
+    echo -e "${CB_BLUE}-------------------------------------------------------------------${C_RESET}"
+    cut -f2- "$tmp_out"
+    echo -e "
+${C_DIM}Run 'mt-jobs -i' to interact, 'mt-jobs -c' to clean history.${C_RESET}"
+    rm -f "$tmp_out"
+    return 0
+  fi
+
+  local selected
+  selected=$(fzf < "$tmp_out" --ansi --delimiter="	" --with-nth=2 --prompt="Select Job > ")
+  rm -f "$tmp_out"
+
+  [ -z "$selected" ] && return 0
+
+  local sel_id
+  sel_id=$(echo "$selected" | cut -f1)
+
+  local sel_data
+  sel_data=$(grep "^${sel_id}|" "$jobs_file" | head -n 1)
+
+  [ -z "$sel_data" ] && {
+    echo -e "${CB_RED}🚨 Error resolving job details for ID: ${sel_id}${C_RESET}"
+    return 1
+  }
+
+  IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd <<< "$sel_data"
+
+  echo -e "
+${CB_BLUE}▶ Selected Job: ${j_name} (${j_id})${C_RESET}"
+  local options=("1. View Logs (cat)")
+  [ "$j_status" = "RUNNING" ] && options+=("2. Tail Logs (live)")
+  [ "$j_status" = "RUNNING" ] && options+=("3. Cancel Job (kill)")
+  options+=("4. Restart Job")
+  options+=("5. Clear Selected Job History")
+  options+=("6. Clear ALL Job History")
+
+  local action
+  action=$(printf '%s
+' "${options[@]}" | fzf --prompt="Select Action > ")
+
+  case "$action" in
+    1*)
+      if [ -f "$j_log" ]; then
+        echo -e "${CB_CYAN}--- LOGS ($j_log) ---${C_RESET}"
+        cat "$j_log"
+        echo -e "${CB_CYAN}---------------------${C_RESET}"
+      else
+        echo -e "${CB_RED}🚨 Log file missing ($j_log).${C_RESET}"
+      fi
+      ;;
+    2*)
+      [ -f "$j_log" ] && tail -f "$j_log" || echo -e "${CB_RED}🚨 Log file missing ($j_log).${C_RESET}"
+      ;;
+    3*)
+      if [ "$j_status" = "RUNNING" ]; then
+        kill -9 "$j_pid" 2> /dev/null
+        local tmp_m
+        tmp_m=$(mktemp)
+        awk -F'|' -v id="$j_id" -v e="$current_time" 'BEGIN{OFS="|"}$1==id{$5=e;$6="CANCELLED"}{print $0}' "$jobs_file" > "$tmp_m" && mv "$tmp_m" "$jobs_file"
+        echo -e "${CB_GREEN}✅ Job cancelled.${C_RESET}"
+      fi
+      ;;
+    4*)
+      local new_log
+      new_log="${LOG_DIR:-$HOME/.bash.d/data/logs}/indexer_$(date +%s).log"
+      __mt_bg_run "${j_name}" "$new_log" "$j_cmd"
+      ;;
+    5*)
+      local tmp_m
+      tmp_m=$(mktemp)
+      grep -v "^${j_id}|" "$jobs_file" > "$tmp_m" && mv "$tmp_m" "$jobs_file"
+      [ -f "$j_log" ] && rm -f "$j_log"
+      echo -e "${CB_GREEN}✅ Selected job history cleared.${C_RESET}"
+      ;;
+    6*)
+      true > "$jobs_file"
+      echo -e "${CB_GREEN}✅ All job history cleared.${C_RESET}"
+      ;;
+  esac
+}
+
+#######################################
+# System: Restore framework from a zip backup
+# Usage: mt-restore [backup_file] [-i|--interactive]
+# Options:
+#   -i, --interactive  Choose a backup from an fzf menu
+#######################################
+mt-restore() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local selected_backup=""
+  local backup_base_dir="${BACKUP_DIR:-$HOME/backups}"
+
+  if [ -n "$1" ] && [ "$1" != "-i" ] && [ "$1" != "--interactive" ]; then
+    if [ -f "$1" ]; then
+      selected_backup="$1"
+    elif [ -f "${backup_base_dir}/$1" ]; then
+      selected_backup="${backup_base_dir}/$1"
+    elif [ -f "${backup_base_dir}/bashd/$1" ]; then
+      selected_backup="${backup_base_dir}/bashd/$1"
+    else
+      echo -e "${CB_RED}🚨 Backup file not found: $1${C_RESET}"
+      return 1
+    fi
+  else
+    echo -e "${CB_BLUE}🔍 Scanning for available backups in ${backup_base_dir}...${C_RESET}"
+    local tmp_list
+    tmp_list=$(mktemp)
+    find "$backup_base_dir" -type f -name "*.zip" 2> /dev/null | sort -r > "$tmp_list"
+
+    if [ ! -s "$tmp_list" ]; then
+      echo -e "${CB_YELLOW}⚠️ No backup zip files found in ${backup_base_dir}.${C_RESET}"
+      rm -f "$tmp_list"
+      return 1
+    fi
+
+    selected_backup=$(fzf --prompt="Select Backup to Restore > " --header="Available Framework Backups" < "$tmp_list")
+    rm -f "$tmp_list"
+
+    [ -z "$selected_backup" ] && return 0
+  fi
+
+  echo -e "${CB_CYAN}📦 Selected Backup: ${selected_backup}${C_RESET}"
+  read -r -p "🚀 Are you sure you want to restore this backup? [y/N] " -n 1
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "${CB_RED}🛑 Restore aborted.${C_RESET}"
+    return 0
+  fi
+
+  # 1. Pre-restore Safety Backup
+  echo -e "${CB_BLUE}🛡️ Creating safety backup of current codebase before restoring...${C_RESET}"
+  local pre_dest="${backup_base_dir}/pre-restore"
+  mkdir -p "$pre_dest"
+  local timestamp
+  timestamp=$(date +"%Y%m%d_%H%M%S")
+  local safety_file="${pre_dest}/pre_restore_safety_${timestamp}.zip"
+
+  (
+    cd "$HOME" || exit 1
+    zip -q -r "$safety_file" .bash.d -x ".bash.d/.git/*" -x ".bash.d/data/cache/*" -x ".bash.d/node_modules/*" -x ".bash.d/**/__pycache__/*"
+  )
+  echo -e "${CB_GREEN}✅ Safety backup saved: ${safety_file}${C_RESET}"
+
+  # 2. Extract selected backup
+  echo -e "${CB_YELLOW}🔄 Restoring .bash.d directory...${C_RESET}"
+  if ! unzip -q -o "$selected_backup" -d "$HOME/"; then
+    echo -e "${CB_RED}🚨 Unzip failed during restore!${C_RESET}"
+    return 1
+  fi
+
+  # 3. Sync to Git Workspace
+  local git_repo_path="${DOTFILES_DIR:-$HOME/vcs/personal/mt-devops-framework}"
+  if [ -d "$git_repo_path" ]; then
+    echo -e "${CB_BLUE}🔄 Syncing restored files to Git workspace (${git_repo_path})...${C_RESET}"
+    rsync -a -u --delete "$HOME/.bash.d/" "${git_repo_path}/.bash.d/"
+  fi
+
+  echo -e "${CB_GREEN}🎉 Restore complete! Rebuilding caches...${C_RESET}"
+  mt-refresh-caches > /dev/null 2>&1
 }
