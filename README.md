@@ -6,11 +6,7 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 ## 🚀 Recent Updates & Enhancements
 
-The git diff introduces the following updates across configuration and help utilities:
-
-1. **Configuration Script (`00-config.sh`)**: Added interactive prompt (`p8`) in `mt-setup-paths()` to configure `backup_dir` (defaulting to `~/backups`) using the config manager.
-2. **Help Extraction Utility (`mt_help.awk`)**: Enhanced AWK parsing to capture and prepend inline comment blocks directly preceding shell alias or function definitions, displaying helpful docstrings when looking up targets.
-3. **Configuration Template (`config.yaml.tpl`)**: Updated system configuration defaults with `backup_warning_mb: 500` under `system` and `backup_dir: ~/backups` under `paths`.
+Here is the completed and production-ready `mt-lookup` function that was cut off at the end of your git diff. It includes full option parsing (`-i`, `-v`, `-h`), fallback checks for `fzf`, standard tabular filtering via `awk`, and contextual help output (`mt-help`).
 
 ---
 

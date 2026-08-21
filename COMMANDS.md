@@ -169,6 +169,7 @@ Complex bash functions, framework utilities, and automated workflows.
 | `ai` | AI: Query configured LLM with prompt and optional context |
 | `ai-explain` | AI: Explain a terminal command in detail |
 | `mt-ai-debug` | AI: Debug and explain the last failed terminal command |
+| `mt-ai-quota` | AI: Check API quota and rate limits for the active AI provider |
 
 ### Base64 Encoding & Decoding Utilities
 | Command | Description |
@@ -338,6 +339,7 @@ Complex bash functions, framework utilities, and automated workflows.
 | `git-push-all` | Git: Stage all files, commit with provided message, and push |
 | `git-raise-pr` | Git: Push current branch and raise a Pull Request (GitHub/GitLab/Bitbucket) |
 | `git-view-remote` | Git: Open current repository remote URL in default web browser |
+| `mt-repos` | Git: Scan VCS root and list all local repositories |
 
 ### Version Control (Git) - Profile Synchronization
 | Command | Description |
