@@ -296,15 +296,36 @@ git-raise-pr() {
   fi
 
   echo -e "${CB_BLUE}🚀 Pushing ${current_branch} to origin...${C_RESET}"
-  git push -u origin "$current_branch"
+  if ! git push -u origin "$current_branch"; then
+    echo -e "\n${CB_RED}🚨 Error: Failed to push branch to origin.${C_RESET}"
+    if [[ "$origin_url" == *"${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"* ]]; then
+      echo -e "${CB_YELLOW}💡 External Developer Detected: You do not have write access to the upstream repository.${C_RESET}"
+      echo -e "To contribute updates, you must push to your own fork. Please run the following commands:"
+      echo -e "  1. ${CB_CYAN}gh repo fork ${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework} --remote=false${C_RESET}"
+      echo -e "  2. ${CB_CYAN}mt-add-sync-url git@github.com:<your-username>/mt-devops-framework.git${C_RESET}"
+      echo -e "  3. ${CB_CYAN}mt-push-update${C_RESET}"
+    fi
+    return 1
+  fi
 
   if [ "$is_github" = true ] && command -v gh > /dev/null 2>&1; then
     echo -e "${CB_BLUE}🛠️  Creating Pull Request via GitHub CLI...${C_RESET}"
+
+    local repo_flag=()
+    [ -n "${UPSTREAM_REPO_PATH:-}" ] && repo_flag=("--repo" "$UPSTREAM_REPO_PATH")
+
+    local pr_success=0
     if [ -n "$pr_title" ]; then
-      gh pr create --base "$target_branch" --title "$pr_title" --body "$pr_body"
+      gh pr create --base "$target_branch" "${repo_flag[@]}" --title "$pr_title" --body "$pr_body" || pr_success=1
     else
-      gh pr create --base "$target_branch" --fill
+      gh pr create --base "$target_branch" "${repo_flag[@]}" --fill || pr_success=1
     fi
+
+    if [ $pr_success -ne 0 ]; then
+      echo -e "${CB_RED}🚨 Pull Request creation failed.${C_RESET}"
+      return 1
+    fi
+
     echo -e "${CB_GREEN}✅ Pull Request created successfully!${C_RESET}"
 
     read -r -p "🌐 View Pull Request in browser? [Y/n] " -n 1
