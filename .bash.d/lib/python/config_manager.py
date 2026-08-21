@@ -193,7 +193,17 @@ def load_env():
     export(
         "SCRIPTS_IAM_DIR",
         paths_cfg.get("iam_scripts_dir",
-                      paths_cfg.get("scripts_iam", "~/vcs/scripts/iam")),
+                      paths_cfg.get("scripts_iam", "/tmp/scripts/iam")),
+        resolve_home=True,
+    )
+    export(
+        "BACKUP_DIR",
+        paths_cfg.get("backup_dir", "~/backups"),
+        resolve_home=True,
+    )
+    export(
+        "EXPORT_DIR",
+        paths_cfg.get("export_dir", "/tmp/exports"),
         resolve_home=True,
     )
     export(
