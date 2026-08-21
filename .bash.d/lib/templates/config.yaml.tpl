@@ -13,9 +13,6 @@ ai:
     api_key: YOUR_GEMINI_API_KEY
     version: gemini-3.6-flash
     extended: false
-  claude:
-    api_key: YOUR_CLAUDE_API_KEY
-    version: claude-3-7-sonnet-latest
   local:
     base_url: "http://localhost:11434/v1"
     model: "llama3.2"
