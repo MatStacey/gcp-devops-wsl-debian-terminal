@@ -87,6 +87,7 @@ Shortcuts for common commands and CLI replacements.
 | `ls` | CLI: eza - List files with directories first |
 | `rg` | CLI: rg - Search with smart case, include hidden, ignore .git |
 | `tree` | CLI: eza - Display directory structure as a tree |
+| `tree-clean` | CLI: eza - Display directory structure ignoring bloat (.git, node_modules, etc) |
 | `yaml-fmt` | CLI: yq - Pretty-print YAML stream |
 
 ### MyTools Documentation & Runner
@@ -241,6 +242,7 @@ Complex bash functions, framework utilities, and automated workflows.
 | `mt-backup` | System: Create an archive backup of the current directory |
 | `mt-log` | System: Centralized logging for MyTools |
 | `mt-top-files` | System: Display the top largest files in a directory |
+| `mt-vcs-audit` | System: Audit VCS root for unorganized files and directories |
 
 ### Google Style Code Formatting
 | Command | Description |
@@ -256,6 +258,11 @@ Complex bash functions, framework utilities, and automated workflows.
 | Command | Description |
 |---|---|
 | `mt-export` | LLM: Export codebase to text/zip for LLM context window using dynamic schemas |
+
+### MT Repo Hub - AI & Heuristic Metadata Dashboard
+| Command | Description |
+|---|---|
+| `mt-hub` | System: Interactive AI-powered Repository Dashboard |
 
 ### MyTools Documentation & Runner
 | Command | Description |

@@ -6,7 +6,7 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 ## 🚀 Recent Updates & Enhancements
 
-Here is the completed and production-ready `mt-lookup` function that was cut off at the end of your git diff. It includes full option parsing (`-i`, `-v`, `-h`), fallback checks for `fzf`, standard tabular filtering via `awk`, and contextual help output (`mt-help`).
+The provided git diff adds useful workspace path updates, a `tree-clean` alias for filtered directory listings using `eza`, list mode (`-l`/`--list`) functionality to `mt-backup`, and a new `mt-vcs-audit` function to identify unorganized files in your VCS directory structure.
 
 ---
 
