@@ -108,6 +108,8 @@ mt-push-update() {
   local run_shellcheck=false
   local backup_before_sync=false
   local delete_merged=false
+  local prompt_remote=false
+  local auto_merge=false
   local skip_ai=false
   local user_msg=""
 
@@ -139,8 +141,16 @@ mt-push-update() {
         delete_merged=true
         shift
         ;;
+      --prompt-remote)
+        prompt_remote=true
+        shift
+        ;;
+      -g | --merge)
+        auto_merge=true
+        shift
+        ;;
       -*)
-        echo "Usage: mt-push-update [-i|--issue <num>] [-s|--shellcheck] [-b|--backup] [-m|--no-ai] [-d|--delete-merged] [message]" >&2
+        echo "Usage: mt-push-update [-i|--issue <num>] [-s|--shellcheck] [-b|--backup] [-m|--no-ai] [-d|--delete-merged] [--prompt-remote] [-g|--merge] [message]" >&2
         return 1
         ;;
       *)
@@ -359,17 +369,36 @@ mt-push-update() {
       git show-ref --verify --quiet refs/heads/master && main_b="master"
 
       local merged_b
-      merged_b=$(git branch --merged "$main_b" | grep -v -E "^[*+]|\\b(main|master|dev|developer)\\b")
+      merged_b=$(git branch --merged "$main_b" | grep -v -E "^[*+]|\\b(main|master|dev|developer)\\b" | tr -d ' ' || true)
 
       if [ -n "$merged_b" ]; then
         echo "$merged_b" | xargs -r git branch -d
         echo -e "${CB_GREEN}✅ Merged local branches cleaned up successfully!${C_RESET}"
+
+        if [ "$prompt_remote" = true ]; then
+          echo -e "\n${CB_YELLOW}🔍 Checking corresponding remote branches on origin...${C_RESET}"
+          for b_item in $merged_b; do
+            if git ls-remote --exit-code --heads origin "$b_item" > /dev/null 2>&1; then
+              read -r -p "Delete remote branch 'origin/$b_item'? [y/N] " -n 1 -r < /dev/tty
+              echo
+              if [[ $REPLY =~ ^[Yy]$ ]]; then
+                git push origin --delete "$b_item"
+              fi
+            fi
+          done
+        fi
       else
-        echo -e "${C_DIM}No stale merged branches found to delete.${C_RESET}"
+        echo -e "${C_DIM}No stale merged local branches found to delete.${C_RESET}"
       fi
     fi
 
     git-raise-pr -b "$default_branch" -t "$pr_title" -m "$(echo -e "$pr_body")"
+    if [ "$auto_merge" = true ] && command -v gh > /dev/null 2>&1; then
+      local current_b
+      current_b=$(git branch --show-current)
+      echo -e "${CB_BLUE}⚡ Auto-merging Pull Request via GitHub CLI...${C_RESET}"
+      gh pr merge "$current_b" --auto --squash --delete-branch && echo -e "${CB_GREEN}✅ PR set to auto-merge on GitHub!${C_RESET}"
+    fi
   ) || return 1
 }
 #######################################
@@ -451,7 +480,7 @@ mt-get-update() {
     return 1
   fi
 
-  echo -e "${CB_YELLOW}🔄 Extracting and applying updates...${C_RESET}"
+  echo -e "${CB_YELLOW}🔄 Extracting release package...${C_RESET}"
   unzip -q "$zip_path" -d "${tmp_dir}/extracted" > /dev/null 2>&1
 
   local ext_root="${tmp_dir}/extracted"
@@ -460,6 +489,33 @@ mt-get-update() {
     nested=$(find "$ext_root" -name "install.sh" -exec dirname {} \; | head -n 1)
     if [ -n "$nested" ]; then
       ext_root="$nested"
+    fi
+  fi
+
+  # --- LOCAL DIVERGENCE GUARD ---
+  if [ -d "${ext_root}/.bash.d" ]; then
+    local diff_files
+    diff_files=$(diff -r -q "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "Only in|data/cache|config/\.env\.cache|data/\.current_version" || true)
+
+    if [ -n "$diff_files" ]; then
+      echo -e "\n${CB_RED}⚠️ WARNING: Applying this update will overwrite local modifications in your ~/.bash.d!${C_RESET}"
+      echo -e "${CB_YELLOW}Modified files detected:${C_RESET}"
+      diff -r -q "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "Only in|data/cache|config/\.env\.cache|data/\.current_version" | awk '{print "  • " $2 " " $4}'
+
+      echo ""
+      read -r -p "🔍 View detailed diff line-by-line before proceeding? [y/N] " -n 1 -r < /dev/tty
+      echo
+      if [[ $REPLY =~ ^[Yy]$ ]]; then
+        diff -u -r --color=always "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "data/cache|config/\.env\.cache|data/\.current_version" | less -R
+      fi
+
+      read -r -p "🚀 Proceed with update and overwrite local changes? [y/N] " -n 1 -r < /dev/tty
+      echo
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${CB_YELLOW}💡 Update aborted. Run 'mt-push-update' first to save your local changes to a PR!${C_RESET}"
+        rm -rf "$tmp_dir"
+        return 0
+      fi
     fi
   fi
 
