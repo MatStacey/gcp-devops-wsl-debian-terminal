@@ -475,6 +475,9 @@ mt-get-version() {
 # System: Forcefully clear and rebuild all background caches (.env, mytools, updates)
 #######################################
 mt-refresh-caches() {
+  # Self-heal missing cache directories (e.g., after clean git clone or update)
+  mkdir -p "$HOME/.bash.d/data/cache" "$HOME/.bash.d/data/logs" "$HOME/.bash.d/config"
+
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
