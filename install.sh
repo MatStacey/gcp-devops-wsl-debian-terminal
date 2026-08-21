@@ -73,4 +73,5 @@ else
   echo "✅ All system dependencies are already satisfied."
 fi
 
+mkdir -p "$HOME/.bash.d/data/cache" "$HOME/.bash.d/data/logs" "$HOME/.bash.d/config"
 echo -e "\n🎉 Installation complete! Run 'source ~/.bashrc' or open a new terminal session to activate your environment."
