@@ -191,6 +191,7 @@ mt-hub() {
   [ ! -f "$cache_file" ] && echo "{}" > "$cache_file"
 
   local do_index=false
+  local run_bg=false
   local force_index=false
   local filter_type=""
   local filter_repo=""
@@ -199,6 +200,7 @@ mt-hub() {
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
       --index) do_index=true ;;
+      -b | --bg | --background) run_bg=true ;;
       -f | --force) force_index=true ;;
       -t | --type)
         filter_type="$2"
@@ -225,7 +227,14 @@ mt-hub() {
   done
 
   if [ "$do_index" = true ]; then
-    __mt_hub_index "$cache_file" "$filter_type" "$filter_repo" "$force_index"
+    if [ "$run_bg" = true ]; then
+      local log_out
+      log_out="${LOG_DIR:-$HOME/.bash.d/data/logs}/indexer_$(date +%s).log"
+      local cmd_str="__mt_hub_index \"$cache_file\" \"$filter_type\" \"$filter_repo\" \"$force_index\""
+      __mt_bg_run "mt-hub-indexer" "$log_out" "$cmd_str"
+    else
+      __mt_hub_index "$cache_file" "$filter_type" "$filter_repo" "$force_index"
+    fi
     return 0
   fi
 

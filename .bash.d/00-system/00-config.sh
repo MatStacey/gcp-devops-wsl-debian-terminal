@@ -498,3 +498,22 @@ mt-load-config() {
 # Config: Forcefully re-parse config.yaml and reload environment variables
 #######################################
 alias mt-reload-config='mt-load-config'
+
+#######################################
+# Config: Set the sync repository URL
+# Arguments:
+#   $1 - Remote repository URL
+#######################################
+mt-add-sync-url() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [ -z "$1" ]; then
+    echo "Usage: mt-add-sync-url <repo_url>"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "git" "sync_repo_url" "$1"
+  export SYNC_REPO_URL="$1"
+  echo "✅ Sync repository URL set to $1."
+}
