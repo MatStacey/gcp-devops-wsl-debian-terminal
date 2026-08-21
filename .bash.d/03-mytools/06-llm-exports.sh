@@ -65,13 +65,14 @@ mt-export() {
   local file_list="/tmp/mt_export_files_${RANDOM}.txt"
   local all_files="/tmp/mt_export_all_${RANDOM}.txt"
 
-  local dest_dir="${EXPORT_DIR:-/tmp/exports}/${safe_dir_name}"
-  mkdir -p "$dest_dir"
-
   local date_prefix
   date_prefix=$(date +"%Y%m%d")
+
   local safe_dir_name
-  safe_dir_name=$(basename "$(realpath "$target_dir")" | tr -d '.')
+  safe_dir_name=$(basename "$(realpath "$target_dir")" | tr '.' '_')
+
+  local dest_dir="${EXPORT_DIR:-/tmp/exports}/${safe_dir_name}"
+  mkdir -p "$dest_dir"
   local out_ext="txt"
   local v_num=1
   local base_out_name=""
@@ -314,6 +315,8 @@ print('')
     cp "$tmp_file" "$final_out"
     echo -e "${CB_GREEN}✅ Export saved to $final_out${C_RESET}"
   fi
+
+  echo -e "${CB_YELLOW}📂 Target Dir    :${C_RESET} $(realpath "$target_dir")"
 
   rm -f "$tmp_file" "$file_list" "$all_files"
 
