@@ -407,6 +407,8 @@ mt-setup-paths() {
   [ -n "$p6" ] && python3 "$CONFIG_MANAGER" update "paths" "scripts_iam" "$p6"
   read -r -p "Docker Root [${DOCKER_ROOT_DIR:-~/.docker}]: " p7
   [ -n "$p7" ] && python3 "$CONFIG_MANAGER" update "paths" "docker_root" "$p7"
+  read -r -p "Backup Dir [${BACKUP_DIR:-~/backups}]: " p8
+  [ -n "$p8" ] && python3 "$CONFIG_MANAGER" update "paths" "backup_dir" "$p8"
   echo -e "${CB_GREEN}✅ Paths config updated.${C_RESET}"
 }
 

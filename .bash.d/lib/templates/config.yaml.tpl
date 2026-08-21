@@ -3,6 +3,7 @@ system:
   default_ide: vscode
   update_check_ttl_sec: 43200
   max_parallel_threads: 8
+  backup_warning_mb: 500
 
 ai:
   enabled: true
@@ -44,6 +45,7 @@ paths:
   ai_workspace: ~/vcs/ai-workspace
   scripts_iam: ~/vcs/scripts/iam
   docker_root: ~/.docker
+  backup_dir: ~/backups
 
 cicd:
   provider: github # github, bitbucket, gitlab, azure, jenkins
