@@ -96,8 +96,6 @@ __git_sync_copy_files() {
 #   -i, --issue <num>  Optional issue number to link to the Pull Request
 #   -s, --shellcheck   Run ShellCheck locally before pushing to catch errors early
 #   -b, --backup       Create a zip backup of .bash.d and .bashrc before syncing
-#   -m, --no-ai        Skip AI commit message generation and commit in a single batch
-#   -d, --delete-merged Delete local branches that have been merged into main/master
 #   $@                 Optional commit message string
 #######################################
 mt-push-update() {
@@ -131,6 +129,11 @@ mt-push-update() {
         skip_ai=true
         export SKIP_AI=true
         shift
+        # Check if the next argument is a message string and not another flag
+        if [[ "$#" -gt 0 && "$1" != -* ]]; then
+          user_msg="$1"
+          shift
+        fi
         ;;
       -d | --delete-merged)
         delete_merged=true
@@ -141,7 +144,11 @@ mt-push-update() {
         return 1
         ;;
       *)
-        user_msg="${user_msg} $1"
+        if [ -z "$user_msg" ]; then
+          user_msg="$1"
+        else
+          user_msg="${user_msg} $1"
+        fi
         shift
         ;;
     esac
@@ -174,9 +181,6 @@ mt-push-update() {
     return 1
   fi
 
-  # ==========================================
-  # SAFEGUARD: PRE-SYNC BACKUP
-  # ==========================================
   if [ "$backup_before_sync" = true ]; then
     echo -e "${CB_BLUE}📦 Creating pre-sync backup of framework...${C_RESET}"
     local dest="${BACKUP_DIR:-~/backups}/framework-pre-sync"
@@ -293,7 +297,6 @@ mt-push-update() {
 
     local current_branch
     current_branch=$(git branch --show-current)
-
     local default_branch
     default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
     default_branch="${default_branch:-main}"
@@ -305,11 +308,9 @@ mt-push-update() {
       if [ -n "$user_msg" ]; then
         local type
         type=$(echo "$user_msg" | grep -oE '^[a-zA-Z]+' || echo "chore")
-
         local slug
         slug=$(echo "$user_msg" | sed -E 's/^[a-zA-Z]+(\([^)]+\))?:[[:space:]]*//' | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-|-$//g' | cut -c1-40)
         [ -z "$slug" ] && slug="update-$(date +%s)"
-
         branch_name="${type}/${slug}"
       else
         branch_name="chore/automated-sync-$(date +%Y%m%d-%H%M%S)"
@@ -371,7 +372,6 @@ mt-push-update() {
     git-raise-pr -b "$default_branch" -t "$pr_title" -m "$(echo -e "$pr_body")"
   ) || return 1
 }
-
 #######################################
 # System: Download and install profile updates from GitHub releases
 # Usage: mt-get-update [-v version]
@@ -468,9 +468,7 @@ mt-get-update() {
       cd "$ext_root" || exit 1
       bash ./install.sh
     )
-    mkdir -p "$HOME/.bash.d/data/cache" "$HOME/.bash.d/data/logs"
     echo "$tag_name" > "$HOME/.bash.d/data/.current_version"
-    mt-refresh-caches > /dev/null 2>&1
   else
     echo -e "${CB_RED}🚨 Error: install.sh missing from downloaded release.${C_RESET}"
   fi

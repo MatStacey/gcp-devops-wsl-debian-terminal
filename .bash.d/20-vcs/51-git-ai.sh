@@ -246,10 +246,6 @@ mt-ai-readme() {
 #   $1 - Target repository directory path
 #######################################
 __git_sync_ai_docs() {
-  if [ "${SKIP_AI:-false}" = "true" ]; then
-    echo -e "${C_DIM}⏩ Skipping AI README summarization (-m / --no-ai active)...${C_RESET}"
-    return 0
-  fi
   local repo_dir="$1"
   echo "📚 Generating COMMANDS.md reference..."
   cat << 'MARKDOWN_EOF' > "$repo_dir/COMMANDS.md"
@@ -309,11 +305,14 @@ Complex bash functions, framework utilities, and automated workflows." >> "$repo
   if [ $query_status -eq 99 ]; then return 0; fi
   if [ $query_status -eq 100 ]; then return 100; fi
 
+  local raw_text
+  raw_text=$(echo "$response" | sed 's/```json//gi; s/```markdown//gi; s/```//g')
+
   local clean_updates
-  if echo "$response" | jq -e . > /dev/null 2>&1; then
-    clean_updates=$(echo "$response" | jq -r '.message // .code // .')
+  if echo "$raw_text" | jq -e . > /dev/null 2>&1; then
+    clean_updates=$(echo "$raw_text" | jq -r '.message // .code')
   else
-    clean_updates=$(echo "$response" | sed 's/```json//gi; s/```markdown//gi; s/```//g')
+    clean_updates="$raw_text"
   fi
 
   if [ -n "$clean_updates" ] && [ -f "$repo_dir/README.md" ]; then
