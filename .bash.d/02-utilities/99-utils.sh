@@ -50,8 +50,9 @@ __get_prompt() {
 
 #######################################
 # System: Create an archive backup of the current directory
-# Usage: mt-backup [-f|--force] [-o|--output format] [-d|--dir path]
+# Usage: mt-backup [-f|--force] [-l|--list] [-o|--output format] [-d|--dir path]
 # Options:
+#   -l, --list     List existing backups for the current directory
 #   -f, --force    Skip the size limit warning check
 #   -o, --output   Archive format: zip (default), rar, tz, gzip
 #   -d, --dir      Override the base destination directory
@@ -60,16 +61,18 @@ __get_prompt() {
 #######################################
 mt-backup() {
   local force=false
+  local list_mode=false
   local format="zip"
 
   # Explicitly query config.yaml first to ensure we get the latest value even if env cache lags
   local cfg_backup_dir
   cfg_backup_dir=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("paths", {}).get("backup_dir", ""))' 2> /dev/null)
 
-  local base_dest="${1:-${BACKUP_DIR:-${cfg_backup_dir:-/tmp/backups}}}"
+  local base_dest="${BACKUP_DIR:-${cfg_backup_dir:-/tmp/backups}}"
 
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
+      -l | --list) list_mode=true ;;
       -f | --force) force=true ;;
       -o | --output)
         format="${2,,}"
@@ -87,6 +90,7 @@ mt-backup() {
         echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
         return 1
         ;;
+      *) base_dest="$1" ;;
     esac
     shift
   done
@@ -100,18 +104,20 @@ mt-backup() {
     return 1
   fi
 
-  echo -e "${CB_BLUE}🔍 Estimating backup payload size...${C_RESET}"
-  local est_size_mb
-  est_size_mb=$(find . -type d \( -name .git -o -name node_modules -o -name __pycache__ -o -name .terraform -o -name venv -o -name .venv \) -prune -o -type f -exec ls -l {} + 2> /dev/null | awk '{s+=$5} END {print int(s/1048576)}')
-  [ -z "$est_size_mb" ] && est_size_mb=0
+  if [ "$list_mode" = false ]; then
+    echo -e "${CB_BLUE}🔍 Estimating backup payload size...${C_RESET}"
+    local est_size_mb
+    est_size_mb=$(find . -type d \( -name .git -o -name node_modules -o -name __pycache__ -o -name .terraform -o -name venv -o -name .venv \) -prune -o -type f -exec ls -l {} + 2> /dev/null | awk '{s+=$5} END {print int(s/1048576)}')
+    [ -z "$est_size_mb" ] && est_size_mb=0
 
-  if [ "$force" = false ] && [ "$est_size_mb" -ge "$threshold_mb" ]; then
-    echo -e "${CB_YELLOW}⚠️ Warning: Estimated payload is ${est_size_mb}MB, which exceeds the ${threshold_mb}MB limit.${C_RESET}"
-    read -p "🚀 Proceed with backup? [y/N] " -n 1 -r < /dev/tty
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-      echo -e "${CB_RED}🛑 Aborted.${C_RESET}"
-      return 1
+    if [ "$force" = false ] && [ "$est_size_mb" -ge "$threshold_mb" ]; then
+      echo -e "${CB_YELLOW}⚠️ Warning: Estimated payload is ${est_size_mb}MB, which exceeds the ${threshold_mb}MB limit.${C_RESET}"
+      read -p "🚀 Proceed with backup? [y/N] " -n 1 -r < /dev/tty
+      echo
+      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+        echo -e "${CB_RED}🛑 Aborted.${C_RESET}"
+        return 1
+      fi
     fi
   fi
 
@@ -124,6 +130,44 @@ mt-backup() {
   # Resolve base destination, expanding ~ if present
   local expanded_base="${base_dest/#\~/$HOME}"
   local dest="${expanded_base}/${safe_dir_name}"
+
+  if [ "$list_mode" = true ]; then
+    if [ ! -d "$dest" ]; then
+      echo -e "${CB_YELLOW}⚠️ No backups found for '${safe_dir_name}' in ${expanded_base}.${C_RESET}"
+      return 0
+    fi
+
+    echo -e "${CB_BLUE}🔍 Scanning '${dest}' for backups...${C_RESET}\n"
+
+    local count
+    count=$(find "$dest" -maxdepth 1 -type f | wc -l)
+
+    if [ "$count" -eq 0 ]; then
+      echo -e "${CB_YELLOW}⚠️ No backups found in $dest.${C_RESET}"
+      return 0
+    fi
+
+    echo -e "${CB_CYAN}📦 Found $count backup(s) for '${safe_dir_name}':${C_RESET}\n"
+
+    # ls -lth sorts by time (latest first), -h gives human-readable sizes
+    command ls -lth --time-style=+"%Y-%m-%d %H:%M:%S" "$dest" | grep -v '^total' | awk '
+      BEGIN {
+        printf "\033[01;34m%-55s %-25s %-15s\033[0m\n", "FILENAME", "DATE CREATED", "SIZE"
+        printf "\033[01;34m-------------------------------------------------------------------------------------------------\033[0m\n"
+      }
+      {
+        size = $5
+        date_created = $6 " " $7
+        name = ""
+        # Support filenames with spaces just in case
+        for(i=8; i<=NF; i++) name = name (i==8?"":" ") $i
+        printf "\033[01;36m%-55s\033[0m \033[01;33m%-25s\033[0m \033[01;32m%-15s\033[0m\n", name, date_created, size
+      }
+    '
+    echo ""
+    return 0
+  fi
+
   mkdir -p "$dest"
 
   # Format timestamps: [YYYY-MM-DD]_[HH-MM-SS]
@@ -182,5 +226,26 @@ mt-backup() {
     echo -e " 📂 Folder: \033]8;;${file_url}\033\\${dest}\033]8;;\033\\"
   else
     echo -e "${CB_RED}🚨 Backup failed.${C_RESET}"
+  fi
+}
+
+#######################################
+# System: Audit VCS root for unorganized files and directories
+#######################################
+mt-vcs-audit() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local vcs_dir="${VCS_ROOT:-$HOME/vcs}"
+  echo -e "${CB_BLUE}🔍 Auditing ${vcs_dir} for unorganized items...${C_RESET}\n"
+
+  if command -v eza > /dev/null 2>&1; then
+    # Print a tree up to 3 levels deep, ignoring our organized folders
+    eza -la --tree --level=3 --group-directories-first -I "external|personal|work|workspaces|misc|.git" "$vcs_dir"
+  else
+    # Fallback to standard ls if eza is unavailable
+    ls -la "$vcs_dir" | grep -vE "(external|personal|work|workspaces|misc)"
   fi
 }
