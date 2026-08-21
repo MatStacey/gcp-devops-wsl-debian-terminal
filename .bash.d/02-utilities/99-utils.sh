@@ -246,6 +246,7 @@ mt-vcs-audit() {
     eza -la --tree --level=3 --group-directories-first -I "external|personal|work|workspaces|misc|.git" "$vcs_dir"
   else
     # Fallback to standard ls if eza is unavailable
+    # shellcheck disable=SC2010
     ls -la "$vcs_dir" | grep -vE "(external|personal|work|workspaces|misc)"
   fi
 }

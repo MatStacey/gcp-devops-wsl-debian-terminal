@@ -20,9 +20,10 @@ __mt_hub_index() {
 
   local processed=0
   for repo in "${repos[@]}"; do
-    local repo_name=$(basename "$repo")
+    local repo_name
+    repo_name=$(basename "$repo")
 
-    local rel_path="${repo#$search_dir/}"
+    local rel_path="${repo#"$search_dir"/}"
     local repo_type="Root"
     if [[ "$rel_path" == */* ]]; then
       repo_type="${rel_path%%/*}"
@@ -70,7 +71,8 @@ __mt_hub_index() {
     grep -qi "junit" "$repo/pom.xml" 2> /dev/null && testing="JUnit"
 
     local stack="Unknown"
-    local top_ext=$(find "$repo" -maxdepth 3 -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" 2> /dev/null | rev | cut -d. -f1 | rev | grep -E "^(py|java|js|ts|tf|go|sh|cpp|c|html|css)$" | sort | uniq -c | sort -rn | head -n1 | awk '{print $2}')
+    local top_ext
+    top_ext=$(find "$repo" -maxdepth 3 -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" 2> /dev/null | rev | cut -d. -f1 | rev | grep -E "^(py|java|js|ts|tf|go|sh|cpp|c|html|css)$" | sort | uniq -c | sort -rn | head -n1 | awk '{print $2}')
     case "$top_ext" in
       py) stack="Python" ;;
       java) stack="Java" ;;
@@ -85,18 +87,21 @@ __mt_hub_index() {
     # --- 2. AI Summarization ---
     local ai_prompt="Analyze this repository structure and README. Return ONLY a valid JSON object matching exactly this schema: {\"description\": \"A highly concise 1-sentence description of what this project does\", \"category\": \"Application\" | \"Infrastructure\" | \"CI/CD\" | \"Tooling\" | \"Library\" | \"Dotfiles\" | \"Other\"}"
 
-    local ctx_file=$(mktemp)
+    local ctx_file
+    ctx_file=$(mktemp)
     [ -f "$repo/README.md" ] && head -c 2000 "$repo/README.md" > "$ctx_file"
     echo -e "\n\nDIRECTORY TREE:\n" >> "$ctx_file"
     find "$repo" -maxdepth 2 -not -path "*/\.git/*" -not -path "*/node_modules/*" >> "$ctx_file"
 
-    local ai_res=$(ai -f "$ctx_file" "$ai_prompt" 2> /dev/null)
+    local ai_res
+    ai_res=$(ai -f "$ctx_file" "$ai_prompt" 2> /dev/null)
     rm -f "$ctx_file"
 
     local desc="No description available."
     local cat="Unknown"
     if [ -n "$ai_res" ]; then
-      local clean_json=$(echo "$ai_res" | sed 's/```json//gi; s/```//g')
+      local clean_json
+      clean_json=$(echo "$ai_res" | sed 's/```json//gi; s/```//g')
       if echo "$clean_json" | jq -e . > /dev/null 2>&1; then
         desc=$(echo "$clean_json" | jq -r '.description // "No description available."')
         cat=$(echo "$clean_json" | jq -r '.category // "Unknown"')
@@ -104,7 +109,8 @@ __mt_hub_index() {
     fi
 
     # --- 3. Save to JSON Cache ---
-    local tmp_cache=$(mktemp)
+    local tmp_cache
+    tmp_cache=$(mktemp)
     jq --arg r "$repo" \
       --arg c "$cat" \
       --arg d "$desc" \
@@ -129,12 +135,14 @@ __mt_hub_preview() {
   local repo="$1"
   local cache_file="$2"
 
-  local repo_name=$(basename "$repo")
+  local repo_name
+  repo_name=$(basename "$repo")
   echo -e "\033[01;36m============================================================\033[0m"
   echo -e "\033[01;34m 📦 ${repo_name}\033[0m"
   echo -e "\033[01;36m============================================================\033[0m\n"
 
-  local meta=$(jq -r ".[ \"$repo\" ] // empty" "$cache_file" 2> /dev/null)
+  local meta
+  meta=$(jq -r ".[ \"$repo\" ] // empty" "$cache_file" 2> /dev/null)
 
   if [ -z "$meta" ] || [ "$meta" == "null" ]; then
     echo -e "\033[01;33m⚠️ No metadata found.\033[0m\n"
@@ -142,12 +150,18 @@ __mt_hub_preview() {
     return 0
   fi
 
-  local cat=$(echo "$meta" | jq -r '.category')
-  local desc=$(echo "$meta" | jq -r '.description')
-  local stack=$(echo "$meta" | jq -r '.stack')
-  local build=$(echo "$meta" | jq -r '.build')
-  local cicd=$(echo "$meta" | jq -r '.cicd')
-  local test_fw=$(echo "$meta" | jq -r '.testing')
+  local cat
+  cat=$(echo "$meta" | jq -r '.category')
+  local desc
+  desc=$(echo "$meta" | jq -r '.description')
+  local stack
+  stack=$(echo "$meta" | jq -r '.stack')
+  local build
+  build=$(echo "$meta" | jq -r '.build')
+  local cicd
+  cicd=$(echo "$meta" | jq -r '.cicd')
+  local test_fw
+  test_fw=$(echo "$meta" | jq -r '.testing')
 
   echo -e "\033[01;35m▶ OVERVIEW\033[0m"
   echo -e "\033[0m${desc}\033[0m\n"
@@ -216,20 +230,23 @@ mt-hub() {
   fi
 
   local search_dir="${VCS_ROOT:-$HOME/vcs}"
-  local tmp_out=$(mktemp)
+  local tmp_out
+  tmp_out=$(mktemp)
 
   while IFS= read -r repo_path; do
     [ -z "$repo_path" ] && continue
-    local repo_name=$(basename "$repo_path")
+    local repo_name
+    repo_name=$(basename "$repo_path")
 
-    local rel_path="${repo_path#$search_dir/}"
+    local rel_path="${repo_path#"$search_dir"/}"
     local repo_type="Root"
     if [[ "$rel_path" == */* ]]; then
       repo_type="${rel_path%%/*}"
     fi
-    repo_type="$(tr '[:lower:]' '[:upper:]' <<< ${repo_type:0:1})${repo_type:1}"
+    repo_type="$(tr '[:lower:]' '[:upper:]' <<< "${repo_type:0:1}")${repo_type:1}"
 
-    local branch=$(git -C "$repo_path" branch --show-current 2> /dev/null || echo "HEAD detached")
+    local branch
+    branch=$(git -C "$repo_path" branch --show-current 2> /dev/null || echo "HEAD detached")
     [ -z "$branch" ] && branch="No commits"
 
     echo "${repo_type}|${repo_name}|${branch}|${repo_path}" >> "$tmp_out"
@@ -237,7 +254,8 @@ mt-hub() {
 
   sort -t'|' -k1,1 -k2,2 "$tmp_out" -o "$tmp_out"
 
-  local selected=$(awk -F'|' '
+  local selected
+  selected=$(awk -F'|' '
     function pad(str, len) {
       if (length(str) > len) return substr(str, 1, len-3) "..."
       return str sprintf("%*s", len - length(str), "")
@@ -250,7 +268,8 @@ mt-hub() {
   rm -f "$tmp_out"
 
   if [ -n "$selected" ]; then
-    local target_path=$(echo "$selected" | awk -F' │ ' '{print $4}' | sed 's/^[ \t]*//;s/[ \t]*$//')
+    local target_path
+    target_path=$(echo "$selected" | awk -F' │ ' '{print $4}' | sed 's/^[ \t]*//;s/[ \t]*$//')
     echo -e "\033[01;32m📂 Navigating to: $target_path\033[0m"
     cd "$target_path" || true
   fi

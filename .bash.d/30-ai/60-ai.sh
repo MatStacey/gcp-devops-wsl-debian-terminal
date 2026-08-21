@@ -614,7 +614,8 @@ mt-ai-quota() {
     fi
     echo -e "⏳ Pinging Anthropic Claude API for rate limit headers...\n"
 
-    local headers_file=$(mktemp)
+    local headers_file
+    headers_file=$(mktemp)
     # Minimal dummy payload to trigger a response and grab headers
     local dummy_payload='{"model": "'"${CLAUDE_VERSION:-claude-3-7-sonnet-latest}"'", "max_tokens": 1, "messages": [{"role": "user", "content": "ping"}]}'
 
@@ -626,12 +627,18 @@ mt-ai-quota() {
       -d "$dummy_payload")
 
     if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 429 ]; then
-      local req_limit=$(grep -i "anthropic-ratelimit-requests-limit:" "$headers_file" | awk '{print $2}' | tr -d '\r')
-      local req_rem=$(grep -i "anthropic-ratelimit-requests-remaining:" "$headers_file" | awk '{print $2}' | tr -d '\r')
-      local in_tok_limit=$(grep -i "anthropic-ratelimit-input-tokens-limit:" "$headers_file" | awk '{print $2}' | tr -d '\r')
-      local in_tok_rem=$(grep -i "anthropic-ratelimit-input-tokens-remaining:" "$headers_file" | awk '{print $2}' | tr -d '\r')
-      local out_tok_limit=$(grep -i "anthropic-ratelimit-output-tokens-limit:" "$headers_file" | awk '{print $2}' | tr -d '\r')
-      local out_tok_rem=$(grep -i "anthropic-ratelimit-output-tokens-remaining:" "$headers_file" | awk '{print $2}' | tr -d '\r')
+      local req_limit
+      req_limit=$(grep -i "anthropic-ratelimit-requests-limit:" "$headers_file" | awk '{print $2}' | tr -d '\r')
+      local req_rem
+      req_rem=$(grep -i "anthropic-ratelimit-requests-remaining:" "$headers_file" | awk '{print $2}' | tr -d '\r')
+      local in_tok_limit
+      in_tok_limit=$(grep -i "anthropic-ratelimit-input-tokens-limit:" "$headers_file" | awk '{print $2}' | tr -d '\r')
+      local in_tok_rem
+      in_tok_rem=$(grep -i "anthropic-ratelimit-input-tokens-remaining:" "$headers_file" | awk '{print $2}' | tr -d '\r')
+      local out_tok_limit
+      out_tok_limit=$(grep -i "anthropic-ratelimit-output-tokens-limit:" "$headers_file" | awk '{print $2}' | tr -d '\r')
+      local out_tok_rem
+      out_tok_rem=$(grep -i "anthropic-ratelimit-output-tokens-remaining:" "$headers_file" | awk '{print $2}' | tr -d '\r')
 
       echo -e "  ${CB_YELLOW}| Metric               | Limit         | Remaining      |${C_RESET}"
       echo -e "  ${CB_BLUE}|----------------------|---------------|----------------|${C_RESET}"
@@ -654,8 +661,10 @@ mt-ai-quota() {
     fi
     echo -e "⏳ Pinging Gemini API Studio...\n"
 
-    local response=$(curl -s -w "\n%{http_code}" -X GET "${URI_GEMINI_MODELS}?key=${GEMINI_API_KEY}")
-    local http_code=$(echo "$response" | tail -n1)
+    local response
+    response=$(curl -s -w "\n%{http_code}" -X GET "${URI_GEMINI_MODELS}?key=${GEMINI_API_KEY}")
+    local http_code
+    http_code=$(echo "$response" | tail -n1)
 
     if [ "$http_code" -eq 200 ]; then
       echo -e "${CB_GREEN}✅ Gemini API is active and reachable.${C_RESET}\n"

@@ -123,8 +123,7 @@ print('')
 
     eval "find \"$target_dir\" -type f" 2> /dev/null | sort > "$all_files"
 
-    cat "$all_files" |
-      grep -E -vi "(${EXPORT_BLOCKLIST})" |
+    grep -E -vi "(${EXPORT_BLOCKLIST})" < "$all_files" |
       grep -E -i "\.(${s_inc})$" > "$file_list"
 
     if [ -n "$s_exc" ] && [ "$s_exc" != "null" ] && [ "$s_exc" != '""' ]; then
@@ -136,16 +135,17 @@ print('')
   __build_file_lists
 
   __print_plan() {
-    local total_files=$(wc -l < "$file_list")
-    local total_all_files=$(wc -l < "$all_files")
+    local total_files
+    total_files=$(wc -l < "$file_list")
     local total_bytes=0
     if [ "$total_files" -gt 0 ]; then
-      total_bytes=$(cat "$file_list" | tr '\n' '\0' | xargs -0 wc -c 2> /dev/null | tail -n 1 | awk '{print $1}')
+      total_bytes=$(tr < "$file_list" '\n' '\0' | xargs -0 wc -c 2> /dev/null | tail -n 1 | awk '{print $1}')
     fi
     [ -z "$total_bytes" ] && total_bytes=0
     local estimated_kb=$((total_bytes / 1024))
 
-    local ext_list=$(awk -F. '{if (NF>1) print $NF}' "$file_list" | sort -u | tr '\n' ', ' | sed 's/, $//')
+    local ext_list
+    ext_list=$(awk -F. '{if (NF>1) print $NF}' "$file_list" | sort -u | tr '\n' ', ' | sed 's/, $//')
     [ -z "$ext_list" ] && ext_list="None/Unknown"
 
     echo -e "${CB_BLUE}==========================================================${C_RESET}"
@@ -180,7 +180,7 @@ print('')
       case "$REPLY" in
         1)
           local to_remove
-          to_remove=$(cat "$file_list" | fzf -m --prompt="Select files to EXCLUDE (Tab to multi-select) > ")
+          to_remove=$(fzf < "$file_list" -m --prompt="Select files to EXCLUDE (Tab to multi-select) > ")
           if [ -n "$to_remove" ]; then
             grep -v -F -x "$to_remove" "$file_list" > "${file_list}.tmp"
             mv "${file_list}.tmp" "$file_list"
@@ -241,7 +241,8 @@ print('')
     else
       echo -e "\n${CB_CYAN}Included Directory Tree:${C_RESET}"
       awk -F'/' '{for(i=1;i<NF;i++){printf "  |   "} print "  |-- "$NF}' "$file_list" | head -n 50
-      local total_files=$(wc -l < "$file_list")
+      local total_files
+      total_files=$(wc -l < "$file_list")
       if [ "$total_files" -gt 50 ]; then
         echo -e "${C_DIM}  ...and $((total_files - 50)) more files. Run with -v for full lists.${C_RESET}"
       fi
@@ -261,7 +262,8 @@ print('')
   # ==========================================================
   # EXECUTION LOGIC
   # ==========================================================
-  local total_files=$(wc -l < "$file_list")
+  local total_files
+  total_files=$(wc -l < "$file_list")
   if [ "$total_files" -eq 0 ]; then
     echo -e "${CB_YELLOW}⚠️ No files matched the schema '${schema_query}' in ${target_dir}.${C_RESET}"
     rm -f "$file_list" "$all_files"

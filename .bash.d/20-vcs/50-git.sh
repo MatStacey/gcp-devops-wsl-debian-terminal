@@ -504,13 +504,13 @@ mt-repos() {
     local repo_name
     repo_name=$(basename "$repo_path")
 
-    local rel_path="${repo_path#$search_dir/}"
+    local rel_path="${repo_path#"$search_dir"/}"
     local repo_type="Root"
     if [[ "$rel_path" == */* ]]; then
       repo_type="${rel_path%%/*}"
     fi
     # Capitalize the first letter for a clean UI
-    repo_type="$(tr '[:lower:]' '[:upper:]' <<< ${repo_type:0:1})${repo_type:1}"
+    repo_type="$(tr '[:lower:]' '[:upper:]' <<< "${repo_type:0:1}")${repo_type:1}"
 
     local branch
     branch=$(git -C "$repo_path" branch --show-current 2> /dev/null || echo "HEAD detached")
