@@ -204,3 +204,8 @@ fi
 # System: Forcefully clear and rebuild all background caches and reload profile
 #######################################
 alias mt-hard-reload='mt-load-config && mt-refresh-caches'
+
+#######################################
+# MT-Framework: Update the DevOps-MT-Framework with Shellcheck and Backup Creation
+#######################################
+alias mtupd='mt-push-update -s -b'

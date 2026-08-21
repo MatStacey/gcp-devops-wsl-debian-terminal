@@ -30,6 +30,10 @@ mt-top-files() {
 mt-log() {
   local level="$1"
   local msg="$2"
+  local log_dir="${LOG_DIR:-$HOME/.bash.d/data/logs}"
+  local log_file="$log_dir/framework.log"
+
+  # Console Output
   case "$level" in
     INFO) echo -e "${CB_BLUE}ℹ️ ${msg}${C_RESET}" ;;
     SUCCESS) echo -e "${CB_GREEN}✅ ${msg}${C_RESET}" ;;
@@ -37,6 +41,20 @@ mt-log() {
     ERROR) echo -e "${CB_RED}🚨 ${msg}${C_RESET}" >&2 ;;
     *) echo "$msg" ;;
   esac
+
+  # File Logging (with 1MB basic rotation)
+  mkdir -p "$log_dir" 2> /dev/null
+  if [ -f "$log_file" ]; then
+    local size
+    size=$(wc -c < "$log_file" 2> /dev/null || echo 0)
+    if [ "$size" -gt 1048576 ]; then
+      mv "$log_file" "${log_file}.old" 2> /dev/null
+    fi
+  fi
+
+  local ts
+  ts=$(date +"%Y-%m-%d %H:%M:%S")
+  echo "[$ts] [$level] $msg" >> "$log_file" 2> /dev/null
 }
 
 #######################################
@@ -105,7 +123,7 @@ mt-backup() {
   fi
 
   if [ "$list_mode" = false ]; then
-    echo -e "${CB_BLUE}🔍 Estimating backup payload size...${C_RESET}"
+    mt-log INFO "Estimating backup payload size..."
     local est_size_mb
     est_size_mb=$(find . -type d \( -name .git -o -name node_modules -o -name __pycache__ -o -name .terraform -o -name venv -o -name .venv \) -prune -o -type f -exec ls -l {} + 2> /dev/null | awk '{s+=$5} END {print int(s/1048576)}')
     [ -z "$est_size_mb" ] && est_size_mb=0
@@ -188,7 +206,7 @@ mt-backup() {
   esac
 
   local backup_file="${dest}/[${date_part}]_[${time_part}]_${safe_dir_name}_backup.${ext}"
-  echo -e "${CB_BLUE}📦 Backing up ${PWD} to ${backup_file}...${C_RESET}"
+  mt-log INFO "Backing up ${PWD} to ${backup_file}..."
 
   local success=0
   if [ "$format" = "zip" ]; then
@@ -212,7 +230,7 @@ mt-backup() {
   if [ $success -eq 0 ]; then
     local file_size
     file_size=$(du -h "$backup_file" | cut -f1)
-    echo -e "${CB_GREEN}✅ Backup complete: ${backup_file} (${file_size})${C_RESET}"
+    mt-log SUCCESS "Backup complete: ${backup_file} (${file_size})"
 
     # Construct correct clickable link for terminal (OSC 8) with clean WSL-to-Windows URI formatting
     local file_url="$dest"
@@ -225,7 +243,7 @@ mt-backup() {
 
     echo -e " 📂 Folder: \033]8;;${file_url}\033\\${dest}\033]8;;\033\\"
   else
-    echo -e "${CB_RED}🚨 Backup failed.${C_RESET}"
+    mt-log ERROR "Backup failed."
   fi
 }
 
@@ -249,4 +267,159 @@ mt-vcs-audit() {
     # shellcheck disable=SC2010
     ls -la "$vcs_dir" | grep -vE "(external|personal|work|workspaces|misc)"
   fi
+}
+
+#######################################
+# System: View, filter, and manage framework logs
+# Usage: mt-logs [-n lines] [-l level] [-s keyword] [-o] [-f] [-c]
+# Options:
+#   -n, --lines <num>     Number of lines to display (default: 50)
+#   -l, --level <level>   Filter by severity (INFO, SUCCESS, WARN, ERROR)
+#   -s, --search <term>   Search for a specific keyword
+#   -o, --open            Open the log file in your default IDE
+#   -f, --follow          Tail the logs live
+#   -c, --clear           Clear the log file
+#######################################
+mt-logs() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local log_file="${LOG_DIR:-$HOME/.bash.d/data/logs}/framework.log"
+  local lines=50
+  local level_filter=""
+  local search_term=""
+  local do_open=false
+  local do_follow=false
+  local do_clear=false
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -n | --lines)
+        lines="$2"
+        shift
+        ;;
+      -l | --level)
+        level_filter="${2^^}"
+        shift
+        ;;
+      -s | --search)
+        search_term="$2"
+        shift
+        ;;
+      -o | --open) do_open=true ;;
+      -f | --follow) do_follow=true ;;
+      -c | --clear) do_clear=true ;;
+      -*)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  if [ ! -f "$log_file" ]; then
+    echo -e "${CB_YELLOW}⚠️ No log file found at $log_file${C_RESET}"
+    return 0
+  fi
+
+  if [ "$do_clear" = true ]; then
+    true > "$log_file"
+    echo -e "${CB_GREEN}✅ Log file cleared.${C_RESET}"
+    return 0
+  fi
+
+  if [ "$do_open" = true ]; then
+    echo -e "${CB_BLUE}📂 Opening $log_file in ${DEFAULT_IDE:-vscode}...${C_RESET}"
+    if [ "${DEFAULT_IDE:-vscode}" = "intellij" ]; then
+      idea "$log_file" 2> /dev/null || cat "$log_file"
+    else
+      code "$log_file" 2> /dev/null || cat "$log_file"
+    fi
+    return 0
+  fi
+
+  if [ "$do_follow" = true ]; then
+    tail -f "$log_file"
+    return 0
+  fi
+
+  local cmd="cat \"$log_file\""
+  [ -n "$level_filter" ] && cmd="$cmd | grep \"\[$level_filter\]\""
+  [ -n "$search_term" ] && cmd="$cmd | grep -i \"$search_term\""
+  cmd="$cmd | tail -n $lines"
+
+  echo -e "${CB_CYAN}📜 Showing last $lines lines of framework logs...${C_RESET}"
+  [ -n "$level_filter" ] && echo -e "${C_DIM}   Level: $level_filter${C_RESET}"
+  [ -n "$search_term" ] && echo -e "${C_DIM}   Search: $search_term${C_RESET}"
+  echo -e "${CB_BLUE}----------------------------------------------------------${C_RESET}"
+
+  eval "$cmd"
+}
+
+#######################################
+# System: Interactively create and document a new alias
+# Usage: mt-alias
+#######################################
+mt-alias() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+  echo -e "${CB_CYAN} 🛠️  Create New Alias${C_RESET}"
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+
+  local alias_name=""
+  local alias_cmd=""
+  local alias_cat=""
+  local alias_desc=""
+
+  read -r -p "1️⃣  Alias Name (e.g., kgpo)     : " alias_name
+  if [ -z "$alias_name" ]; then
+    echo -e "${CB_RED}🚨 Alias name is required. Aborting.${C_RESET}"
+    return 1
+  fi
+
+  local aliases_file="$HOME/.bash.d/02-utilities/20-aliases.sh"
+  if grep -qE "^alias ${alias_name}=" "$aliases_file"; then
+    echo -e "${CB_RED}🚨 Error: Alias '${alias_name}' already exists in 20-aliases.sh.${C_RESET}"
+    return 1
+  fi
+
+  read -r -p "2️⃣  Target Command             : " alias_cmd
+  if [ -z "$alias_cmd" ]; then
+    echo -e "${CB_RED}🚨 Target command is required. Aborting.${C_RESET}"
+    return 1
+  fi
+
+  read -r -p "3️⃣  Category (e.g., Docker)    : " alias_cat
+  [ -z "$alias_cat" ] && alias_cat="User Custom"
+
+  read -r -p "4️⃣  Description                : " alias_desc
+  [ -z "$alias_desc" ] && alias_desc="Custom shortcut for ${alias_cmd}"
+
+  echo -e "
+${CB_BLUE}Generating and saving alias...${C_RESET}"
+
+  cat << ALIASEOF >> "$aliases_file"
+
+#######################################
+# ${alias_cat}: ${alias_desc}
+#######################################
+alias ${alias_name}='${alias_cmd}'
+ALIASEOF
+
+  echo -e "${CB_GREEN}✅ Alias saved to 20-aliases.sh!${C_RESET}"
+
+  # Source the updated file to make it available immediately in the current shell
+  source "$aliases_file"
+
+  # Quietly rebuild the mytools cache so mt-lookup and mt-help recognize it
+  echo -e "${CB_YELLOW}🔄 Rebuilding MyTools index...${C_RESET}"
+  mt-refresh-caches > /dev/null 2>&1
+
+  echo -e "${CB_GREEN}🎉 Success! You can now use '${alias_name}' or look it up via 'mt-help ${alias_name}'.${C_RESET}"
 }

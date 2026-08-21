@@ -6,30 +6,203 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 ## 🚀 Recent Updates & Enhancements
 
+[1;38;2;189;147;249mℹ️ Querying Gemini (gemini-3.6-flash)...[0m
 {
-  "category": "chat",
-  "language": null,
-  "extension": null,
-  "title": "shellcheck-bash-refactoring-review",
-  "code": null,
-  "message": "### Code Review: ShellCheck & POSIX Bash Optimization Patch
+  "category": "script",
+  "language": "bash",
+  "extension": "sh",
+  "title": "devops-mt-framework-log-and-alias-utilities",
+  "code": "#!/usr/bin/env bash
 
-This diff applies key ShellCheck cleanups and Bash best practices across your utility scripts:
+#######################################
+# System: Log formatted message to console and file
+# Usage: mt-log <level> <message>
+#######################################
+mt-log() {
+  local level=\"$1\"
+  local msg=\"$2\"
+  local log_dir=\"${LOG_DIR:-$HOME/.bash.d/data/logs}\"
+  local log_file=\"$log_dir/framework.log\"
 
-1. **Separated Declaration and Assignment (`SC2155`)**:
-   - *Issue:* Writing `local total_files=$(wc -l ...)` masks the return exit code of the subshell command (`wc`), because `local` returns `0` even if command execution fails.
-   - *Fix:* Explicitly separated `local total_files` and assignment `total_files=$(...)` to preserve exact error handling.
+  # Console Output
+  case \"$level\" in
+    INFO) echo -e \"${CB_BLUE}ℹ️  ${msg}${C_RESET}\" ;;
+    SUCCESS) echo -e \"${CB_GREEN}✅ ${msg}${C_RESET}\" ;;
+    WARN) echo -e \"${CB_YELLOW}⚠️  ${msg}${C_RESET}\" ;;
+    ERROR) echo -e \"${CB_RED}🚨 ${msg}${C_RESET}\" >&2 ;;
+    *) echo \"$msg\" ;;
+  esac
 
-2. **Elimination of Useless Use of `cat` (UUOC) (`SC2002`)**:
-   - *Issue:* Piping `cat` into processes like `grep`, `tr`, or `fzf` creates redundant subshells and process forks.
-   - *Fix:* Converted to standard file redirection (e.g., `grep ... < "$all_files"`, `fzf < "$file_list"`).
+  # File Logging (with 1MB basic rotation)
+  mkdir -p \"$log_dir\" 2> /dev/null
+  if [ -f \"$log_file\" ]; then
+    local size
+    size=$(wc -c < \"$log_file\" 2> /dev/null || echo 0)
+    if [ \"$size\" -gt 1048576 ]; then
+      mv \"$log_file\" \"${log_file}.old\" 2> /dev/null
+    fi
+  fi
 
-3. **Quoting Inside Parameter Expansions (`SC2295`)**:
-   - *Issue:* Unquoted expansion patterns like `${repo_path#$search_dir/}` can cause unexpected glob matching if `$search_dir` contains special regex/glob characters.
-   - *Fix:* Safely quoted the inner expansion string: `${repo_path#"$search_dir"/}`.
+  local ts
+  ts=$(date +\"%Y-%m-%d %H:%M:%S\")
+  echo \"[$ts] [$level] $msg\" >> \"$log_file\" 2> /dev/null
+}
 
-4. **Explicit Lint Suppression (`SC2010`)**:
-   - *Fix:* Added `# shellcheck disable=SC2010` above `ls -la | grep` in `mt-vcs-audit()`, acknowledging the explicit fallback path when `eza` is unavailable."
+#######################################
+# System: View, filter, and manage framework logs
+# Usage: mt-logs [-n lines] [-l level] [-s keyword] [-o] [-f] [-c]
+#######################################
+mt-logs() {
+  if [[ \"$1\" == \"-h\" || \"$1\" == \"--help\" ]]; then
+    mt-help \"${FUNCNAME[0]}\"
+    return 0
+  fi
+
+  local log_file=\"${LOG_DIR:-$HOME/.bash.d/data/logs}/framework.log\"
+  local lines=50
+  local level_filter=\"\"
+  local search_term=\"\"
+  local do_open=false
+  local do_follow=false
+  local do_clear=false
+
+  while [[ \"$#\" -gt 0 ]]; do
+    case \"$1\" in
+      -n | --lines)
+        lines=\"$2\"
+        shift
+        ;;
+      -l | --level)
+        level_filter=\"${2^^}\"
+        shift
+        ;;
+      -s | --search)
+        search_term=\"$2\"
+        shift
+        ;;
+      -o | --open) do_open=true ;;
+      -f | --follow) do_follow=true ;;
+      -c | --clear) do_clear=true ;;
+      -*)
+        echo -e \"${CB_RED}🚨 Unknown option: $1${C_RESET}\"
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  if [ ! -f \"$log_file\" ]; then
+    echo -e \"${CB_YELLOW}⚠️  No log file found at $log_file${C_RESET}\"
+    return 0
+  fi
+
+  if [ \"$do_clear\" = true ]; then
+    true > \"$log_file\"
+    echo -e \"${CB_GREEN}✅ Log file cleared.${C_RESET}\"
+    return 0
+  fi
+
+  if [ \"$do_open\" = true ]; then
+    echo -e \"${CB_BLUE}📂 Opening $log_file in ${DEFAULT_IDE:-vscode}...${C_RESET}\"
+    if [ \"${DEFAULT_IDE:-vscode}\" = \"intellij\" ]; then
+      idea \"$log_file\" 2> /dev/null || cat \"$log_file\"
+    else
+      code \"$log_file\" 2> /dev/null || cat \"$log_file\"
+    fi
+    return 0
+  fi
+
+  if [ \"$do_follow\" = true ]; then
+    tail -f \"$log_file\"
+    return 0
+  fi
+
+  local cmd=\"cat \\"$log_file\\"\"
+  [ -n \"$level_filter\" ] && cmd=\"$cmd | grep \\"\[$level_filter\]\\"\"
+  [ -n \"$search_term\" ] && cmd=\"$cmd | grep -i \\"$search_term\\"\"
+  cmd=\"$cmd | tail -n $lines\"
+
+  echo -e \"${CB_CYAN}📜 Showing last $lines lines of framework logs...${C_RESET}\"
+  [ -n \"$level_filter\" ] && echo -e \"${C_DIM}   Level: $level_filter${C_RESET}\"
+  [ -n \"$search_term\" ] && echo -e \"${C_DIM}   Search: $search_term${C_RESET}\"
+  echo -e \"${CB_BLUE}----------------------------------------------------------${C_RESET}\"
+
+  eval \"$cmd\"
+}
+
+#######################################
+# System: Interactively create and document a new alias
+# Usage: mt-alias
+#######################################
+mt-alias() {
+  if [[ \"$1\" == \"-h\" || \"$1\" == \"--help\" ]]; then
+    mt-help \"${FUNCNAME[0]}\"
+    return 0
+  fi
+
+  echo -e \"${CB_BLUE}==========================================================${C_RESET}\"
+  echo -e \"${CB_CYAN} 🛠️  Create New Alias${C_RESET}\"
+  echo -e \"${CB_BLUE}==========================================================${C_RESET}\"
+
+  local alias_name=\"\"
+  local alias_cmd=\"\"
+  local alias_cat=\"\"
+  local alias_desc=\"\"
+
+  read -r -p \"1️⃣  Alias Name (e.g., kgpo)     : \" alias_name
+  if [ -z \"$alias_name\" ]; then
+    echo -e \"${CB_RED}🚨 Alias name is required. Aborting.${C_RESET}\"
+    return 1
+  fi
+
+  local aliases_file=\"$HOME/.bash.d/02-utilities/20-aliases.sh\"
+  if grep -qE \"^alias ${alias_name}=\" \"$aliases_file\"; then
+    echo -e \"${CB_RED}🚨 Error: Alias '${alias_name}' already exists in 20-aliases.sh.${C_RESET}\"
+    return 1
+  fi
+
+  read -r -p \"2️⃣  Target Command             : \" alias_cmd
+  if [ -z \"$alias_cmd\" ]; then
+    echo -e \"${CB_RED}🚨 Target command is required. Aborting.${C_RESET}\"
+    return 1
+  fi
+
+  read -r -p \"3️⃣  Category (e.g., Docker)    : \" alias_cat
+  [ -z \"$alias_cat\" ] && alias_cat=\"User Custom\"
+
+  read -r -p \"4️⃣  Description                : \" alias_desc
+  [ -z \"$alias_desc\" ] && alias_desc=\"Custom shortcut for ${alias_cmd}\"
+
+  echo -e \"\n${CB_BLUE}Generating and saving alias...${C_RESET}\"
+
+  cat << ALIASEOF >> \"$aliases_file\"
+
+#######################################
+# ${alias_cat}: ${alias_desc}
+#######################################
+alias ${alias_name}='${alias_cmd}'
+ALIASEOF
+
+  echo -e \"${CB_GREEN}✅ Alias saved to 20-aliases.sh!${C_RESET}\"
+
+  # Source the updated file to make it available immediately in the current shell
+  source \"$aliases_file\"
+
+  # Quietly rebuild the mytools cache so mt-lookup and mt-help recognize it
+  if declare -f mt-refresh-caches > /dev/null 2>&1; then
+    mt-refresh-caches > /dev/null 2>&1
+  fi
+
+  echo -e \"${CB_CYAN}ℹ️  Alias '${alias_name}' is now active in your current session.${C_RESET}\"
+}
+",
+  "message": "I have reviewed your Git diff patch and completed the truncated `mt-alias` wizard implementation at the end of `.bash.d/02-utilities/99-utils.sh`.
+
+### Summary of Changes in this Patch:
+1. **`mtupd` Alias Addition (`20-aliases.sh`)**: Shortcut for `mt-push-update -s -b` to run updates with Shellcheck validation and backup creation enabled.
+2. **File Logging with Rotation (`mt-log`)**: `mt-log` now appends timestamps and log levels to `$LOG_DIR/framework.log` with an automated 1MB file size rotation strategy (`framework.log.old`).
+3. **Log Viewer (`mt-logs`)**: Added CLI options for log filtering (`-l/--level`), text searching (`-s/--search`), live tailing (`-f/--follow`), log clearing (`-c/--clear`), and IDE inspection (`-o/--open`).
+4. **Interactive Alias Generator (`mt-alias`)**: Completed the function to interactively prompt for alias details, prevent duplicates, persist them to `20-aliases.sh`, reload the environment, and refresh internal help caches."
 }
 
 ---
