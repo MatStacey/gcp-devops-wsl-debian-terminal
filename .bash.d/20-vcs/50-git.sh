@@ -504,6 +504,14 @@ mt-repos() {
     local repo_name
     repo_name=$(basename "$repo_path")
 
+    local rel_path="${repo_path#$search_dir/}"
+    local repo_type="Root"
+    if [[ "$rel_path" == */* ]]; then
+      repo_type="${rel_path%%/*}"
+    fi
+    # Capitalize the first letter for a clean UI
+    repo_type="$(tr '[:lower:]' '[:upper:]' <<< ${repo_type:0:1})${repo_type:1}"
+
     local branch
     branch=$(git -C "$repo_path" branch --show-current 2> /dev/null || echo "HEAD detached")
     [ -z "$branch" ] && branch="No commits"
@@ -511,7 +519,7 @@ mt-repos() {
     local remote
     remote=$(git -C "$repo_path" config --get remote.origin.url 2> /dev/null || echo "No remote")
 
-    echo "${repo_name}|${branch}|${remote}|${repo_path}" >> "$tmp_out"
+    echo "${repo_type}|${repo_name}|${branch}|${remote}|${repo_path}" >> "$tmp_out"
   done < <(find "$search_dir" -type d -exec test -d "{}/.git" \; -prune -print)
 
   local count
@@ -525,7 +533,7 @@ mt-repos() {
 
   echo -e "\n${CB_CYAN}📦 Found $count repositories in $search_dir:${C_RESET}\n"
 
-  sort -t'|' -k1,1 -k4,4 -k2,2 "$tmp_out" -o "$tmp_out"
+  sort -t'|' -k1,1 -k2,2 -k5,5 "$tmp_out" -o "$tmp_out"
 
   awk -F'|' -v home="$HOME" -v wsl_distro="${WSL_DISTRO_NAME:-Debian}" '
     function pad(str, len) {
@@ -533,16 +541,17 @@ mt-repos() {
       return str sprintf("%*s", len - length(str), "")
     }
     BEGIN {
-      printf "\033[01;34m%-35s %-20s %-50s %s\033[0m\n", "REPOSITORY", "BRANCH", "REMOTE URL", "PATH"
-      printf "\033[01;34m------------------------------------------------------------------------------------------------------------------------------------\033[0m\n"
+      printf "\033[01;34m%-15s %-35s %-20s %-50s %s\033[0m\n", "TYPE", "REPOSITORY", "BRANCH", "REMOTE URL", "PATH"
+      printf "\033[01;34m---------------------------------------------------------------------------------------------------------------------------------------------------\033[0m\n"
     }
     {
-      repo = pad($1, 35)
-      branch_raw = $2
+      type = pad($1, 15)
+      repo = pad($2, 35)
+      branch_raw = $3
       branch = pad(branch_raw, 20)
       branch_color = (branch_raw == "main" || branch_raw == "master") ? "\033[01;32m" : "\033[01;33m"
       
-      remote_raw = $3
+      remote_raw = $4
       remote_color = (remote_raw == "No remote") ? "\033[2;37m" : "\033[0m"
       remote_disp = pad(remote_raw, 50)
       
@@ -561,7 +570,7 @@ mt-repos() {
           remote_linked = remote_disp
       }
       
-      path_full = $4
+      path_full = $5
       path_disp = path_full
       if (index(path_disp, home) == 1) {
           path_disp = "~" substr(path_disp, length(home) + 1)
@@ -575,7 +584,7 @@ mt-repos() {
       
       path_linked = "\033]8;;" file_url "\033\\" path_disp "\033]8;;\033\\"
       
-      printf "\033[01;36m%s\033[0m %s%s\033[0m %s%s\033[0m %s\n", repo, branch_color, branch, remote_color, remote_linked, path_linked
+      printf "\033[01;35m%s\033[0m \033[01;36m%s\033[0m %s%s\033[0m %s%s\033[0m %s\n", type, repo, branch_color, branch, remote_color, remote_linked, path_linked
     }
   ' "$tmp_out"
 
