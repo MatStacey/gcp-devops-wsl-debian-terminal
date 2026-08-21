@@ -129,6 +129,7 @@ mt-push-update() {
         ;;
       -m | --no-ai)
         skip_ai=true
+        export SKIP_AI=true
         shift
         ;;
       -d | --delete-merged)
