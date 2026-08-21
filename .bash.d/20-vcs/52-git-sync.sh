@@ -96,6 +96,8 @@ __git_sync_copy_files() {
 #   -i, --issue <num>  Optional issue number to link to the Pull Request
 #   -s, --shellcheck   Run ShellCheck locally before pushing to catch errors early
 #   -b, --backup       Create a zip backup of .bash.d and .bashrc before syncing
+#   -m, --no-ai        Skip AI commit message generation and commit in a single batch
+#   -d, --delete-merged Delete local branches that have been merged into main/master
 #   $@                 Optional commit message string
 #######################################
 mt-push-update() {
@@ -107,6 +109,8 @@ mt-push-update() {
   local issue_num=""
   local run_shellcheck=false
   local backup_before_sync=false
+  local delete_merged=false
+  local skip_ai=false
   local user_msg=""
 
   while [[ "$#" -gt 0 ]]; do
@@ -123,8 +127,16 @@ mt-push-update() {
         backup_before_sync=true
         shift
         ;;
+      -m | --no-ai)
+        skip_ai=true
+        shift
+        ;;
+      -d | --delete-merged)
+        delete_merged=true
+        shift
+        ;;
       -*)
-        echo "Usage: mt-push-update [-i|--issue <issue_number>] [-s|--shellcheck] [-b|--backup] [optional message]" >&2
+        echo "Usage: mt-push-update [-i|--issue <num>] [-s|--shellcheck] [-b|--backup] [-m|--no-ai] [-d|--delete-merged] [message]" >&2
         return 1
         ;;
       *)
@@ -313,7 +325,11 @@ mt-push-update() {
       pr_body="${pr_body}\n\nResolves #${issue_num}"
     fi
 
-    if [ -z "$user_msg" ]; then
+    if [ "$skip_ai" = true ]; then
+      local commit_msg="${user_msg:-chore: automated profile synchronization}"
+      echo "📦 Skipping AI commit generation. Batch committing with: \"$commit_msg\"..."
+      git commit -m "$commit_msg" > /dev/null
+    elif [ -z "$user_msg" ]; then
       __git_sync_ai_commit "$repo_dir"
       if [ $? -eq 100 ]; then
         echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
@@ -328,6 +344,23 @@ mt-push-update() {
     else
       echo "📦 Committing all as a single batch..."
       git commit -m "$user_msg" > /dev/null
+    fi
+
+    if [ "$delete_merged" = true ]; then
+      echo -e "${CB_BLUE}🧹 Pruning remote tracking references and deleting merged local branches...${C_RESET}"
+      git fetch --prune > /dev/null 2>&1
+      local main_b="main"
+      git show-ref --verify --quiet refs/heads/master && main_b="master"
+
+      local merged_b
+      merged_b=$(git branch --merged "$main_b" | grep -v -E "^[*+]|\\b(main|master|dev|developer)\\b")
+
+      if [ -n "$merged_b" ]; then
+        echo "$merged_b" | xargs -r git branch -d
+        echo -e "${CB_GREEN}✅ Merged local branches cleaned up successfully!${C_RESET}"
+      else
+        echo -e "${C_DIM}No stale merged branches found to delete.${C_RESET}"
+      fi
     fi
 
     git-raise-pr -b "$default_branch" -t "$pr_title" -m "$(echo -e "$pr_body")"
