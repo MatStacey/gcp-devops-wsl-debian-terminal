@@ -475,3 +475,110 @@ __git_auto_format() {
     fi
   fi
 }
+
+#######################################
+# Git: Scan VCS root and list all local repositories
+# Globals:
+#   VCS_ROOT, WSL_DISTRO_NAME
+#######################################
+mt-repos() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local search_dir="${VCS_ROOT:-$HOME/vcs}"
+  if [ ! -d "$search_dir" ]; then
+    echo -e "${CB_RED}🚨 Error: VCS root directory '$search_dir' not found.${C_RESET}"
+    return 1
+  fi
+
+  echo -e "${CB_BLUE}🔍 Scanning '$search_dir' for Git repositories...${C_RESET}"
+
+  local tmp_out
+  tmp_out=$(mktemp)
+
+  while IFS= read -r repo_path; do
+    [ -z "$repo_path" ] && continue
+
+    local repo_name
+    repo_name=$(basename "$repo_path")
+
+    local branch
+    branch=$(git -C "$repo_path" branch --show-current 2> /dev/null || echo "HEAD detached")
+    [ -z "$branch" ] && branch="No commits"
+
+    local remote
+    remote=$(git -C "$repo_path" config --get remote.origin.url 2> /dev/null || echo "No remote")
+
+    echo "${repo_name}|${branch}|${remote}|${repo_path}" >> "$tmp_out"
+  done < <(find "$search_dir" -type d -exec test -d "{}/.git" \; -prune -print)
+
+  local count
+  count=$(wc -l < "$tmp_out")
+
+  if [ "$count" -eq 0 ]; then
+    echo -e "${CB_YELLOW}⚠️ No Git repositories found in $search_dir.${C_RESET}"
+    rm -f "$tmp_out"
+    return 0
+  fi
+
+  echo -e "\n${CB_CYAN}📦 Found $count repositories in $search_dir:${C_RESET}\n"
+
+  sort -t'|' -k1,1 -k4,4 -k2,2 "$tmp_out" -o "$tmp_out"
+
+  awk -F'|' -v home="$HOME" -v wsl_distro="${WSL_DISTRO_NAME:-Debian}" '
+    function pad(str, len) {
+      if (length(str) > len) return substr(str, 1, len-3) "..."
+      return str sprintf("%*s", len - length(str), "")
+    }
+    BEGIN {
+      printf "\033[01;34m%-35s %-20s %-50s %s\033[0m\n", "REPOSITORY", "BRANCH", "REMOTE URL", "PATH"
+      printf "\033[01;34m------------------------------------------------------------------------------------------------------------------------------------\033[0m\n"
+    }
+    {
+      repo = pad($1, 35)
+      branch_raw = $2
+      branch = pad(branch_raw, 20)
+      branch_color = (branch_raw == "main" || branch_raw == "master") ? "\033[01;32m" : "\033[01;33m"
+      
+      remote_raw = $3
+      remote_color = (remote_raw == "No remote") ? "\033[2;37m" : "\033[0m"
+      remote_disp = pad(remote_raw, 50)
+      
+      # Robust URL transformation for both SSH (git@) and HTTPS
+      web_url = remote_raw
+      if (web_url ~ /^git@/) {
+          sub(/^git@/, "", web_url)
+          sub(/:/, "/", web_url)
+          web_url = "https://" web_url
+      }
+      sub(/\.git$/, "", web_url)
+      
+      if (web_url ~ /^http/) {
+          remote_linked = "\033]8;;" web_url "\033\\" remote_disp "\033]8;;\033\\"
+      } else {
+          remote_linked = remote_disp
+      }
+      
+      path_full = $4
+      path_disp = path_full
+      if (index(path_disp, home) == 1) {
+          path_disp = "~" substr(path_disp, length(home) + 1)
+      }
+      
+      if (wsl_distro != "") {
+          file_url = "file://wsl.localhost/" wsl_distro path_full
+      } else {
+          file_url = "file://" path_full
+      }
+      
+      path_linked = "\033]8;;" file_url "\033\\" path_disp "\033]8;;\033\\"
+      
+      printf "\033[01;36m%s\033[0m %s%s\033[0m %s%s\033[0m %s\n", repo, branch_color, branch, remote_color, remote_linked, path_linked
+    }
+  ' "$tmp_out"
+
+  echo ""
+  rm -f "$tmp_out"
+}
