@@ -776,3 +776,243 @@ mt-restore() {
   echo -e "${CB_GREEN}🎉 Restore complete! Rebuilding caches...${C_RESET}"
   mt-refresh-caches > /dev/null 2>&1
 }
+
+#######################################
+# System: Display history of executed framework commands
+# Usage: mt-cmd-history [-i|--interactive] [-n count]
+# Options:
+#   -i, --interactive  Select a past framework command via fzf to re-run
+#   -n, --lines <num>  Number of entries to show (default: 20)
+#######################################
+#######################################
+# System: Display history of executed framework commands
+# Usage: mt-cmd-history [-i|--interactive] [-n count]
+# Options:
+#   -i, --interactive  Select a past framework command via fzf to re-run
+#   -n, --lines <num>  Number of entries to show (default: 20)
+#######################################
+
+#######################################
+# System: Display history of executed framework commands
+# Usage: mt-cmd-history [-i|--interactive] [-n count]
+# Options:
+#   -i, --interactive  Select a past framework command via fzf to re-run
+#   -n, --lines <num>  Number of entries to show (default: 20)
+#######################################
+
+#######################################
+# System: Display history of executed framework commands
+# Usage: mt-cmd-history [-i|--interactive] [-n count]
+# Options:
+#   -i, --interactive  Select a past framework command via fzf to re-run
+#   -n, --lines <num>  Number of entries to show (default: 20)
+#######################################
+
+#######################################
+# System: Display history of executed framework commands
+# Usage: mt-cmd-history [-i|--interactive] [-n count]
+# Options:
+#   -i, --interactive  Select a past framework command via fzf to re-run
+#   -n, --lines <num>  Number of entries to show (default: 20)
+#######################################
+
+#######################################
+# System: Display history of executed framework commands
+# Usage: mt-cmd-history [-i|--interactive] [-n count]
+# Options:
+#   -i, --interactive  Select a past framework command via fzf to re-run
+#   -n, --lines <num>  Number of entries to show (default: 20)
+#######################################
+
+#######################################
+# System: Display history of executed framework commands
+# Usage: mt-cmd-history [-i|--interactive] [-n count]
+# Options:
+#   -i, --interactive  Select a past framework command via fzf to re-run
+#   -n, --lines <num>  Number of entries to show (default: 20)
+#######################################
+mt-cmd-history() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local interactive=false
+  local limit=20
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -i | --interactive) interactive=true ;;
+      -n | --lines)
+        limit="$2"
+        shift
+        ;;
+      *)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  local tsv_file="$HOME/.bash.d/data/cache/.mt_data.tsv"
+  if [ ! -f "$tsv_file" ]; then
+    mt-refresh-caches > /dev/null 2>&1
+  fi
+
+  local tmp_cmds tmp_hist
+  tmp_cmds=$(mktemp)
+  tmp_hist=$(mktemp)
+
+  # Extract list of framework functions and aliases into a clean file
+  awk -F"\t" "{print \$3}" "$tsv_file" | sort -u | grep -v "^$" > "$tmp_cmds"
+
+  if [ ! -s "$tmp_cmds" ]; then
+    echo -e "${CB_RED}🚨 Failed to load framework command definitions.${C_RESET}"
+    rm -f "$tmp_cmds" "$tmp_hist"
+    return 1
+  fi
+
+  # Flush current in-memory history to disk
+  history -a 2> /dev/null || true
+
+  local hist_source="$HOME/.bash_history"
+
+  if [ -f "$hist_source" ]; then
+    # Force grep -a (text mode) and strip non-printable characters
+    strings "$hist_source" 2> /dev/null | grep -a -v -E "^(#|[[:space:]]*$)" |
+      sed "s/^[[:space:]]*[0-9]*[[:space:]]*//" |
+      awk -v cmd_file="$tmp_cmds" '
+      BEGIN {
+        while ((getline line < cmd_file) > 0) {
+          if (line != "") cmds[line] = 1
+        }
+        close(cmd_file)
+      }
+      {
+        cmd = $1
+        sub(/^.*::/, "", cmd)
+        
+        # Match only if the FIRST word is an exact framework tool name
+        if (cmd in cmds) {
+          print $0
+        }
+      }
+    ' | awk "!seen[\$0]++" | tail -n "$limit" > "$tmp_hist"
+  fi
+
+  rm -f "$tmp_cmds"
+
+  if [ ! -s "$tmp_hist" ]; then
+    echo -e "${CB_YELLOW}⚠️ No recorded framework commands found in shell history.${C_RESET}"
+    rm -f "$tmp_hist"
+    return 0
+  fi
+
+  if [ "$interactive" = true ]; then
+    local selected_cmd
+    selected_cmd=$(fzf --prompt="Re-run Framework Command > " --header="Framework Command History" < "$tmp_hist")
+    rm -f "$tmp_hist"
+
+    if [ -n "$selected_cmd" ]; then
+      echo -e "${CB_GREEN}🚀 Executing:${C_RESET} ${selected_cmd}"
+      eval "$selected_cmd"
+    fi
+  else
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
+    echo -e "${CB_CYAN} 📜 Recent Framework Command History${C_RESET}"
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
+    awk '{printf "  \033[01;33m%3d\033[0m  \033[0;37m%s\033[0m\n", NR, $0}' "$tmp_hist"
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
+    echo -e "${C_DIM}Run 'mt-history -i' to select and re-run a command via fzf.${C_RESET}"
+    rm -f "$tmp_hist"
+  fi
+}
+
+#######################################
+# System: Display history of executed framework commands (Alias)
+#######################################
+alias mt-history="mt-cmd-history"
+
+#6666666666666666666666666666666666666666
+# System: Safely execute or write clipboard code without terminal paste truncation
+# Usage: mt-apply [optional_target_file_path]
+#6666666666666666666666666666666666666666
+
+#6666666666666666666666666666666666666666
+# System: Safely execute or write clipboard code without terminal paste truncation
+# Usage: mt-apply [optional_target_file_path]
+#6666666666666666666666666666666666666666
+
+#######################################
+# System: Safely execute or write clipboard code without terminal paste truncation
+# Usage: mt-apply [optional_target_file_path]
+#######################################
+
+#######################################
+# System: Safely execute or write clipboard code without terminal paste truncation
+# Usage: mt-apply [optional_target_file_path]
+#######################################
+
+#######################################
+# System: Safely execute or write clipboard code without terminal paste truncation
+# Usage: mt-apply [optional_target_file_path]
+#######################################
+mt-apply() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local tmp_raw tmp_clean
+  tmp_raw=$(mktemp /tmp/mt_apply_raw_XXXXXX)
+  tmp_clean=$(mktemp /tmp/mt_apply_clean_XXXXXX)
+  local target_file="${1:-}"
+
+  # Read directly from Clipboard
+  if command -v powershell.exe > /dev/null 2>&1; then
+    powershell.exe -Command "Get-Clipboard" | tr -d "\r" > "$tmp_raw"
+  elif command -v xclip > /dev/null 2>&1; then
+    xclip -o -selection clipboard > "$tmp_raw"
+  elif command -v pbpaste > /dev/null 2>&1; then
+    pbpaste > "$tmp_raw"
+  else
+    echo -e "${CB_RED}?? No clipboard helper (xclip/powershell/pbpaste) found.${C_RESET}"
+    rm -f "$tmp_raw" "$tmp_clean"
+    return 1
+  fi
+
+  if [ ! -s "$tmp_raw" ]; then
+    echo -e "${CB_YELLOW}?? Clipboard is empty! No code to apply.${C_RESET}"
+    rm -f "$tmp_raw" "$tmp_clean"
+    return 1
+  fi
+
+  # Clean markdown code fences and leading prompt symbols
+  grep -v -E "^[[:space:]]*\`\`\`" "$tmp_raw" | sed -E "s/^[[:space:]]*\$[[:space:]]*//" > "$tmp_clean"
+
+  # Target file write mode
+  if [ -n "$target_file" ]; then
+    mkdir -p "$(dirname "$target_file")"
+    mv "$tmp_clean" "$target_file"
+    rm -f "$tmp_raw"
+    echo -e "${CB_GREEN}? Successfully written clipboard content to ${target_file}!${C_RESET}"
+    return 0
+  fi
+
+  # Check if clipboard is a CLI inline invocation (e.g. python3 -c "..." or bash script)
+  if grep -q -E "^[[:space:]]*(python3[[:space:]]+-c|cat[[:space:]]+<<|bash|sh|sudo)" "$tmp_clean"; then
+    echo -e "${CB_BLUE}? Executing shell command block from clipboard...${C_RESET}"
+    bash "$tmp_clean"
+  elif grep -q -E "^(#!.*python|import |from .*import )" "$tmp_clean"; then
+    echo -e "${CB_BLUE}? Executing native Python script from clipboard...${C_RESET}"
+    python3 "$tmp_clean"
+  else
+    echo -e "${CB_BLUE}? Executing Bash script from clipboard...${C_RESET}"
+    bash "$tmp_clean"
+  fi
+
+  local exit_code=$?
+  rm -f "$tmp_raw" "$tmp_clean"
+  return $exit_code
+}
