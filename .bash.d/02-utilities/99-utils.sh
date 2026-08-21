@@ -958,6 +958,10 @@ alias mt-history="mt-cmd-history"
 # System: Safely execute or write clipboard code without terminal paste truncation
 # Usage: mt-apply [optional_target_file_path]
 #######################################
+#######################################
+# System: Safely execute or write clipboard code without terminal paste truncation
+# Usage: mt-apply [optional_target_file_path]
+#######################################
 mt-apply() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -969,7 +973,6 @@ mt-apply() {
   tmp_clean=$(mktemp /tmp/mt_apply_clean_XXXXXX)
   local target_file="${1:-}"
 
-  # Read directly from Clipboard
   if command -v powershell.exe > /dev/null 2>&1; then
     powershell.exe -Command "Get-Clipboard" | tr -d "\r" > "$tmp_raw"
   elif command -v xclip > /dev/null 2>&1; then
@@ -977,38 +980,32 @@ mt-apply() {
   elif command -v pbpaste > /dev/null 2>&1; then
     pbpaste > "$tmp_raw"
   else
-    echo -e "${CB_RED}?? No clipboard helper (xclip/powershell/pbpaste) found.${C_RESET}"
+    echo -e "${CB_RED}🚨 No clipboard helper found.${C_RESET}"
     rm -f "$tmp_raw" "$tmp_clean"
     return 1
   fi
 
   if [ ! -s "$tmp_raw" ]; then
-    echo -e "${CB_YELLOW}?? Clipboard is empty! No code to apply.${C_RESET}"
+    echo -e "${CB_YELLOW}⚠️ Clipboard is empty!${C_RESET}"
     rm -f "$tmp_raw" "$tmp_clean"
     return 1
   fi
 
-  # Clean markdown code fences and leading prompt symbols
   grep -v -E "^[[:space:]]*\`\`\`" "$tmp_raw" | sed -E "s/^[[:space:]]*\$[[:space:]]*//" > "$tmp_clean"
 
-  # Target file write mode
   if [ -n "$target_file" ]; then
     mkdir -p "$(dirname "$target_file")"
     mv "$tmp_clean" "$target_file"
     rm -f "$tmp_raw"
-    echo -e "${CB_GREEN}? Successfully written clipboard content to ${target_file}!${C_RESET}"
+    echo -e "${CB_GREEN}✅ Successfully written clipboard content to ${target_file}!${C_RESET}"
     return 0
   fi
 
-  # Check if clipboard is a CLI inline invocation (e.g. python3 -c "..." or bash script)
-  if grep -q -E "^[[:space:]]*(python3[[:space:]]+-c|cat[[:space:]]+<<|bash|sh|sudo)" "$tmp_clean"; then
-    echo -e "${CB_BLUE}? Executing shell command block from clipboard...${C_RESET}"
-    bash "$tmp_clean"
-  elif grep -q -E "^(#!.*python|import |from .*import )" "$tmp_clean"; then
-    echo -e "${CB_BLUE}? Executing native Python script from clipboard...${C_RESET}"
+  if python3 -c 'import sys; txt=open(sys.argv[1]).read(); sys.exit(0 if ("import " in txt or "shutil." in txt or "os.path" in txt) and not "python3 -c" in txt else 1)' "$tmp_clean"; then
+    echo -e "${CB_BLUE}⚡ Executing native Python script from clipboard...${C_RESET}"
     python3 "$tmp_clean"
   else
-    echo -e "${CB_BLUE}? Executing Bash script from clipboard...${C_RESET}"
+    echo -e "${CB_BLUE}⚡ Executing Bash script from clipboard...${C_RESET}"
     bash "$tmp_clean"
   fi
 
