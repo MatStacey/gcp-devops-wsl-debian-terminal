@@ -42,9 +42,10 @@ paths:
   vcs_personal: ~/vcs/personal
   vcs_exports: ~/vcs/personal/exports
   sync_repo: ~/vcs/personal/gcp-devops-wsl-debian-terminal
-  ai_workspace: ~/vcs/ai-workspace
-  scripts_iam: ~/vcs/scripts/iam
+  ai_workspace: ~/vcs/workspaces/ai
+  scripts_iam: /tmp/scripts/iam
   docker_root: ~/.docker
+  export_dir: /tmp/exports
   backup_dir: ~/backups
 
 cicd:

@@ -177,6 +177,11 @@ def load_env():
         resolve_home=True,
     )
     export(
+        "DOTFILES_DIR",
+        paths_cfg.get("dotfiles_dir", "~/vcs/personal/mt-devops-framework"),
+        resolve_home=True,
+    )
+    export(
         "SYNC_REPO_DIR",
         paths_cfg.get(
             "sync_repo_dir",
@@ -187,13 +192,23 @@ def load_env():
     export(
         "AI_WORKSPACE_DIR",
         paths_cfg.get("ai_workspace_dir",
-                      paths_cfg.get("ai_workspace", "~/vcs/ai-workspace")),
+                      paths_cfg.get("ai_workspace", "~/vcs/workspaces/ai")),
         resolve_home=True,
     )
     export(
         "SCRIPTS_IAM_DIR",
         paths_cfg.get("iam_scripts_dir",
-                      paths_cfg.get("scripts_iam", "~/vcs/scripts/iam")),
+                      paths_cfg.get("scripts_iam", "/tmp/scripts/iam")),
+        resolve_home=True,
+    )
+    export(
+        "BACKUP_DIR",
+        paths_cfg.get("backup_dir", "~/backups"),
+        resolve_home=True,
+    )
+    export(
+        "EXPORT_DIR",
+        paths_cfg.get("export_dir", "/tmp/exports"),
         resolve_home=True,
     )
     export(

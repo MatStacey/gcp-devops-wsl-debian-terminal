@@ -47,7 +47,7 @@ tf-iam() {
   prompt=$(__get_prompt "tf_iam_base")
 
   if [ "$generate_script" = true ]; then
-    local target_dir="${SCRIPTS_IAM_DIR:-$HOME/vcs/scripts/iam}"
+    local target_dir="${SCRIPTS_IAM_DIR:-/tmp/scripts/iam}"
     mkdir -p "$target_dir"
     local target_script="${target_dir}/${repo_name}.sh"
 

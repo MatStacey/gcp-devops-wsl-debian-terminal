@@ -49,30 +49,26 @@ __git_sync_copy_files() {
     fi
   fi
 
-  rsync -a -u --exclude-from="$syncignore" "$repo_dir/.bash.d/" "$HOME/.bash.d/"
+  # SECURITY FIX: One-way sync ONLY. Local Home is the source of truth during a push.
   rsync -a -u --delete --delete-excluded --exclude-from="$syncignore" "$HOME/.bash.d/" "$repo_dir/.bash.d/"
 
   if [ -f "$HOME/.bashrc" ]; then
-    if [ ! -f "$repo_dir/.bashrc" ] || [ "$HOME/.bashrc" -nt "$repo_dir/.bashrc" ]; then
-      cp "$HOME/.bashrc" "$repo_dir/.bashrc"
-    elif [ "$repo_dir/.bashrc" -nt "$HOME/.bashrc" ]; then
-      cp "$repo_dir/.bashrc" "$HOME/.bashrc"
-    fi
+    cp -f "$HOME/.bashrc" "$repo_dir/.bashrc"
   fi
 
   for f in install.sh README.md .gitignore .dockerignore Dockerfile .gitleaks.toml; do
     if [ -f "$HOME/.bash.d/$f" ]; then
-      cp -u "$HOME/.bash.d/$f" "$repo_dir/$f"
+      cp -f "$HOME/.bash.d/$f" "$repo_dir/$f"
     elif [ -f "$HOME/$f" ]; then
-      cp -u "$HOME/$f" "$repo_dir/$f"
+      cp -f "$HOME/$f" "$repo_dir/$f"
     fi
   done
 
   for d in .github .devcontainer; do
     if [ -d "$HOME/.bash.d/$d" ]; then
-      cp -r -u "$HOME/.bash.d/$d" "$repo_dir/"
+      cp -r -f "$HOME/.bash.d/$d" "$repo_dir/"
     elif [ -d "$HOME/$d" ]; then
-      cp -r -u "$HOME/.bash.d/$d" "$repo_dir/"
+      cp -r -f "$HOME/$d" "$repo_dir/"
     fi
   done
 
@@ -95,11 +91,12 @@ __git_sync_copy_files() {
 
 #######################################
 # System: Sync local bash configs to terminal dotfiles repo and create a Pull Request
-# Usage: mt-push-update [-i issue_num] [-s] [optional_message]
+# Usage: mt-push-update [-i|--issue issue_num] [-s|--shellcheck] [-b|--backup] [optional_message]
 # Options:
-#   -i <issue>  Optional issue number to link to the Pull Request
-#   -s          Run ShellCheck locally before pushing to catch errors early
-#   $@          Optional commit message string
+#   -i, --issue <num>  Optional issue number to link to the Pull Request
+#   -s, --shellcheck   Run ShellCheck locally before pushing to catch errors early
+#   -b, --backup       Create a zip backup of .bash.d and .bashrc before syncing
+#   $@                 Optional commit message string
 #######################################
 mt-push-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -109,18 +106,35 @@ mt-push-update() {
 
   local issue_num=""
   local run_shellcheck=false
-  local OPTIND opt
-  while getopts "i:s" opt; do
-    case ${opt} in
-      i) issue_num="$OPTARG" ;;
-      s) run_shellcheck=true ;;
-      \?)
-        echo "Usage: mt-push-update [-i <issue_number>] [-s] [optional message]" >&2
+  local backup_before_sync=false
+  local user_msg=""
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -i | --issue)
+        issue_num="$2"
+        shift 2
+        ;;
+      -s | --shellcheck)
+        run_shellcheck=true
+        shift
+        ;;
+      -b | --backup)
+        backup_before_sync=true
+        shift
+        ;;
+      -*)
+        echo "Usage: mt-push-update [-i|--issue <issue_number>] [-s|--shellcheck] [-b|--backup] [optional message]" >&2
         return 1
+        ;;
+      *)
+        user_msg="${user_msg} $1"
+        shift
         ;;
     esac
   done
-  shift $((OPTIND - 1))
+
+  user_msg=$(echo "$user_msg" | xargs)
 
   if [ "$run_shellcheck" = true ]; then
     echo -e "${CB_BLUE}🔍 Running local ShellCheck...${C_RESET}"
@@ -135,7 +149,6 @@ mt-push-update() {
     fi
   fi
 
-  local user_msg="$*"
   local repo_dir="${DOTFILES_DIR:-$SYNC_REPO_DIR}"
   local remote_url="${SYNC_REPO_URL:-}"
 
@@ -146,6 +159,32 @@ mt-push-update() {
     echo -e "\nTo enable syncing, link an empty remote Git repository by running:"
     echo -e "   \033[1;36mmt-add-sync-url \"git@github.com:username/my-terminal-repo.git\"\033[0m\n"
     return 1
+  fi
+
+  # ==========================================
+  # SAFEGUARD: PRE-SYNC BACKUP
+  # ==========================================
+  if [ "$backup_before_sync" = true ]; then
+    echo -e "${CB_BLUE}📦 Creating pre-sync backup of framework...${C_RESET}"
+    local dest="${BACKUP_DIR:-~/backups}/framework-pre-sync"
+    mkdir -p "$dest"
+    local timestamp
+    timestamp=$(date +"%Y%m%d_%H%M%S")
+    local backup_file="${dest}/mt_framework_backup_${timestamp}.zip"
+
+    (
+      cd "$HOME" || exit 1
+      zip -q -r "$backup_file" .bash.d .bashrc -x ".bash.d/.git/*" -x ".bash.d/data/cache/*" -x ".bash.d/node_modules/*" -x ".bash.d/**/__pycache__/*" -x ".bash.d/.terraform/*" -x ".bash.d/venv/*" -x ".bash.d/.venv/*"
+    )
+
+    if [ -f "$backup_file" ]; then
+      local file_size
+      file_size=$(du -h "$backup_file" | cut -f1)
+      echo -e "${CB_GREEN}✅ Pre-sync backup saved to ${backup_file} (${file_size})${C_RESET}"
+    else
+      echo -e "${CB_RED}🚨 Pre-sync backup failed. Aborting sync to prevent data loss.${C_RESET}"
+      return 1
+    fi
   fi
 
   echo "🔄 Syncing bash configuration to $repo_dir..."

@@ -4,7 +4,7 @@
 
 # Secrets & Configuration
 .bash.d/config/config.yaml
-.bash.d/config/.env.cache
+.bash.d/data/cache/.env.cache
 
 # Framework Caches & State Variables
 .bash.d/.mt_cache*
@@ -12,7 +12,11 @@
 .bash.d/.update_check_cache
 .bash.d/.profile_update_cache
 .bash.d/.*_pending
-.current_version
+.bash.d/data/.current_version
+
+# Dynamic Caches (Includes .vcs_hub.json)
+.bash.d/data/cache/
+data/cache/
 
 # Python & Linters
 __pycache__/
@@ -24,9 +28,4 @@ __pycache__/
 
 # Build Artifacts & Miscellaneous
 *.zip
-.devdata/cache/
 .dev
-data/cache/
-config/.current_version
-.bash.d/data/cache/.env.cache
-data/.current_version

@@ -6,11 +6,31 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 ## 🚀 Recent Updates & Enhancements
 
-The git diff introduces the following updates across configuration and help utilities:
+{
+  "category": "chat",
+  "language": null,
+  "extension": null,
+  "title": "shellcheck-bash-refactoring-review",
+  "code": null,
+  "message": "### Code Review: ShellCheck & POSIX Bash Optimization Patch
 
-1. **Configuration Script (`00-config.sh`)**: Added interactive prompt (`p8`) in `mt-setup-paths()` to configure `backup_dir` (defaulting to `~/backups`) using the config manager.
-2. **Help Extraction Utility (`mt_help.awk`)**: Enhanced AWK parsing to capture and prepend inline comment blocks directly preceding shell alias or function definitions, displaying helpful docstrings when looking up targets.
-3. **Configuration Template (`config.yaml.tpl`)**: Updated system configuration defaults with `backup_warning_mb: 500` under `system` and `backup_dir: ~/backups` under `paths`.
+This diff applies key ShellCheck cleanups and Bash best practices across your utility scripts:
+
+1. **Separated Declaration and Assignment (`SC2155`)**:
+   - *Issue:* Writing `local total_files=$(wc -l ...)` masks the return exit code of the subshell command (`wc`), because `local` returns `0` even if command execution fails.
+   - *Fix:* Explicitly separated `local total_files` and assignment `total_files=$(...)` to preserve exact error handling.
+
+2. **Elimination of Useless Use of `cat` (UUOC) (`SC2002`)**:
+   - *Issue:* Piping `cat` into processes like `grep`, `tr`, or `fzf` creates redundant subshells and process forks.
+   - *Fix:* Converted to standard file redirection (e.g., `grep ... < "$all_files"`, `fzf < "$file_list"`).
+
+3. **Quoting Inside Parameter Expansions (`SC2295`)**:
+   - *Issue:* Unquoted expansion patterns like `${repo_path#$search_dir/}` can cause unexpected glob matching if `$search_dir` contains special regex/glob characters.
+   - *Fix:* Safely quoted the inner expansion string: `${repo_path#"$search_dir"/}`.
+
+4. **Explicit Lint Suppression (`SC2010`)**:
+   - *Fix:* Added `# shellcheck disable=SC2010` above `ls -la | grep` in `mt-vcs-audit()`, acknowledging the explicit fallback path when `eza` is unavailable."
+}
 
 ---
 

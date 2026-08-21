@@ -174,6 +174,11 @@ alias rg='rg --smart-case --hidden --glob "!.git/*"'
 alias tree='eza --tree'
 
 #######################################
+# CLI: eza - Display directory structure ignoring bloat (.git, node_modules, etc)
+#######################################
+alias tree-clean='eza --tree -I ".git|node_modules|__pycache__|.terraform|venv|.venv|.mt_cache*|target"'
+
+#######################################
 # CLI: yq - Pretty-print YAML stream
 #######################################
 alias yaml-fmt='yq -P'
