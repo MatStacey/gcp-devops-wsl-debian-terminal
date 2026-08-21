@@ -159,7 +159,6 @@ Shortcuts for common commands and CLI replacements.
 | Command | Description |
 |---|---|
 | `mt-hard-reload` | System: Forcefully clear and rebuild all background caches and reload profile |
-| `mtindp` | MT Devops Framework: Index Personal Git repositories in VCS Home |
 | `mtupd` | MT-Framework: Update the DevOps-MT-Framework with Shellcheck and Backup Creation |
 
 ---
@@ -242,9 +241,8 @@ Complex bash functions, framework utilities, and automated workflows.
 ### General System Utilities
 | Command | Description |
 |---|---|
-| `mt-alias` | System: Interactively create or update an alias |
+| `mt-alias` | System: Interactively create and document a new alias |
 | `mt-backup` | System: Create an archive backup of the current directory |
-| `mt-jobs` | System: List and manage MT background jobs |
 | `mt-log` | System: Centralized logging for MyTools |
 | `mt-logs` | System: View, filter, and manage framework logs |
 | `mt-top-files` | System: Display the top largest files in a directory |

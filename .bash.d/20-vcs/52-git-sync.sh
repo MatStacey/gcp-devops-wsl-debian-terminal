@@ -430,7 +430,9 @@ mt-get-update() {
       cd "$ext_root" || exit 1
       bash ./install.sh
     )
+    mkdir -p "$HOME/.bash.d/data/cache" "$HOME/.bash.d/data/logs"
     echo "$tag_name" > "$HOME/.bash.d/data/.current_version"
+    mt-refresh-caches > /dev/null 2>&1
   else
     echo -e "${CB_RED}🚨 Error: install.sh missing from downloaded release.${C_RESET}"
   fi
