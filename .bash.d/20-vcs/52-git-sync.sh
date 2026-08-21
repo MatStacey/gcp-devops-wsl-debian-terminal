@@ -108,6 +108,7 @@ mt-push-update() {
   local run_shellcheck=false
   local backup_before_sync=false
   local delete_merged=false
+  local prompt_remote=false
   local auto_merge=false
   local skip_ai=false
   local user_msg=""
@@ -140,12 +141,16 @@ mt-push-update() {
         delete_merged=true
         shift
         ;;
+      --prompt-remote)
+        prompt_remote=true
+        shift
+        ;;
       -g | --merge)
         auto_merge=true
         shift
         ;;
       -*)
-        echo "Usage: mt-push-update [-i|--issue <num>] [-s|--shellcheck] [-b|--backup] [-m|--no-ai] [-d|--delete-merged] [-g|--merge] [message]" >&2
+        echo "Usage: mt-push-update [-i|--issue <num>] [-s|--shellcheck] [-b|--backup] [-m|--no-ai] [-d|--delete-merged] [--prompt-remote] [-g|--merge] [message]" >&2
         return 1
         ;;
       *)
@@ -364,13 +369,26 @@ mt-push-update() {
       git show-ref --verify --quiet refs/heads/master && main_b="master"
 
       local merged_b
-      merged_b=$(git branch --merged "$main_b" | grep -v -E "^[*+]|\\b(main|master|dev|developer)\\b")
+      merged_b=$(git branch --merged "$main_b" | grep -v -E "^[*+]|\\b(main|master|dev|developer)\\b" | tr -d ' ' || true)
 
       if [ -n "$merged_b" ]; then
         echo "$merged_b" | xargs -r git branch -d
         echo -e "${CB_GREEN}✅ Merged local branches cleaned up successfully!${C_RESET}"
+
+        if [ "$prompt_remote" = true ]; then
+          echo -e "\n${CB_YELLOW}🔍 Checking corresponding remote branches on origin...${C_RESET}"
+          for b_item in $merged_b; do
+            if git ls-remote --exit-code --heads origin "$b_item" > /dev/null 2>&1; then
+              read -r -p "Delete remote branch 'origin/$b_item'? [y/N] " -n 1 -r < /dev/tty
+              echo
+              if [[ $REPLY =~ ^[Yy]$ ]]; then
+                git push origin --delete "$b_item"
+              fi
+            fi
+          done
+        fi
       else
-        echo -e "${C_DIM}No stale merged branches found to delete.${C_RESET}"
+        echo -e "${C_DIM}No stale merged local branches found to delete.${C_RESET}"
       fi
     fi
 
