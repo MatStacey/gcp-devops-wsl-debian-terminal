@@ -397,7 +397,7 @@ mt-push-update() {
       local current_b
       current_b=$(git branch --show-current)
       echo -e "${CB_BLUE}⚡ Auto-merging Pull Request via GitHub CLI...${C_RESET}"
-      gh pr merge "$current_b" --auto --squash --delete-branch && echo -e "${CB_GREEN}✅ PR set to auto-merge on GitHub!${C_RESET}"
+      gh pr merge "$current_b" --admin --squash --delete-branch && echo -e "${CB_GREEN}✅ PR set to auto-merge on GitHub!${C_RESET}"
     fi
   ) || return 1
 }
@@ -524,6 +524,7 @@ mt-get-update() {
       cd "$ext_root" || exit 1
       bash ./install.sh
     )
+    mkdir -p "$HOME/.bash.d/data/cache" "$HOME/.bash.d/data/logs" "$HOME/.bash.d/config"
     echo "$tag_name" > "$HOME/.bash.d/data/.current_version"
   else
     echo -e "${CB_RED}🚨 Error: install.sh missing from downloaded release.${C_RESET}"
