@@ -246,6 +246,10 @@ mt-ai-readme() {
 #   $1 - Target repository directory path
 #######################################
 __git_sync_ai_docs() {
+  if [ "${SKIP_AI:-false}" = "true" ]; then
+    echo -e "${C_DIM}⏩ Skipping AI README summarization (-m / --no-ai active)...${C_RESET}"
+    return 0
+  fi
   local repo_dir="$1"
   echo "📚 Generating COMMANDS.md reference..."
   cat << 'MARKDOWN_EOF' > "$repo_dir/COMMANDS.md"
