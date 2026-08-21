@@ -29,3 +29,6 @@ __pycache__/
 # Build Artifacts & Miscellaneous
 *.zip
 .dev
+
+# AI Assistant Configurations
+CLAUDE.md
