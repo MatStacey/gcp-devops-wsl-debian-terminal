@@ -495,12 +495,12 @@ mt-get-update() {
   # --- LOCAL DIVERGENCE GUARD ---
   if [ -d "${ext_root}/.bash.d" ]; then
     local diff_files
-    diff_files=$(diff -r -q "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "Only in|data/cache|config/\.env\.cache|data/\.current_version" || true)
+    diff_files=$(diff -r -w -q "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "Only in|data/cache|config/\.env\.cache|data/\.current_version" || true)
 
     if [ -n "$diff_files" ]; then
       echo -e "\n${CB_RED}⚠️ WARNING: Applying this update will overwrite local modifications in your ~/.bash.d!${C_RESET}"
       echo -e "${CB_YELLOW}Modified files detected:${C_RESET}"
-      diff -r -q "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "Only in|data/cache|config/\.env\.cache|data/\.current_version" | awk '{print "  • " $2 " " $4}'
+      diff -r -w -q "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "Only in|data/cache|config/\.env\.cache|data/\.current_version" | awk '{print "  • " $2 " " $4}'
 
       echo ""
       read -r -p "🔍 View detailed diff line-by-line before proceeding? [y/N] " -n 1 -r < /dev/tty
