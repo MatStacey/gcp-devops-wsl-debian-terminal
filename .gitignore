@@ -29,3 +29,5 @@ __pycache__/
 # Build Artifacts & Miscellaneous
 *.zip
 .dev
+.bash.d/data/logs/
+data/logs/

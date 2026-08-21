@@ -241,6 +241,7 @@ Complex bash functions, framework utilities, and automated workflows.
 |---|---|
 | `mt-backup` | System: Create an archive backup of the current directory |
 | `mt-log` | System: Centralized logging for MyTools |
+| `mt-logs` | System: View, filter, and manage framework logs |
 | `mt-top-files` | System: Display the top largest files in a directory |
 | `mt-vcs-audit` | System: Audit VCS root for unorganized files and directories |
 
