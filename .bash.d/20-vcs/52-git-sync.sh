@@ -273,7 +273,11 @@ mt-push-update() {
       shfmt -i 2 -ci -sr -w . > /dev/null 2>&1 || true
     fi
 
-    __git_sync_ai_docs "$repo_dir"
+    if [ "$skip_ai" = true ]; then
+      echo -e "${C_DIM}⏩ Skipping AI README summarization (-m active)...${C_RESET}"
+    else
+      __git_sync_ai_docs "$repo_dir"
+    fi
     if [ $? -eq 100 ]; then
       echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
       exit 1
