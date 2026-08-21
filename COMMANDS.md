@@ -237,6 +237,7 @@ Complex bash functions, framework utilities, and automated workflows.
 ### General System Utilities
 | Command | Description |
 |---|---|
+| `mt-backup` | System: Create an archive backup of the current directory |
 | `mt-log` | System: Centralized logging for MyTools |
 | `mt-top-files` | System: Display the top largest files in a directory |
 

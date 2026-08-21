@@ -6,7 +6,11 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 ## 🚀 Recent Updates & Enhancements
 
-Applied the git diff modifications to `~/.bash.d/03-mytools/06-llm-exports.sh`. The updated `mt-export` function replaces hardcoded inclusion/exclusion parameters with dynamic YAML schema parsing using Python and `yq`. Additionally, it enforces context window protection with a 2,000 file killswitch and a 500 file confirmation prompt.
+The git diff introduces the following updates across configuration and help utilities:
+
+1. **Configuration Script (`00-config.sh`)**: Added interactive prompt (`p8`) in `mt-setup-paths()` to configure `backup_dir` (defaulting to `~/backups`) using the config manager.
+2. **Help Extraction Utility (`mt_help.awk`)**: Enhanced AWK parsing to capture and prepend inline comment blocks directly preceding shell alias or function definitions, displaying helpful docstrings when looking up targets.
+3. **Configuration Template (`config.yaml.tpl`)**: Updated system configuration defaults with `backup_warning_mb: 500` under `system` and `backup_dir: ~/backups` under `paths`.
 
 ---
 
