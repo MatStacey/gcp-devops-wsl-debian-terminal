@@ -305,14 +305,11 @@ Complex bash functions, framework utilities, and automated workflows." >> "$repo
   if [ $query_status -eq 99 ]; then return 0; fi
   if [ $query_status -eq 100 ]; then return 100; fi
 
-  local raw_text
-  raw_text=$(echo "$response" | sed 's/```json//gi; s/```markdown//gi; s/```//g')
-
   local clean_updates
-  if echo "$raw_text" | jq -e . > /dev/null 2>&1; then
-    clean_updates=$(echo "$raw_text" | jq -r '.message // .code')
+  if echo "$response" | jq -e . > /dev/null 2>&1; then
+    clean_updates=$(echo "$response" | jq -r '.message // .code // .')
   else
-    clean_updates="$raw_text"
+    clean_updates=$(echo "$response" | sed 's/```json//gi; s/```markdown//gi; s/```//g')
   fi
 
   if [ -n "$clean_updates" ] && [ -f "$repo_dir/README.md" ]; then
