@@ -401,12 +401,14 @@ mt-setup-paths() {
   [ -n "$p3" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_exports" "$p3"
   read -r -p "Dotfiles Repo [${DOTFILES_DIR:-~/vcs/personal/mt-devops-framework}]: " p4
   [ -n "$p4" ] && python3 "$CONFIG_MANAGER" update "paths" "dotfiles_dir" "$p4"
-  read -r -p "AI Workspace [${AI_WORKSPACE_DIR:-~/vcs/ai-workspace}]: " p5
+  read -r -p "AI Workspace [${AI_WORKSPACE_DIR:-~/vcs/workspaces/ai}]: " p5
   [ -n "$p5" ] && python3 "$CONFIG_MANAGER" update "paths" "ai_workspace" "$p5"
-  read -r -p "IAM Scripts [${SCRIPTS_IAM_DIR:-~/vcs/scripts/iam}]: " p6
+  read -r -p "IAM Scripts [${SCRIPTS_IAM_DIR:-/tmp/scripts/iam}]: " p6
   [ -n "$p6" ] && python3 "$CONFIG_MANAGER" update "paths" "scripts_iam" "$p6"
   read -r -p "Docker Root [${DOCKER_ROOT_DIR:-~/.docker}]: " p7
   [ -n "$p7" ] && python3 "$CONFIG_MANAGER" update "paths" "docker_root" "$p7"
+  read -r -p "Export Dir [${EXPORT_DIR:-/tmp/exports}]: " p_exp
+  [ -n "$p_exp" ] && python3 "$CONFIG_MANAGER" update "paths" "export_dir" "$p_exp"
   read -r -p "Backup Dir [${BACKUP_DIR:-~/backups}]: " p8
   [ -n "$p8" ] && python3 "$CONFIG_MANAGER" update "paths" "backup_dir" "$p8"
   echo -e "${CB_GREEN}✅ Paths config updated.${C_RESET}"
