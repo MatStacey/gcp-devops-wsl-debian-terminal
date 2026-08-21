@@ -77,6 +77,11 @@ Shortcuts for common commands and CLI replacements.
 | `gcp-crf-ls` | GCP: Cloud Run Functions - List functions |
 | `gcs-ls` | GCP: Cloud Storage - List buckets or contents |
 
+### General System Utilities
+| Command | Description |
+|---|---|
+| `mt-history` | System: Display history of executed framework commands (Alias) |
+
 ### Modern CLI Replacements
 | Command | Description |
 |---|---|
@@ -159,7 +164,9 @@ Shortcuts for common commands and CLI replacements.
 | Command | Description |
 |---|---|
 | `mt-hard-reload` | System: Forcefully clear and rebuild all background caches and reload profile |
-| `mtupd` | MT-Framework: Update the DevOps-MT-Framework with Shellcheck and Backup Creation |
+| `mtindp` | MT-Framework: Update the DevOps-MT-Framework with Shellcheck and Backup Creation |
+| `mtupd` | Version Control (Git) - Profile Synchronisation: Auto-sync framework with Shellcheck, Backup and Auto-Merge |
+| `mtupd-ai` | Version Control (Git) - Update: Update Framework with Shellcheck, Backup, Auto-Merge and AI |
 
 ---
 
@@ -241,10 +248,14 @@ Complex bash functions, framework utilities, and automated workflows.
 ### General System Utilities
 | Command | Description |
 |---|---|
-| `mt-alias` | System: Interactively create and document a new alias |
+| `mt-alias` | System: Interactively create or update an alias |
+| `mt-apply` | System: Safely execute or write clipboard code without terminal paste truncation |
 | `mt-backup` | System: Create an archive backup of the current directory |
+| `mt-cmd-history` | System: Display history of executed framework commands |
+| `mt-jobs` | System: List and manage MT background jobs |
 | `mt-log` | System: Centralized logging for MyTools |
 | `mt-logs` | System: View, filter, and manage framework logs |
+| `mt-restore` | System: Restore framework from a zip backup |
 | `mt-top-files` | System: Display the top largest files in a directory |
 | `mt-vcs-audit` | System: Audit VCS root for unorganized files and directories |
 

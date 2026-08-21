@@ -218,3 +218,8 @@ alias mtindp='mt-hub --index -t personal'
 # Version Control (Git) - Profile Synchronisation: Auto-sync framework with Shellcheck, Backup and Auto-Merge
 #######################################
 alias mtupd='mt-push-update -s -b -m -g'
+
+#######################################
+# Version Control (Git) - Update: Update Framework with Shellcheck, Backup, Auto-Merge and AI
+#######################################
+alias mtupd-ai='mt-push-update -s -b -g'
