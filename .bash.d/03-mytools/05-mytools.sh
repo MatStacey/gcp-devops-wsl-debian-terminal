@@ -176,20 +176,64 @@ mt-run() {
 
 #######################################
 # MyTools: Search through available mytools commands with tab-completion
+# Usage: mt-lookup [-i|--interactive] [-v|--verbose] [keyword]
 # Arguments:
-#   $1 - Search term or command name
+#   -i, --interactive  Open an fzf menu to select a tool
+#   -v, --verbose      Open interactive menu and print the full code using mt-help -v
+#   $1                 Search term or command name
 #######################################
 mt-lookup() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  }
-  [ -z "$1" ] && {
-    echo "Usage: mt-lookup <keyword|command>"
-    return 1
-  }
+  local interactive=false
+  local verbose=false
+  local query=""
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -i | --interactive) interactive=true ;;
+      -v | --verbose) verbose=true ;;
+      -h | --help)
+        mt-help "${FUNCNAME[0]}"
+        return 0
+        ;;
+      -*)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        echo "Usage: mt-lookup [-i|--interactive] [-v|--verbose] [keyword]"
+        return 1
+        ;;
+      *) query="$1" ;;
+    esac
+    shift
+  done
+
   mytools > /dev/null
-  awk -F'\t' -v q="${1,,}" 'tolower($0) ~ q { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
+  local tsv_file="$HOME/.bash.d/data/cache/.mt_data.tsv"
+
+  # Trigger the menu if -i or -v is passed
+  if [ "$interactive" = true ] || [ "$verbose" = true ]; then
+    local selected
+    if [ -n "$query" ]; then
+      selected=$(awk -F'\t' -v q="${query,,}" 'tolower($0) ~ q { printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$tsv_file" | fzf --ansi --prompt="Select Tool > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
+    else
+      selected=$(awk -F'\t' '{ printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$tsv_file" | fzf --ansi --prompt="Select Tool > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
+    fi
+
+    if [ -n "$selected" ]; then
+      local cmd_name
+      cmd_name=$(echo "$selected" | awk '{print $1}')
+      if [ "$verbose" = true ]; then
+        mt-help -v "$cmd_name"
+      else
+        mt-help "$cmd_name"
+      fi
+    fi
+  else
+    if [ -z "$query" ]; then
+      echo "Usage: mt-lookup [-i|--interactive] [-v|--verbose] <keyword|command>"
+      return 1
+    fi
+    # Standard non-interactive output
+    awk -F'\t' -v q="${query,,}" 'tolower($0) ~ q { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$tsv_file"
+  fi
 }
 
 #######################################
@@ -240,43 +284,117 @@ mt-config() {
   echo -e " ${CB_CYAN}VCS_PERSONAL      ${C_RESET}: ${VCS_PERSONAL}"
   echo -e " ${CB_CYAN}DOTFILES_DIR      ${C_RESET}: ${DOTFILES_DIR:-$SYNC_REPO_DIR}"
   echo -e " ${CB_CYAN}AI_WORKSPACE      ${C_RESET}: ${AI_WORKSPACE_DIR}"
+  echo -e " ${CB_CYAN}EXPORT_DIR        ${C_RESET}: ${EXPORT_DIR:-/tmp/exports}"
+  echo -e " ${CB_CYAN}BACKUP_DIR        ${C_RESET}: ${BACKUP_DIR:-~/backups}"
   echo -e " ${CB_CYAN}AUTO_CLEANUP      ${C_RESET}: ${AUTO_CLEANUP_EXPORTS:-false} (${AUTO_CLEANUP_DAYS:-7} days)"
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
 }
 
 #######################################
 # MyTools: Display detailed help and source code for a command
+# Usage: mt-help [-v|--verbose] <command>
 # Arguments:
 #   $1 - Command name or keyword
 #######################################
 mt-help() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
-    echo "Usage: mt-help <command>"
-    return 0
-  }
-  local target="$1"
+  local show_code=false
+  local target=""
+
+  # Parse Arguments
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -v | --verbose) show_code=true ;;
+      -h | --help)
+        echo -e "${CB_BLUE}Usage:${C_RESET} mt-help [-v|--verbose] <command>"
+        return 0
+        ;;
+      -*)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        echo "Usage: mt-help [-v|--verbose] <command>"
+        return 1
+        ;;
+      *) target="$1" ;;
+    esac
+    shift
+  done
+
   [ -z "$target" ] && {
-    echo "Usage: mt-help <command>"
+    echo "Usage: mt-help [-v|--verbose] <command>"
     return 1
   }
 
   __render_help() {
     local cmd="$1"
     local fpath="$2"
-    echo -e "\033[1;34m==========================================================\033[0m"
-    echo -e "\033[1;36m 🛠️  ${cmd}\033[0m"
-    echo -e "\033[1;34m==========================================================\033[0m"
-    echo -e "\033[1;33m 📄 File: \033[0m $(wslpath -m "$fpath" 2> /dev/null || echo "$fpath")"
-    echo -e "\033[1;34m----------------------------------------------------------\033[0m"
-    awk -v target="$cmd" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$fpath" | "$BAT_BIN" --language=bash --style=plain 2> /dev/null ||
-      awk -v target="$cmd" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$fpath"
-    echo -e "\033[1;34m==========================================================\033[0m"
+    local show_code="$3"
+
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
+    echo -e "${CB_CYAN} 🛠️  ${cmd}${C_RESET}"
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
+    echo -e "${CB_YELLOW} 📄 File: ${C_RESET} $(wslpath -m "$fpath" 2> /dev/null || echo "$fpath")"
+    echo -e "${CB_BLUE}----------------------------------------------------------${C_RESET}"
+
+    # Use AWK to cleanly separate the docstring from the codeblock
+    local raw_data
+    raw_data=$(awk -v target="$cmd" '
+      BEGIN { flag=0; doc=""; code="" }
+      /^#######################################/ { next }
+      /^#/ {
+          line = substr($0, 2)
+          sub(/^[ \t]/, "", line)
+          doc = doc line "\n"
+          next
+      }
+      $0 ~ "^alias " target "=" { code = $0 "\n"; exit }
+      $0 ~ "^" target "\(\\)[ \t]*\{" { code = $0 "\n"; flag=1; next }
+      flag { code = code $0 "\n"; if ($0 ~ /^}$/) exit }
+      { if (!flag) { doc=""; code="" } }
+      END { print doc; print "---MT_CODE_DELIMITER---"; print code }
+    ' "$fpath")
+
+    local docstring="${raw_data%%---MT_CODE_DELIMITER---*}"
+    local codeblock="${raw_data#*---MT_CODE_DELIMITER---}"
+
+    # Parse and colorize the documentation string
+    local section="desc"
+    while IFS= read -r line; do
+      [ -z "$line" ] && continue
+
+      # Catch Headers (Usage:, Options:, Arguments:, etc.)
+      if [[ "$line" =~ ^(Usage|Options|Arguments|Returns|Outputs|Globals): ]]; then
+        echo -e "\n${CB_CYAN}▶ ${line}${C_RESET}"
+        section="details"
+      elif [ "$section" = "desc" ]; then
+        # Main description text is standard white
+        echo -e "${C_WHITE}${line}${C_RESET}"
+      else
+        # In details sections, look for flags starting with a dash
+        if [[ "$line" =~ ^[[:space:]]*- ]]; then
+          # Color the flag yellow, and the description dim text
+          echo -e "  ${CB_YELLOW}${line%%  *}${C_RESET}  ${C_DIM}${line#*  }${C_RESET}"
+        else
+          echo -e "  ${C_DIM}${line}${C_RESET}"
+        fi
+      fi
+    done <<< "$docstring"
+
+    # Only show source code if the flag was provided
+    if [ "$show_code" = true ] && [ -n "$codeblock" ]; then
+      echo -e "\n${CB_BLUE}▶ SOURCE CODE${C_RESET}"
+      echo -e "${CB_BLUE}----------------------------------------------------------${C_RESET}"
+      if command -v "$BAT_BIN" > /dev/null 2>&1; then
+        echo "$codeblock" | "$BAT_BIN" --language=bash --style=plain --paging=never 2> /dev/null
+      else
+        echo -e "${C_DIM}${codeblock}${C_RESET}"
+      fi
+    fi
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
   }
 
   local file_path
   file_path=$(grep -rlE "^(alias ${target}=|${target}\(\)[ \t]*\{)" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
   if [ -n "$file_path" ]; then
-    __render_help "$target" "$file_path"
+    __render_help "$target" "$file_path" "$show_code"
     return 0
   fi
 
@@ -296,7 +414,7 @@ mt-help() {
     local single_target="${candidates[0]}"
     file_path=$(grep -rlE "^(alias ${single_target}=|${single_target}\(\)[ \t]*\{)" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
     if [ -n "$file_path" ]; then
-      __render_help "$single_target" "$file_path"
+      __render_help "$single_target" "$file_path" "$show_code"
       return 0
     fi
   elif [ "$count" -gt 1 ]; then
