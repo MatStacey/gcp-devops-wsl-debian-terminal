@@ -397,7 +397,7 @@ mt-push-update() {
       local current_b
       current_b=$(git branch --show-current)
       echo -e "${CB_BLUE}⚡ Auto-merging Pull Request via GitHub CLI...${C_RESET}"
-      gh pr merge "$current_b" --auto --squash --delete-branch && echo -e "${CB_GREEN}✅ PR set to auto-merge on GitHub!${C_RESET}"
+      gh pr merge "$current_b" --auto --squash --delete-branch --admin && echo -e "${CB_GREEN}✅ PR set to auto-merge on GitHub!${C_RESET}"
     fi
   ) || return 1
 }

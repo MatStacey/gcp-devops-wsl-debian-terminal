@@ -208,9 +208,13 @@ alias mt-hard-reload='mt-load-config && mt-refresh-caches'
 #######################################
 # MT-Framework: Update the DevOps-MT-Framework with Shellcheck and Backup Creation
 #######################################
-alias mtupd='mt-push-update -s -b'
 
 #######################################
 # MT Devops Framework: Index Personal Git repositories in VCS Home
 #######################################
 alias mtindp='mt-hub --index -t personal'
+
+#######################################
+# Version Control (Git) - Profile Synchronisation: Auto-sync framework with Shellcheck, Backup and Auto-Merge
+#######################################
+alias mtupd='mt-push-update -s -b -m -g'
