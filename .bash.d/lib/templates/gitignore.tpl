@@ -12,7 +12,11 @@
 .bash.d/.update_check_cache
 .bash.d/.profile_update_cache
 .bash.d/.*_pending
-data/.current_version
+.bash.d/data/.current_version
+
+# Dynamic Caches (Includes .vcs_hub.json)
+.bash.d/data/cache/
+data/cache/
 
 # Python & Linters
 __pycache__/
@@ -25,5 +29,3 @@ __pycache__/
 # Build Artifacts & Miscellaneous
 *.zip
 .dev
-# Dynamic Caches
-data/cache/

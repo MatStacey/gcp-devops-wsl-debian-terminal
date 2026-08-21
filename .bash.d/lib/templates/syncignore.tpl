@@ -1,5 +1,5 @@
 config/config.yaml
-data/cache/.env.cache
+data/cache/
 .mt_cache*
 .update_check_cache
 .profile_update_cache
@@ -18,4 +18,3 @@ Dockerfile
 .dockerignore
 .gitignore
 .gitleaks.toml
-data/cache/

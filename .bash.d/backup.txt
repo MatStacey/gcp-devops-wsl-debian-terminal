@@ -1,4 +1,0 @@
-[1;38;2;189;147;249m🔍 Estimating backup payload size...[0m
-[1;38;2;189;147;249m📦 Backing up /home/mst/.bash.d to /home/mst/backups/bashd/[2026-08-21]_[17-40-47]_bashd_backup.zip...[0m
-[1;38;2;80;250;123m✅ Backup complete: /home/mst/backups/bashd/[2026-08-21]_[17-40-47]_bashd_backup.zip (128K)[0m
- 📂 Folder: ]8;;file:////wsl.localhost/Debian/home/mst/backups/bashd\/home/mst/backups/bashd]8;;\
