@@ -8,85 +8,10 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 Added the `mtupd-ai` alias to `.bash.d/02-utilities/20-aliases.sh`. This alias executes `mt-push-update` with flags `-s` (shellcheck), `-b` (backup), and `-g` (git auto-sync/merge) for AI-driven framework updates.
 
-----------------------------------------------------------${C_RESET}\"
-
-  eval \"$cmd\"
-}
-
-#######################################
-# System: Interactively create and document a new alias
-# Usage: mt-alias
-#######################################
-mt-alias() {
-  if [[ \"$1\" == \"-h\" || \"$1\" == \"--help\" ]]; then
-    mt-help \"${FUNCNAME[0]}\"
-    return 0
-  fi
-
-  echo -e \"${CB_BLUE}==========================================================${C_RESET}\"
-  echo -e \"${CB_CYAN} 🛠️  Create New Alias${C_RESET}\"
-  echo -e \"${CB_BLUE}==========================================================${C_RESET}\"
-
-  local alias_name=\"\"
-  local alias_cmd=\"\"
-  local alias_cat=\"\"
-  local alias_desc=\"\"
-
-  read -r -p \"1️⃣  Alias Name (e.g., kgpo)     : \" alias_name
-  if [ -z \"$alias_name\" ]; then
-    echo -e \"${CB_RED}🚨 Alias name is required. Aborting.${C_RESET}\"
-    return 1
-  fi
-
-  local aliases_file=\"$HOME/.bash.d/02-utilities/20-aliases.sh\"
-  if grep -qE \"^alias ${alias_name}=\" \"$aliases_file\"; then
-    echo -e \"${CB_RED}🚨 Error: Alias '${alias_name}' already exists in 20-aliases.sh.${C_RESET}\"
-    return 1
-  fi
-
-  read -r -p \"2️⃣  Target Command             : \" alias_cmd
-  if [ -z \"$alias_cmd\" ]; then
-    echo -e \"${CB_RED}🚨 Target command is required. Aborting.${C_RESET}\"
-    return 1
-  fi
-
-  read -r -p \"3️⃣  Category (e.g., Docker)    : \" alias_cat
-  [ -z \"$alias_cat\" ] && alias_cat=\"User Custom\"
-
-  read -r -p \"4️⃣  Description                : \" alias_desc
-  [ -z \"$alias_desc\" ] && alias_desc=\"Custom shortcut for ${alias_cmd}\"
-
-  echo -e \"\n${CB_BLUE}Generating and saving alias...${C_RESET}\"
-
-  cat << ALIASEOF >> \"$aliases_file\"
-
-#######################################
-# ${alias_cat}: ${alias_desc}
-#######################################
-alias ${alias_name}='${alias_cmd}'
-ALIASEOF
-
-  echo -e \"${CB_GREEN}✅ Alias saved to 20-aliases.sh!${C_RESET}\"
-
-  # Source the updated file to make it available immediately in the current shell
-  source \"$aliases_file\"
-
-  # Quietly rebuild the mytools cache so mt-lookup and mt-help recognize it
-  if declare -f mt-refresh-caches > /dev/null 2>&1; then
-    mt-refresh-caches > /dev/null 2>&1
-  fi
-
-  echo -e \"${CB_CYAN}ℹ️  Alias '${alias_name}' is now active in your current session.${C_RESET}\"
-}
-",
-  "message": "I have reviewed your Git diff patch and completed the truncated `mt-alias` wizard implementation at the end of `.bash.d/02-utilities/99-utils.sh`.
-
-### Summary of Changes in this Patch:
-1. **`mtupd` Alias Addition (`20-aliases.sh`)**: Shortcut for `mt-push-update -s -b` to run updates with Shellcheck validation and backup creation enabled.
-2. **File Logging with Rotation (`mt-log`)**: `mt-log` now appends timestamps and log levels to `$LOG_DIR/framework.log` with an automated 1MB file size rotation strategy (`framework.log.old`).
-3. **Log Viewer (`mt-logs`)**: Added CLI options for log filtering (`-l/--level`), text searching (`-s/--search`), live tailing (`-f/--follow`), log clearing (`-c/--clear`), and IDE inspection (`-o/--open`).
-4. **Interactive Alias Generator (`mt-alias`)**: Completed the function to interactively prompt for alias details, prevent duplicates, persist them to `20-aliases.sh`, reload the environment, and refresh internal help caches."
-}
+- **`mtupd` Alias Addition (`20-aliases.sh`)**: Shortcut for `mt-push-update -s -b` to run updates with Shellcheck validation and backup creation enabled.
+- **File Logging with Rotation (`mt-log`)**: `mt-log` now appends timestamps and log levels to `$LOG_DIR/framework.log` with an automated 1MB file size rotation strategy (`framework.log.old`).
+- **Log Viewer (`mt-logs`)**: Added CLI options for log filtering (`-l/--level`), text searching (`-s/--search`), live tailing (`-f/--follow`), log clearing (`-c/--clear`), and IDE inspection (`-o/--open`).
+- **Interactive Alias Generator (`mt-alias`)**: Completed the function to interactively prompt for alias details, prevent duplicates, persist them to `20-aliases.sh`, reload the environment, and refresh internal help caches.
 
 ---
 

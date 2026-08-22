@@ -23,5 +23,5 @@ git_gitignore: |
 git_readme: |
   Analyze the provided codebase context and generate a comprehensive, professional README.md for this project. Include sections for an Overview, Prerequisites, Installation/Setup, and Usage based on the actual code. Use proper markdown formatting. Return the exact code to be saved.
 
-  git_readme_summary: "Analyze this git diff and write a brief, professional bulleted summary of the updates for a README.md 'Recent Updates' section. Return ONLY the raw markdown bullet points."
-  tf_iam: "Analyze the following Terraform plan... list the minimum IAM permissions..."
+git_readme_summary: |
+  Analyze this git diff and write a brief, professional bulleted summary of the updates for a README.md 'Recent Updates' section. Respond using the 'message' field as plain markdown bullet points only. Do not include code, diffs, or JSON in the response, and do not use the 'code' field.
