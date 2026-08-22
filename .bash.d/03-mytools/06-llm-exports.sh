@@ -234,11 +234,13 @@ __mt_export_check_file_count_guards() {
     return 1
   fi
 
-  if [ "$total_files" -gt 2000 ]; then
+  local max_files="${EXPORT_MAX_FILE_THRESHOLD:-2000}"
+  local warn_files="${EXPORT_WARN_FILE_THRESHOLD:-500}"
+  if [ "$total_files" -gt "$max_files" ]; then
     echo -e "${CB_RED}🚨 KILLSWITCH: $total_files files detected. Export aborted to prevent system lockup and LLM overload.${C_RESET}"
     rm -f "$file_list" "$all_files"
     return 1
-  elif [ "$total_files" -gt 500 ] && [ "$plan_mode" = false ] && [ "$interactive_mode" = false ]; then
+  elif [ "$total_files" -gt "$warn_files" ] && [ "$plan_mode" = false ] && [ "$interactive_mode" = false ]; then
     echo -e "${CB_YELLOW}⚠️ Warning: $total_files files detected. This may exceed AI context limits.${C_RESET}"
     read -r -p "Proceed anyway? [y/N] " -n 1 < /dev/tty
     echo

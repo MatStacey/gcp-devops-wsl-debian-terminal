@@ -76,6 +76,7 @@ def load_env():
     export("UPDATE_CHECK_TTL_SEC", core_cfg.get("update_check_ttl_sec", 43200))
     export("MAX_PARALLEL_THREADS", core_cfg.get("max_parallel_threads", 8))
     export("BACKUP_WARNING_MB", core_cfg.get("backup_warning_mb", 500))
+    export("LOG_ROTATE_BYTES", core_cfg.get("log_rotate_bytes", 1048576))
 
     # AI
     export(
@@ -88,6 +89,8 @@ def load_env():
         "AI_MAX_DIFF_BYTES",
         ai_cfg.get("max_context_bytes", git_cfg.get("ai_max_diff_bytes", 150000)),
     )
+    export("AI_MAX_RETRIES", ai_cfg.get("max_retries", 3))
+    export("AI_MAX_CONTEXT_FILES", ai_cfg.get("max_context_files", 1000))
 
     sys_prompt_file = ai_cfg.get("system_prompt_file", "")
     sys_prompt = ""
@@ -136,6 +139,8 @@ def load_env():
         "EXPORT_IGNORE_DIRS",
         exp_cfg.get("dir_ignore_glob", exp_cfg.get("ignore_dirs", "")),
     )
+    export("EXPORT_WARN_FILE_THRESHOLD", exp_cfg.get("warn_file_threshold", 500))
+    export("EXPORT_MAX_FILE_THRESHOLD", exp_cfg.get("max_file_threshold", 2000))
 
     # Git
     export("SYNC_REPO_URL", git_cfg.get("sync_repo_url", ""))

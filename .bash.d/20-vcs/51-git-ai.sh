@@ -179,10 +179,11 @@ __git_ai_preflight_check() {
     return 1
   fi
 
+  local max_context_files="${AI_MAX_CONTEXT_FILES:-1000}"
   local file_count
-  file_count=$(find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" 2> /dev/null | head -n 1000 | wc -l)
-  if [ "$file_count" -ge 1000 ]; then
-    echo -e "${CB_YELLOW}⚠️  Warning: This directory contains 1000+ files. AI context may exceed limits.${C_RESET}" >&2
+  file_count=$(find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" 2> /dev/null | head -n "$max_context_files" | wc -l)
+  if [ "$file_count" -ge "$max_context_files" ]; then
+    echo -e "${CB_YELLOW}⚠️  Warning: This directory contains ${max_context_files}+ files. AI context may exceed limits.${C_RESET}" >&2
     read -p "Proceed anyway? [y/N] " -n 1 -r < /dev/tty
     echo > /dev/tty
     [[ ! $REPLY =~ ^[Yy]$ ]] && {

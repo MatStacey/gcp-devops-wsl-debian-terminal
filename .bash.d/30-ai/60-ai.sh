@@ -52,10 +52,11 @@ __ai_build_context() {
 
   [ "$export_context" != true ] && return 0
 
+  local max_context_files="${AI_MAX_CONTEXT_FILES:-1000}"
   local file_count
-  file_count=$(find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" 2> /dev/null | head -n 1000 | wc -l)
-  if [ "$file_count" -ge 1000 ]; then
-    echo -e "\n${C_YELLOW}⚠️  Warning: This directory contains 1000+ files. AI context may exceed limits.${C_RESET}" >&2
+  file_count=$(find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" 2> /dev/null | head -n "$max_context_files" | wc -l)
+  if [ "$file_count" -ge "$max_context_files" ]; then
+    echo -e "\n${C_YELLOW}⚠️  Warning: This directory contains ${max_context_files}+ files. AI context may exceed limits.${C_RESET}" >&2
     read -p "Proceed anyway? [y/N] " -n 1 -r < /dev/tty
     echo > /dev/tty
     [ "$REPLY" != "y" ] && [ "$REPLY" != "Y" ] && {
@@ -155,12 +156,13 @@ __ai_query_gemini() {
     return 1
   }
 
-  local final_model="${GEMINI_VERSION:-gemini-3.6-flash}"
+  local default_model="gemini-3.6-flash"
+  local final_model="${GEMINI_VERSION:-$default_model}"
   local is_extended="${GEMINI_EXTENDED:-false}"
   [ "$req_extended" = true ] && is_extended="true"
 
   if [ -n "$req_version" ]; then
-    local base_prefix="gemini-3.6"
+    local base_prefix="${default_model%-flash}"
     [[ "$final_model" =~ ^(gemini-[0-9]+\.[0-9]+) ]] && base_prefix="${BASH_REMATCH[1]}"
     final_model="${base_prefix}-${req_version}"
   fi
@@ -197,9 +199,9 @@ __ai_query_gemini() {
 
   echo "⏳ Querying Gemini ($final_model)..." >&2
   local response="" content=""
-  local attempt=1 max_retries=3
+  local attempt=1 max_retries="${AI_MAX_RETRIES:-3}"
 
-  while [ $attempt -le $max_retries ]; do
+  while [ "$attempt" -le "$max_retries" ]; do
     response=$(curl -s -X POST "${api_url}" -H "x-goog-api-key: ${GEMINI_API_KEY}" -H 'Content-Type: application/json' -d @"$payload_file")
     content=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty')
 
@@ -274,9 +276,9 @@ __ai_query_claude() {
 
   echo "⏳ Querying Claude ($final_model)..." >&2
   local response="" content=""
-  local attempt=1 max_retries=3
+  local attempt=1 max_retries="${AI_MAX_RETRIES:-3}"
 
-  while [ $attempt -le $max_retries ]; do
+  while [ "$attempt" -le "$max_retries" ]; do
     response=$(curl -s -X POST "${api_url}" -H "x-api-key: ${CLAUDE_API_KEY}" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d @"$payload_file")
     content=$(echo "$response" | jq -r '.content[0].text // empty')
 
