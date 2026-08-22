@@ -109,7 +109,11 @@ __mt_push_update_run_shellcheck() {
 }
 
 #######################################
-# System: Create a pre-sync zip backup of .bash.d and .bashrc
+# System: Create a pre-sync zip backup of .bash.d and .bashrc. Excludes
+# config.yaml and any *_token.sh file so a plaintext copy of them never
+# ends up sitting in an unencrypted zip under $BACKUP_DIR -- real secrets
+# (API keys) already live entirely outside .bash.d in
+# ~/vcs/secrets/secrets.sh and are never touched by this backup at all.
 # Globals (read):
 #   BACKUP_DIR
 # Returns:
@@ -125,7 +129,7 @@ __mt_push_update_backup() {
 
   (
     cd "$HOME" || exit 1
-    zip -q -r "$backup_file" .bash.d .bashrc -x ".bash.d/.git/*" -x ".bash.d/data/cache/*" -x ".bash.d/node_modules/*" -x ".bash.d/**/__pycache__/*" -x ".bash.d/.terraform/*" -x ".bash.d/venv/*" -x ".bash.d/.venv/*"
+    zip -q -r "$backup_file" .bash.d .bashrc -x ".bash.d/.git/*" -x ".bash.d/data/cache/*" -x ".bash.d/node_modules/*" -x ".bash.d/**/__pycache__/*" -x ".bash.d/.terraform/*" -x ".bash.d/venv/*" -x ".bash.d/.venv/*" -x ".bash.d/config/config.yaml" -x ".bash.d/config/*_token.sh"
   )
 
   if [ -f "$backup_file" ]; then
