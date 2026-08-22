@@ -47,7 +47,7 @@ mt-log() {
   if [ -f "$log_file" ]; then
     local size
     size=$(wc -c < "$log_file" 2> /dev/null || echo 0)
-    if [ "$size" -gt 1048576 ]; then
+    if [ "$size" -gt "${LOG_ROTATE_BYTES:-1048576}" ]; then
       mv "$log_file" "${log_file}.old" 2> /dev/null
     fi
   fi
