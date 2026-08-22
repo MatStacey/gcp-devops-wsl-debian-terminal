@@ -461,7 +461,13 @@ mt-setup-exports() {
 }
 
 #######################################
-# Config: Interactive Paths Setup Menu
+# Config: Interactive Paths Setup Menu -- prompts for and persists the
+# framework's core filesystem paths (VCS roots, dotfiles repo, AI
+# workspace, IAM scripts, Docker root, export/backup directories)
+# Usage: mt-wizard-paths
+# Globals:
+#   VCS_ROOT, VCS_PERSONAL, VCS_EXPORTS, DOTFILES_DIR, AI_WORKSPACE_DIR,
+#   SCRIPTS_IAM_DIR, DOCKER_ROOT_DIR, EXPORT_DIR, BACKUP_DIR, CONFIG_MANAGER
 #######################################
 mt-wizard-paths() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -469,24 +475,33 @@ mt-wizard-paths() {
     return 0
   fi
   echo -e "${CB_BLUE}--- Paths Configuration ---${C_RESET}"
-  read -r -p "VCS Root [${VCS_ROOT:-~/vcs}]: " p1
-  [ -n "$p1" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_root" "$p1"
-  read -r -p "VCS Personal [${VCS_PERSONAL:-~/vcs/personal}]: " p2
-  [ -n "$p2" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_personal" "$p2"
-  read -r -p "VCS Exports [${VCS_EXPORTS:-~/vcs/personal/exports}]: " p3
-  [ -n "$p3" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_exports" "$p3"
-  read -r -p "Dotfiles Repo [${DOTFILES_DIR:-~/vcs/personal/mt-devops-framework}]: " p4
-  [ -n "$p4" ] && python3 "$CONFIG_MANAGER" update "paths" "dotfiles_dir" "$p4"
-  read -r -p "AI Workspace [${AI_WORKSPACE_DIR:-~/vcs/workspaces/ai}]: " p5
-  [ -n "$p5" ] && python3 "$CONFIG_MANAGER" update "paths" "ai_workspace" "$p5"
-  read -r -p "IAM Scripts [${SCRIPTS_IAM_DIR:-/tmp/scripts/iam}]: " p6
-  [ -n "$p6" ] && python3 "$CONFIG_MANAGER" update "paths" "scripts_iam" "$p6"
-  read -r -p "Docker Root [${DOCKER_ROOT_DIR:-~/.docker}]: " p7
-  [ -n "$p7" ] && python3 "$CONFIG_MANAGER" update "paths" "docker_root" "$p7"
-  read -r -p "Export Dir [${EXPORT_DIR:-/tmp/exports}]: " p_exp
-  [ -n "$p_exp" ] && python3 "$CONFIG_MANAGER" update "paths" "export_dir" "$p_exp"
-  read -r -p "Backup Dir [${BACKUP_DIR:-~/backups}]: " p8
-  [ -n "$p8" ] && python3 "$CONFIG_MANAGER" update "paths" "backup_dir" "$p8"
+  local vcs_root_input
+  read -r -p "VCS Root [${VCS_ROOT:-~/vcs}]: " vcs_root_input
+  [ -n "$vcs_root_input" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_root" "$vcs_root_input"
+  local vcs_personal_input
+  read -r -p "VCS Personal [${VCS_PERSONAL:-~/vcs/personal}]: " vcs_personal_input
+  [ -n "$vcs_personal_input" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_personal" "$vcs_personal_input"
+  local vcs_exports_input
+  read -r -p "VCS Exports [${VCS_EXPORTS:-~/vcs/personal/exports}]: " vcs_exports_input
+  [ -n "$vcs_exports_input" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_exports" "$vcs_exports_input"
+  local dotfiles_dir_input
+  read -r -p "Dotfiles Repo [${DOTFILES_DIR:-~/vcs/personal/mt-devops-framework}]: " dotfiles_dir_input
+  [ -n "$dotfiles_dir_input" ] && python3 "$CONFIG_MANAGER" update "paths" "dotfiles_dir" "$dotfiles_dir_input"
+  local ai_workspace_input
+  read -r -p "AI Workspace [${AI_WORKSPACE_DIR:-~/vcs/workspaces/ai}]: " ai_workspace_input
+  [ -n "$ai_workspace_input" ] && python3 "$CONFIG_MANAGER" update "paths" "ai_workspace" "$ai_workspace_input"
+  local iam_scripts_input
+  read -r -p "IAM Scripts [${SCRIPTS_IAM_DIR:-/tmp/scripts/iam}]: " iam_scripts_input
+  [ -n "$iam_scripts_input" ] && python3 "$CONFIG_MANAGER" update "paths" "scripts_iam" "$iam_scripts_input"
+  local docker_root_input
+  read -r -p "Docker Root [${DOCKER_ROOT_DIR:-~/.docker}]: " docker_root_input
+  [ -n "$docker_root_input" ] && python3 "$CONFIG_MANAGER" update "paths" "docker_root" "$docker_root_input"
+  local export_dir_input
+  read -r -p "Export Dir [${EXPORT_DIR:-/tmp/exports}]: " export_dir_input
+  [ -n "$export_dir_input" ] && python3 "$CONFIG_MANAGER" update "paths" "export_dir" "$export_dir_input"
+  local backup_dir_input
+  read -r -p "Backup Dir [${BACKUP_DIR:-~/backups}]: " backup_dir_input
+  [ -n "$backup_dir_input" ] && python3 "$CONFIG_MANAGER" update "paths" "backup_dir" "$backup_dir_input"
   echo -e "${CB_GREEN}✅ Paths config updated.${C_RESET}"
 }
 

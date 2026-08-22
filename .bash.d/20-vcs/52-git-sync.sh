@@ -452,6 +452,153 @@ mt-push-update() {
   (__mt_push_update_commit_and_raise_pr) || return 1
 }
 #######################################
+# System: Resolve the latest (or a specific) GitHub release and report
+# whether an update is actually needed
+# Arguments:
+#   $1 - Optional specific version tag to target (empty = latest)
+# Globals:
+#   UPSTREAM_REPO_PATH, DOTFILES_DIR, SYNC_REPO_DIR
+# Globals (written, expected pre-declared local by the caller):
+#   download_url, tag_name
+# Returns:
+#   0 if an update was resolved, 1 on error, 2 if already up to date
+#######################################
+__mt_get_update_resolve_release() {
+  local target_version="$1"
+  local repo_path="${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"
+
+  local api_url="https://api.github.com/repos/${repo_path}/releases/latest"
+  [ -n "$target_version" ] && api_url="https://api.github.com/repos/${repo_path}/releases/tags/${target_version}"
+
+  local release_data
+  release_data=$(curl -s "$api_url")
+
+  download_url=$(echo "$release_data" | jq -r ".assets[0].browser_download_url // empty")
+  tag_name=$(echo "$release_data" | jq -r ".tag_name // empty")
+
+  local current_version="Local"
+  local repo_dir="${DOTFILES_DIR:-$SYNC_REPO_DIR}"
+  if [ -f "$HOME/.bash.d/data/.current_version" ]; then
+    current_version=$(command cat "$HOME/.bash.d/data/.current_version" | tr -d '\r\n ')
+  elif [ -n "$repo_dir" ] && [ -d "$repo_dir/.git" ] && command -v git > /dev/null 2>&1; then
+    current_version=$(git -C "$repo_dir" describe --tags --abbrev=0 2> /dev/null || echo "Local")
+    current_version=$(echo "$current_version" | tr -d '\r\n ')
+  fi
+
+  local clean_tag
+  clean_tag=$(echo "$tag_name" | tr -d '\r\n ')
+
+  if [ "$clean_tag" = "$current_version" ] && [ -z "$target_version" ]; then
+    echo -e "${CB_GREEN}✅ You are already running the latest version (${current_version}).${C_RESET}"
+    return 2
+  fi
+
+  if [ -z "$download_url" ] || [ "$download_url" = "null" ]; then
+    if [ -n "$target_version" ]; then
+      mt-log ERROR "Could not find release assets for version ${target_version} in ${repo_path}."
+    else
+      mt-log ERROR "Could not find latest release assets for ${repo_path}."
+    fi
+    return 1
+  fi
+  return 0
+}
+
+#######################################
+# System: Download a release zip and extract it, locating install.sh even
+# if the archive nests everything inside a subdirectory
+# Arguments:
+#   $1 - Download URL for the release zip asset
+#   $2 - Tag name (used only in progress messages)
+# Globals (written, expected pre-declared local by the caller):
+#   tmp_dir, ext_root
+# Returns:
+#   0 on success, 1 if the download failed
+#######################################
+__mt_get_update_download_and_extract() {
+  local download_url="$1" tag_name="$2"
+  echo -e "${CB_GREEN}📦 Found release ${tag_name}. Downloading...${C_RESET}"
+
+  tmp_dir=$(mktemp -d)
+  local zip_path="${tmp_dir}/update.zip"
+
+  if ! curl -L -s --fail "$download_url" -o "$zip_path"; then
+    mt-log ERROR "Failed to download release asset from ${download_url}."
+    rm -rf "$tmp_dir"
+    return 1
+  fi
+
+  echo -e "${CB_YELLOW}🔄 Extracting release package...${C_RESET}"
+  unzip -q "$zip_path" -d "${tmp_dir}/extracted" > /dev/null 2>&1
+
+  ext_root="${tmp_dir}/extracted"
+  if [ ! -f "$ext_root/install.sh" ]; then
+    local nested
+    nested=$(find "$ext_root" -name "install.sh" -exec dirname {} \; | head -n 1)
+    [ -n "$nested" ] && ext_root="$nested"
+  fi
+  return 0
+}
+
+#######################################
+# System: Warn about and confirm overwriting local ~/.bash.d modifications
+# that diverge from the downloaded release before it gets installed
+# Arguments:
+#   $1 - Path to the extracted release's root directory
+# Returns:
+#   0 to proceed with the update, 1 if the user declined
+#######################################
+__mt_get_update_check_divergence() {
+  local ext_root="$1"
+  [ -d "${ext_root}/.bash.d" ] || return 0
+
+  local diff_files
+  diff_files=$(diff -r -w -q "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "Only in|data/cache|config/\.env\.cache|data/\.current_version" || true)
+  [ -z "$diff_files" ] && return 0
+
+  mt-log WARN "Applying this update will overwrite local modifications in ~/.bash.d."
+  echo -e "${CB_YELLOW}Modified files detected:${C_RESET}"
+  diff -r -w -q "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "Only in|data/cache|config/\.env\.cache|data/\.current_version" | awk '{print "  • " $2 " " $4}'
+
+  echo ""
+  read -r -p "🔍 View detailed diff line-by-line before proceeding? [y/N] " -n 1 -r < /dev/tty
+  echo
+  if [[ $REPLY =~ ^[Yy]$ ]]; then
+    diff -u -r --color=always "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "data/cache|config/\.env\.cache|data/\.current_version" | less -R
+  fi
+
+  read -r -p "🚀 Proceed with update and overwrite local changes? [y/N] " -n 1 -r < /dev/tty
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "${CB_YELLOW}💡 Update aborted. Run 'mt-push-update' first to save your local changes to a PR!${C_RESET}"
+    return 1
+  fi
+  return 0
+}
+
+#######################################
+# System: Run a downloaded release's install.sh and record its version
+# Arguments:
+#   $1 - Path to the extracted release's root directory
+#   $2 - Tag name to record as the new current version
+# Returns:
+#   0 on success, 1 if install.sh is missing from the release
+#######################################
+__mt_get_update_install() {
+  local ext_root="$1" tag_name="$2"
+  if [ ! -f "$ext_root/install.sh" ]; then
+    mt-log ERROR "install.sh missing from downloaded release."
+    return 1
+  fi
+  (
+    cd "$ext_root" || exit 1
+    bash ./install.sh
+  )
+  mkdir -p "$HOME/.bash.d/data/cache" "$HOME/.bash.d/data/logs" "$HOME/.bash.d/config"
+  echo "$tag_name" > "$HOME/.bash.d/data/.current_version"
+}
+
+#######################################
 # System: Download and install profile updates from GitHub releases
 # Usage: mt-get-update [-v version]
 # Options:
@@ -477,109 +624,21 @@ mt-get-update() {
 
   echo -e "${CB_BLUE}⬇️ Fetching release information...${C_RESET}"
 
-  local repo_path="${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"
+  local download_url="" tag_name=""
+  __mt_get_update_resolve_release "$target_version"
+  local resolve_status=$?
+  [ "$resolve_status" -eq 2 ] && return 0
+  [ "$resolve_status" -eq 1 ] && return 1
 
-  local api_url="https://api.github.com/repos/${repo_path}/releases/latest"
-  if [ -n "$target_version" ]; then
-    api_url="https://api.github.com/repos/${repo_path}/releases/tags/${target_version}"
-  fi
+  local tmp_dir="" ext_root=""
+  __mt_get_update_download_and_extract "$download_url" "$tag_name" || return 1
 
-  local release_data
-  release_data=$(curl -s "$api_url")
-
-  local download_url
-  download_url=$(echo "$release_data" | jq -r ".assets[0].browser_download_url // empty")
-  local tag_name
-  tag_name=$(echo "$release_data" | jq -r ".tag_name // empty")
-
-  local current_version="Local"
-  local repo_dir="${DOTFILES_DIR:-$SYNC_REPO_DIR}"
-  if [ -f "$HOME/.bash.d/data/.current_version" ]; then
-    current_version=$(command cat "$HOME/.bash.d/data/.current_version" | tr -d '\r\n ')
-  elif [ -n "$repo_dir" ] && [ -d "$repo_dir/.git" ] && command -v git > /dev/null 2>&1; then
-    current_version=$(git -C "$repo_dir" describe --tags --abbrev=0 2> /dev/null || echo "Local")
-    current_version=$(echo "$current_version" | tr -d '\r\n ')
-  fi
-
-  local clean_tag
-  clean_tag=$(echo "$tag_name" | tr -d '\r\n ')
-
-  if [ "$clean_tag" = "$current_version" ] && [ -z "$target_version" ]; then
-    echo -e "${CB_GREEN}✅ You are already running the latest version (${current_version}).${C_RESET}"
+  if ! __mt_get_update_check_divergence "$ext_root"; then
+    rm -rf "$tmp_dir"
     return 0
   fi
 
-  if [ -z "$download_url" ] || [ "$download_url" = "null" ]; then
-    if [ -n "$target_version" ]; then
-      echo -e "${CB_RED}🚨 Error: Could not find release assets for version ${target_version} in ${repo_path}.${C_RESET}"
-    else
-      echo -e "${CB_RED}🚨 Error: Could not find latest release assets for ${repo_path}.${C_RESET}"
-    fi
-    return 1
-  fi
-
-  echo -e "${CB_GREEN}📦 Found release ${tag_name}. Downloading...${C_RESET}"
-
-  local tmp_dir
-  tmp_dir=$(mktemp -d)
-  local zip_path="${tmp_dir}/update.zip"
-
-  if ! curl -L -s --fail "$download_url" -o "$zip_path"; then
-    echo -e "${CB_RED}🚨 Error: Failed to download release asset from ${download_url}.${C_RESET}"
-    rm -rf "$tmp_dir"
-    return 1
-  fi
-
-  echo -e "${CB_YELLOW}🔄 Extracting release package...${C_RESET}"
-  unzip -q "$zip_path" -d "${tmp_dir}/extracted" > /dev/null 2>&1
-
-  local ext_root="${tmp_dir}/extracted"
-  if [ ! -f "$ext_root/install.sh" ]; then
-    local nested
-    nested=$(find "$ext_root" -name "install.sh" -exec dirname {} \; | head -n 1)
-    if [ -n "$nested" ]; then
-      ext_root="$nested"
-    fi
-  fi
-
-  # --- LOCAL DIVERGENCE GUARD ---
-  if [ -d "${ext_root}/.bash.d" ]; then
-    local diff_files
-    diff_files=$(diff -r -w -q "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "Only in|data/cache|config/\.env\.cache|data/\.current_version" || true)
-
-    if [ -n "$diff_files" ]; then
-      echo -e "\n${CB_RED}⚠️ WARNING: Applying this update will overwrite local modifications in your ~/.bash.d!${C_RESET}"
-      echo -e "${CB_YELLOW}Modified files detected:${C_RESET}"
-      diff -r -w -q "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "Only in|data/cache|config/\.env\.cache|data/\.current_version" | awk '{print "  • " $2 " " $4}'
-
-      echo ""
-      read -r -p "🔍 View detailed diff line-by-line before proceeding? [y/N] " -n 1 -r < /dev/tty
-      echo
-      if [[ $REPLY =~ ^[Yy]$ ]]; then
-        diff -u -r --color=always "$HOME/.bash.d" "${ext_root}/.bash.d" 2> /dev/null | grep -v -E "data/cache|config/\.env\.cache|data/\.current_version" | less -R
-      fi
-
-      read -r -p "🚀 Proceed with update and overwrite local changes? [y/N] " -n 1 -r < /dev/tty
-      echo
-      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo -e "${CB_YELLOW}💡 Update aborted. Run 'mt-push-update' first to save your local changes to a PR!${C_RESET}"
-        rm -rf "$tmp_dir"
-        return 0
-      fi
-    fi
-  fi
-
-  if [ -f "$ext_root/install.sh" ]; then
-    (
-      cd "$ext_root" || exit 1
-      bash ./install.sh
-    )
-    mkdir -p "$HOME/.bash.d/data/cache" "$HOME/.bash.d/data/logs" "$HOME/.bash.d/config"
-    echo "$tag_name" > "$HOME/.bash.d/data/.current_version"
-  else
-    echo -e "${CB_RED}🚨 Error: install.sh missing from downloaded release.${C_RESET}"
-  fi
-
+  __mt_get_update_install "$ext_root" "$tag_name"
   rm -rf "$tmp_dir"
 }
 
