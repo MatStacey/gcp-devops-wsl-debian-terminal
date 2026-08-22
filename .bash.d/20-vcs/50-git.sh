@@ -181,7 +181,7 @@ git-clean-merged() {
     echo -e "${CB_GREEN}✅ No merged remote branches found on origin.${C_RESET}"
   else
     for r_branch in $remote_merged; do
-      read -r -p "Delete remote branch 'origin/$r_branch'? [y/N] " -n 1
+      read -r -p "Delete remote branch 'origin/$r_branch'? [y/N] " -n 1 < /dev/tty
       echo
       if [[ $REPLY =~ ^[Yy]$ ]]; then
         git push origin --delete "$r_branch"
@@ -243,17 +243,17 @@ __git_raise_pr_handle_dead_pr() {
     __git_raise_pr_dead_pr_action="done"
   elif [ "$pr_state" = "MERGED" ] || [ "$pr_state" = "CLOSED" ]; then
     echo -e "${CB_YELLOW}⚠️  This branch has a ${pr_state} PR (Dead Branch).${C_RESET}"
-    read -r -p "Would you like to delete this branch locally and checkout a new one? [Y/n] " -n 1
+    read -r -p "Would you like to delete this branch locally and checkout a new one? [Y/n] " -n 1 < /dev/tty || REPLY="n"
     echo
     if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
-      read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
+      read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1 < /dev/tty || REPLY="n"
       echo
       if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
         echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
         git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
       fi
 
-      read -r -p "Enter new branch name: " new_branch
+      read -r -p "Enter new branch name: " new_branch < /dev/tty
       if [ -z "$new_branch" ]; then
         echo -e "${CB_RED}🚨 Aborted.${C_RESET}"
         __git_raise_pr_dead_pr_action="error"
@@ -316,7 +316,7 @@ __git_raise_pr_create_or_open() {
 
     echo -e "${CB_GREEN}✅ Pull Request created successfully!${C_RESET}"
 
-    read -r -p "🌐 View Pull Request in browser? [Y/n] " -n 1
+    read -r -p "🌐 View Pull Request in browser? [Y/n] " -n 1 < /dev/tty
     echo
     if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
       local pr_url
@@ -453,7 +453,7 @@ git-nuke() {
   fi
 
   echo -e "${CB_RED}⚠️  WARNING: This will DESTROY all local uncommitted changes AND untracked files.${C_RESET}"
-  read -r -p "Reset '${current_branch}' to origin/${current_branch}? [y/N] " -n 1
+  read -r -p "Reset '${current_branch}' to origin/${current_branch}? [y/N] " -n 1 < /dev/tty
   echo
 
   if [[ $REPLY =~ ^[Yy]$ ]]; then
