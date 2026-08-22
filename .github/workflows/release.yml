@@ -17,12 +17,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
       - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2
+        uses: gitleaks/gitleaks-action@e0c47f4f8be36e29cdc102c57e68cb5cbf0e8d1e # v3.0.0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -31,7 +31,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Install System Dependencies
         run: sudo apt-get update && sudo apt-get install -y shellcheck shfmt yamllint jq
@@ -72,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Repository
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 
@@ -91,8 +91,31 @@ jobs:
 
           zip -r "$ZIP_NAME" . -x ".git/*" -x ".git" -x ".github/*" -x "venv/*" -x "*/__pycache__/*" -x ".terraform/*" -x "*.tfstate*"
 
+      - name: Smoke-Test Packaged Release Install
+        run: |
+          echo "🧪 Verifying the packaged release installs cleanly and matches the source tree..."
+          EXTRACT_DIR=$(mktemp -d)
+          TEST_HOME=$(mktemp -d)
+          unzip -q "$ZIP_NAME" -d "$EXTRACT_DIR"
+
+          # Decline the interactive bootstrap prompt -- this test verifies the
+          # file sync, not system package installation.
+          echo n | HOME="$TEST_HOME" bash "$EXTRACT_DIR/install.sh"
+
+          echo "🔍 Diffing installed .bash.d against the source tree..."
+          if ! diff -rq .bash.d "$TEST_HOME/.bash.d" \
+            --exclude=cache --exclude=logs --exclude=config.yaml \
+            --exclude=.env.cache --exclude="*_token.sh" \
+            --exclude=".vcs_hub.json" --exclude=".syncignore" \
+            --exclude=".current_version"; then
+            echo "::error::Installed .bash.d tree does not match the source tree -- the release package is missing files that should have shipped."
+            exit 1
+          fi
+
+          echo "✅ Smoke-test passed: packaged release installs and matches source."
+
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        uses: softprops/action-gh-release@3d0d9888cb7fd7b750713d6e236d1fcb99157228 # v3.0.2
         with:
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
           name: Release ${{ steps.tag_version.outputs.new_tag }}
