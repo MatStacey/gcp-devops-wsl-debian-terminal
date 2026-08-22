@@ -346,6 +346,11 @@ Complex bash functions, framework utilities, and automated workflows.
 | `sys-install` | System: Updates system packages and clears pending-update marker |
 | `sys-update` | System: Updates system packages (APT on Debian/WSL, Homebrew on macOS) |
 
+### System: Interactive Master Menu
+| Command | Description |
+|---|---|
+| `mt-menu` | System: Launch the interactive master router for the entire framework |
+
 ### System & Navigation Aliases
 | Command | Description |
 |---|---|
