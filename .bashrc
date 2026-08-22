@@ -104,7 +104,16 @@ fi
 ###=============================================================================
 ### LOAD CUSTOM MODULES
 ###=============================================================================
-# Recursively source all script files, enforcing sorted execution order
+# Recursively source all script files, enforcing sorted execution order.
+#
+# Numbering scheme: `find | sort` sorts by full path, so the DIRECTORY
+# prefix (00-system, 01-ui, 02-utilities, 03-mytools, 10-infra, 20-vcs,
+# 30-ai, ...) is what determines load order across the framework — gaps
+# between e.g. 03 and 10 are deliberate, reserved for future categories.
+# A file's own leading number only breaks ties *within* its directory and
+# has no effect on cross-directory order, so it does not need to relate
+# to its directory's number (e.g. 10-infra/30-gcp-config.sh is correct —
+# it just means "loads before 10-infra/40-terraform-k8s.sh").
 if [ -d "$HOME/.bash.d" ]; then
     while IFS= read -r -d '' f; do
         [ -r "$f" ] && source "$f"
