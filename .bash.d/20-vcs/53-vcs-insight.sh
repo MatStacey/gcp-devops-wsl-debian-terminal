@@ -386,6 +386,11 @@ mt-hub() {
 
   sort -t'|' -k1,1 -k2,2 "$tmp_out" -o "$tmp_out"
 
+  # The raw repo path is prepended as a hidden, tab-delimited first field
+  # so fzf's --preview and the post-selection cd below can recover it
+  # exactly -- {4}/awk -F' │ ' against the visible, space-padded display
+  # text is not reliable since fzf's default field-splitting is
+  # whitespace-based and the box-drawing separator sits inside padding.
   local selected
   selected=$(awk -F'|' '
     function pad(str, len) {
@@ -393,15 +398,15 @@ mt-hub() {
       return str sprintf("%*s", len - length(str), "")
     }
     {
-      printf "%s │ %s │ %s │ %s\n", pad($1, 15), pad($2, 35), pad($3, 20), $4
+      printf "%s\t%s │ %s │ %s │ %s\n", $4, pad($1, 15), pad($2, 35), pad($3, 20), $4
     }
-  ' "$tmp_out" | fzf --ansi --prompt="VCS Hub > " --header="TYPE            │ REPOSITORY                          │ BRANCH               " --with-nth=1..3 --preview="bash -c 'source ~/.bash.d/01-ui/01-colors.sh; source ~/.bash.d/20-vcs/53-vcs-insight.sh; __mt_hub_preview \"{4}\" \"$cache_file\"'")
+  ' "$tmp_out" | fzf --ansi --delimiter=$'\t' --with-nth=2 --prompt="VCS Hub > " --header="TYPE            │ REPOSITORY                          │ BRANCH               " --preview="bash -c 'source ~/.bash.d/01-ui/01-colors.sh; source ~/.bash.d/20-vcs/53-vcs-insight.sh; __mt_hub_preview \"{1}\" \"$cache_file\"'")
 
   rm -f "$tmp_out"
 
   if [ -n "$selected" ]; then
     local target_path
-    target_path=$(echo "$selected" | awk -F' │ ' '{print $4}' | sed 's/^[ \t]*//;s/[ \t]*$//')
+    target_path=$(awk -F'\t' '{print $1}' <<< "$selected")
     echo -e "${CB_GREEN}📂 Navigating to: $target_path${C_RESET}"
     cd "$target_path" || true
   fi
