@@ -104,10 +104,9 @@ jobs:
 
           echo "🔍 Diffing installed .bash.d against the source tree..."
           if ! diff -rq .bash.d "$TEST_HOME/.bash.d" \
-            --exclude=cache --exclude=logs --exclude=config.yaml \
+            --exclude=data --exclude=config.yaml \
             --exclude=.env.cache --exclude="*_token.sh" \
-            --exclude=".vcs_hub.json" --exclude=".syncignore" \
-            --exclude=".current_version"; then
+            --exclude=".syncignore" --exclude=".current_version"; then
             echo "::error::Installed .bash.d tree does not match the source tree -- the release package is missing files that should have shipped."
             exit 1
           fi
