@@ -46,60 +46,84 @@ gcl-update() {
 }
 
 #######################################
-# GCP: Print active user account
+# GCP: Print an active gcloud configuration property
+# Usage: gcl-get <project|project-number|region|user|zone>
+#######################################
+gcl-get() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  case "$1" in
+    project) __get_gcp_config_val "project" ;;
+    project-number)
+      local project_id
+      project_id=$(__get_gcp_config_val "project")
+      [ -n "$project_id" ] && gcloud projects describe "$project_id" --format="value(projectNumber)"
+      ;;
+    region) __get_gcp_config_val "region" ;;
+    zone) __get_gcp_config_val "zone" ;;
+    user) __get_gcp_config_val "account" ;;
+    *)
+      echo "Usage: gcl-get <project|project-number|region|user|zone>" >&2
+      return 1
+      ;;
+  esac
+}
+
+#######################################
+# GCP: Print active user account (shortcut for `gcl-get user`)
 #######################################
 gcl-get-user() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __get_gcp_config_val "account"
+  gcl-get user
 }
 
 #######################################
-# GCP: Print active project ID
+# GCP: Print active project ID (shortcut for `gcl-get project`)
 #######################################
 gcl-get-project() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __get_gcp_config_val "project"
+  gcl-get project
 }
 
 #######################################
-# GCP: Print active compute region
+# GCP: Print active compute region (shortcut for `gcl-get region`)
 #######################################
 gcl-get-region() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __get_gcp_config_val "region"
+  gcl-get region
 }
 
 #######################################
-# GCP: Print active compute zone
+# GCP: Print active compute zone (shortcut for `gcl-get zone`)
 #######################################
 gcl-get-zone() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __get_gcp_config_val "zone"
+  gcl-get zone
 }
 
 #######################################
-# GCP: Print active project Number (API call required)
+# GCP: Print active project Number, API call required (shortcut for `gcl-get project-number`)
 #######################################
 gcl-get-project-number() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  local project_id
-  project_id=$(gcl-get-project)
-  [ -n "$project_id" ] && gcloud projects describe "$project_id" --format="value(projectNumber)"
+  gcl-get project-number
 }
 
 #######################################

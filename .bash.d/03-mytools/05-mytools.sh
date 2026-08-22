@@ -90,21 +90,62 @@ mytools() {
 #######################################
 # MyTools: List all available command categories
 #######################################
-mt-cats() {
+#######################################
+# MyTools: List categories, functions, aliases, or a specific category's tools
+# Usage: mt-list [category] [-f|--func] [-a|--alias]
+# Arguments:
+#   [category]   Category name -- list tools within it
+#   -f, --func   List all documented shell functions
+#   -a, --alias  List all documented shell aliases
+#   (none)       List all available categories
+#######################################
+mt-list() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
   }
   mytools > /dev/null
-  echo -e "\n${CB_BLUE}▶ AVAILABLE CATEGORIES${C_RESET}"
-  cut -f2 "$HOME/.bash.d/data/cache/.mt_data.tsv" 2> /dev/null | sort -u | while read -r cat; do
-    [ -n "$cat" ] && echo -e "  ${CB_YELLOW}[${cat}]${C_RESET}"
-  done
-  echo ""
+
+  case "$1" in
+    "")
+      echo -e "\n${CB_BLUE}▶ AVAILABLE CATEGORIES${C_RESET}"
+      cut -f2 "$HOME/.bash.d/data/cache/.mt_data.tsv" 2> /dev/null | sort -u | while read -r cat; do
+        [ -n "$cat" ] && echo -e "  ${CB_YELLOW}[${cat}]${C_RESET}"
+      done
+      echo ""
+      ;;
+    -f | --func)
+      echo -e "\n${CB_BLUE}▶ FUNCTIONS${C_RESET}\n"
+      awk -F'\t' -v dim="$C_DIM" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" '$1 == "func" { printf "  %s•%s %s%-24s%s (%s%s%s) %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, yellow, $2, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
+      echo ""
+      ;;
+    -a | --alias)
+      echo -e "\n${CB_BLUE}▶ ALIASES${C_RESET}\n"
+      awk -F'\t' -v dim="$C_DIM" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" '$1 == "alias" { printf "  %s•%s %s%-24s%s (%s%s%s) %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, yellow, $2, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
+      echo ""
+      ;;
+    *)
+      local target_cat="${1,,}"
+      echo -e "\n${CB_BLUE}▶ CATEGORY: ${1}${C_RESET}\n"
+      awk -F'\t' -v target="$target_cat" -v dim="$C_DIM" -v cyan="$CB_CYAN" -v white="$C_WHITE" -v rst="$C_RESET" 'tolower($2) == target { printf "  %s•%s %s%-24s%s %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
+      echo ""
+      ;;
+  esac
 }
 
 #######################################
-# MyTools: List all tools within a specific category
+# MyTools: List all available command categories (shortcut for `mt-list`)
+#######################################
+mt-cats() {
+  [[ "$1" == "-h" || "$1" == "--help" ]] && {
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  }
+  mt-list
+}
+
+#######################################
+# MyTools: List all tools within a specific category (shortcut for `mt-list <category>`)
 # Arguments:
 #   $1 - Category name
 #######################################
@@ -118,41 +159,29 @@ mt-cat() {
     mt-cats
     return 1
   }
-
-  mytools > /dev/null
-  local target_cat="${1,,}"
-
-  echo -e "\n${CB_BLUE}▶ CATEGORY: ${1}${C_RESET}\n"
-  awk -F'\t' -v target="$target_cat" -v dim="$C_DIM" -v cyan="$CB_CYAN" -v white="$C_WHITE" -v rst="$C_RESET" 'tolower($2) == target { printf "  %s•%s %s%-24s%s %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
-  echo ""
+  mt-list "$1"
 }
 
 #######################################
-# MyTools: List all documented shell functions
+# MyTools: List all documented shell functions (shortcut for `mt-list --func`)
 #######################################
 mt-funcs() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
   }
-  mytools > /dev/null
-  echo -e "\n${CB_BLUE}▶ FUNCTIONS${C_RESET}\n"
-  awk -F'\t' -v dim="$C_DIM" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" '$1 == "func" { printf "  %s•%s %s%-24s%s (%s%s%s) %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, yellow, $2, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
-  echo ""
+  mt-list --func
 }
 
 #######################################
-# MyTools: List all documented shell aliases
+# MyTools: List all documented shell aliases (shortcut for `mt-list --alias`)
 #######################################
 mt-aliases() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
   }
-  mytools > /dev/null
-  echo -e "\n${CB_BLUE}▶ ALIASES${C_RESET}\n"
-  awk -F'\t' -v dim="$C_DIM" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" '$1 == "alias" { printf "  %s•%s %s%-24s%s (%s%s%s) %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, yellow, $2, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
-  echo ""
+  mt-list --alias
 }
 
 #######################################
@@ -436,7 +465,7 @@ _mt_cat_completions() {
   cats=$(cut -f2 "$HOME/.bash.d/data/cache/.mt_data.tsv" 2> /dev/null | sort -u)
   mapfile -t COMPREPLY < <(compgen -W "$cats" -- "${COMP_WORDS[COMP_CWORD]}")
 }
-complete -F _mt_cat_completions mt-cat
+complete -F _mt_cat_completions mt-cat mt-list
 
 _mt_help_completions() {
   local tools
