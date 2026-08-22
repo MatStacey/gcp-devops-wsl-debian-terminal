@@ -171,7 +171,7 @@ tf-clean() {
     return 0
   fi
   echo -e "${CB_RED}⚠️ WARNING: This will delete .terraform directories, lock files, and saved plans.${C_RESET}"
-  read -r -p "Are you sure you want to proceed? [y/N] " -n 1
+  read -r -p "Are you sure you want to proceed? [y/N] " -n 1 < /dev/tty || REPLY="n"
   echo
   if [[ ! $REPLY =~ ^[Yy]$ ]]; then
     echo "🛑 Aborted."
