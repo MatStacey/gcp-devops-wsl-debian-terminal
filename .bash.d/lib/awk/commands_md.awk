@@ -11,5 +11,9 @@ $1 == target_type {
         print "|---|---|"
         prev_cat = $2
     }
-    printf "| `%s` | %s |\n", $3, $4
+    name = $3
+    desc = $4
+    gsub(/\|/, "\\|", name)
+    gsub(/\|/, "\\|", desc)
+    printf "| `%s` | %s |\n", name, desc
 }

@@ -9,12 +9,18 @@ import contextlib
 import os
 import sys
 
-import yaml
-
 
 def main():
     """Loads the YAML prompt file, retrieves the requested key, and prints it."""
     if len(sys.argv) < 2:
+        return
+
+    try:
+        import yaml
+    except ImportError:
+        # Printed to stderr, not stdout: this script's stdout is captured
+        # directly as prompt text by the caller, never sourced as bash.
+        print("🚨 PyYAML is missing. Run bootstrap to install it.", file=sys.stderr)
         return
 
     prompt_key = sys.argv[1]
@@ -28,7 +34,7 @@ def main():
             prompts = yaml.safe_load(f) or {}
 
         val = prompts.get(prompt_key, "")
-        if val:
+        if val and isinstance(val, str):
             print(val.strip())
 
 

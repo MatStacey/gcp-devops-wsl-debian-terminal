@@ -24,13 +24,16 @@ def _export(var_name, value, home_dir, to_lower=False, resolve_home=False):
 
 
 def _read_yaml_config(path):
+    """Reads config.yaml, falling back to {} (never None) on any failure so
+    callers can still apply their own sensible defaults instead of losing
+    every exported variable over one bad value or a missing dependency."""
     try:
         import yaml
     except ImportError:
         print(
             "echo -e '\033[01;31m🚨 Error: PyYAML is missing. Run bootstrap to install it.\033[0m' >&2"
         )
-        return None
+        return {}
 
     if not os.path.exists(path):
         return {}
@@ -40,7 +43,7 @@ def _read_yaml_config(path):
             return yaml.safe_load(f) or {}
     except (yaml.YAMLError, OSError) as e:
         print(f"echo -e '\033[01;31m🚨 Error parsing config.yaml: {e}\033[0m' >&2")
-        return None
+        return {}
 
 
 def load_env():
@@ -48,8 +51,6 @@ def load_env():
     home = os.environ.get("HOME", "")
 
     d = _read_yaml_config(path)
-    if d is None:
-        return
 
     def export(var_name, value, to_lower=False, resolve_home=False):
         _export(var_name, value, home, to_lower, resolve_home)
@@ -157,8 +158,8 @@ def load_env():
     )
     export(
         "GIT_FORMAT_ON_PUSH",
-        str(git_cfg.get("enable_format_on_push", git_cfg.get("format_on_push",
-                                                             True))).lower(),
+        git_cfg.get("enable_format_on_push", git_cfg.get("format_on_push", True)),
+        to_lower=True,
     )
 
     # Paths
@@ -246,6 +247,7 @@ def update_yaml(cat_path, key, val):
 
     current[key] = val
 
+    os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         yaml.safe_dump(d, f, sort_keys=False, default_flow_style=False)
 
