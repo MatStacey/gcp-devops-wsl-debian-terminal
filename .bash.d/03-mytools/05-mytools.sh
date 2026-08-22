@@ -513,7 +513,8 @@ mt-refresh-caches() {
   fi
 
   echo -e "${CB_YELLOW}🧹 Clearing background caches...${C_RESET}"
-  rm -f "$HOME/.bash.d/config/.env.cache"
+  rm -f "$HOME/.bash.d/data/cache/.env.cache"
+  rm -f "$HOME/.bash.d/config/.env.cache" # stray pre-fix location, harmless no-op once cleaned up
   # Legacy pre-migration cache locations (harmless no-op post-migration)
   rm -f "$HOME/.bash.d/.mt_cache" "$HOME/.bash.d/.mt_cache.time" "$HOME/.bash.d/.mt_data.tsv" 2> /dev/null
   rm -f "$HOME/.bash.d/.zoxide_cache.sh" "$HOME/.bash.d/.update_check_cache" "$HOME/.bash.d/.update_pending" 2> /dev/null
@@ -528,8 +529,8 @@ mt-refresh-caches() {
   echo -e "${CB_BLUE}🔄 Rebuilding configurations and tool indexes...${C_RESET}"
   if [ -f "$HOME/.bash.d/lib/python/config_manager.py" ]; then
     mkdir -p "$HOME/.bash.d/data/cache" "$HOME/.bash.d/data/logs" "$HOME/.bash.d/config"
-    python3 "$HOME/.bash.d/lib/python/config_manager.py" load-env > "$HOME/.bash.d/config/.env.cache"
-    chmod 600 "$HOME/.bash.d/config/.env.cache" 2> /dev/null
+    python3 "$HOME/.bash.d/lib/python/config_manager.py" load-env > "$HOME/.bash.d/data/cache/.env.cache"
+    chmod 600 "$HOME/.bash.d/data/cache/.env.cache" 2> /dev/null
   fi
 
   __rebuild_mytools_cache
