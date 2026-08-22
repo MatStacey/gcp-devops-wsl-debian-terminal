@@ -101,6 +101,7 @@ __mt_hub_index() {
     local cat="Unknown"
     if [ -n "$ai_res" ]; then
       local clean_json
+      # shellcheck disable=SC2016
       clean_json=$(echo "$ai_res" | sed 's/```json//gi; s/```//g')
       if echo "$clean_json" | jq -e . > /dev/null 2>&1; then
         desc=$(echo "$clean_json" | jq -r '.description // "No description available."')
@@ -137,16 +138,16 @@ __mt_hub_preview() {
 
   local repo_name
   repo_name=$(basename "$repo")
-  echo -e "\033[01;36m============================================================\033[0m"
-  echo -e "\033[01;34m 📦 ${repo_name}\033[0m"
-  echo -e "\033[01;36m============================================================\033[0m\n"
+  echo -e "${CB_CYAN}============================================================${C_RESET}"
+  echo -e "${CB_BLUE} 📦 ${repo_name}${C_RESET}"
+  echo -e "${CB_CYAN}============================================================${C_RESET}\n"
 
   local meta
   meta=$(jq -r ".[ \"$repo\" ] // empty" "$cache_file" 2> /dev/null)
 
   if [ -z "$meta" ] || [ "$meta" == "null" ]; then
-    echo -e "\033[01;33m⚠️ No metadata found.\033[0m\n"
-    echo -e "Run \033[01;32mmt-hub --index\033[0m to generate AI insights and heuristics for this repository."
+    echo -e "${CB_YELLOW}⚠️ No metadata found.${C_RESET}\n"
+    echo -e "Run ${CB_GREEN}mt-hub --index${C_RESET} to generate AI insights and heuristics for this repository."
     return 0
   fi
 
@@ -163,17 +164,17 @@ __mt_hub_preview() {
   local test_fw
   test_fw=$(echo "$meta" | jq -r '.testing')
 
-  echo -e "\033[01;35m▶ OVERVIEW\033[0m"
-  echo -e "\033[0m${desc}\033[0m\n"
+  echo -e "${CB_MAGENTA}▶ OVERVIEW${C_RESET}"
+  echo -e "${C_RESET}${desc}${C_RESET}\n"
 
-  echo -e "\033[01;35m▶ ARCHITECTURE METADATA\033[0m"
-  echo -e " \033[01;36mCategory    :\033[0m ${cat}"
-  echo -e " \033[01;36mTech Stack  :\033[0m ${stack}"
-  echo -e " \033[01;36mBuild Tools :\033[0m ${build}"
-  echo -e " \033[01;36mCI/CD       :\033[0m ${cicd}"
-  echo -e " \033[01;36mTesting     :\033[0m ${test_fw}"
+  echo -e "${CB_MAGENTA}▶ ARCHITECTURE METADATA${C_RESET}"
+  echo -e " ${CB_CYAN}Category    :${C_RESET} ${cat}"
+  echo -e " ${CB_CYAN}Tech Stack  :${C_RESET} ${stack}"
+  echo -e " ${CB_CYAN}Build Tools :${C_RESET} ${build}"
+  echo -e " ${CB_CYAN}CI/CD       :${C_RESET} ${cicd}"
+  echo -e " ${CB_CYAN}Testing     :${C_RESET} ${test_fw}"
 
-  echo -e "\n\033[01;35m▶ RECENT COMMITS\033[0m"
+  echo -e "\n${CB_MAGENTA}▶ RECENT COMMITS${C_RESET}"
   git -C "$repo" log -3 --format="%C(yellow)%h%Creset - %s %Cgreen(%cr)%Creset" 2> /dev/null || echo "No commits yet."
 }
 
@@ -279,7 +280,7 @@ mt-hub() {
   if [ -n "$selected" ]; then
     local target_path
     target_path=$(echo "$selected" | awk -F' │ ' '{print $4}' | sed 's/^[ \t]*//;s/[ \t]*$//')
-    echo -e "\033[01;32m📂 Navigating to: $target_path\033[0m"
+    echo -e "${CB_GREEN}📂 Navigating to: $target_path${C_RESET}"
     cd "$target_path" || true
   fi
 }

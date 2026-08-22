@@ -18,3 +18,5 @@ Dockerfile
 .dockerignore
 .gitignore
 .gitleaks.toml
+config/github_token.sh
+config/*_token.sh

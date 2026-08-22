@@ -6,11 +6,16 @@
 .bash.d/data/.current_version
 .bash.d/config/config.yaml
 .bash.d/config/.env.cache
+.bash.d/config/.syncignore
+.bash.d/config/github_token.sh
+.bash.d/config/*_token.sh
+.bash.d/log.txt
 data/cache/
 data/logs/
 data/.current_version
 config/config.yaml
 config/.env.cache
+config/.syncignore
 .bash.d/data/cache/.env.cache
 .bash.d/.mt_cache*
 .bash.d/.mt_data.tsv

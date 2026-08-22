@@ -263,6 +263,7 @@ MARKDOWN_EOF
     local awk_script="$HOME/.bash.d/lib/awk/commands_md.awk"
     local tsv_data="$HOME/.bash.d/data/cache/.mt_data.tsv"
 
+    # shellcheck disable=SC2129  # sequential appends interleaved with a heredoc block below; grouping would hurt readability
     awk -v target_type="alias" -f "$awk_script" <(sort -t$'	' -k2,2 -k3,3 "$tsv_data") >> "$repo_dir/COMMANDS.md"
 
     echo -e "
@@ -306,6 +307,7 @@ Complex bash functions, framework utilities, and automated workflows." >> "$repo
   if [ $query_status -eq 100 ]; then return 100; fi
 
   local raw_text
+  # shellcheck disable=SC2016
   raw_text=$(echo "$response" | sed 's/```json//gi; s/```markdown//gi; s/```//g')
 
   local clean_updates

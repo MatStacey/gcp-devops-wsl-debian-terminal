@@ -185,6 +185,6 @@ kns() {
 }
 
 _kns_completions() {
-  COMPREPLY=($(compgen -W "$(kubectl get namespaces -o=jsonpath='{.items[*].metadata.name}' 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}"))
+  mapfile -t COMPREPLY < <(compgen -W "$(kubectl get namespaces -o=jsonpath='{.items[*].metadata.name}' 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}")
 }
 complete -F _kns_completions kns

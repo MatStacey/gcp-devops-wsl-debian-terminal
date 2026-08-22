@@ -1,4 +1,4 @@
-# shellcheck shell=bash
+# shellcheck shell=bash disable=SC2119,SC2120
 # ------------------------------------------
 # Path & URL Launchers (Config-Driven)
 # ------------------------------------------

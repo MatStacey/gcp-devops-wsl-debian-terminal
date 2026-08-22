@@ -48,6 +48,7 @@ tf-val-all() {
 
   local threads="${MAX_PARALLEL_THREADS:-8}"
 
+  # shellcheck disable=SC2016  # inner bash -c script intentionally uses its own $1, passed via the trailing _ "{}" args
   find terraform/ -type f -name "*.tf" -exec dirname {} \; | sort -u | xargs -I {} -P "$threads" bash -c '
         echo -e "\n🔍 Validating $1..."
         terraform -chdir="$1" init -backend=false > /dev/null 2>&1
@@ -61,5 +62,6 @@ tf-val-all() {
 }
 
 # Bypass the custom kubectl wrapper when generating completions to prevent terminal echo
+# shellcheck disable=SC1090
 if command -v kubectl > /dev/null 2>&1; then source <(command kubectl completion bash); fi
 if command -v terraform > /dev/null 2>&1; then complete -C "$(which terraform)" terraform; fi

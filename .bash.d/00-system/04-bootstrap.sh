@@ -1,4 +1,4 @@
-# shellcheck shell=bash
+# shellcheck shell=bash disable=SC2119,SC2120
 # ------------------------------------------
 # System & Environment Bootstrap
 # ------------------------------------------
@@ -34,7 +34,8 @@ __get_missing_deps() {
 # System: Bootstrap APT dependencies on Debian/WSL
 #######################################
 __bootstrap_apt() {
-  local apt_deps=($(__get_missing_deps "${APT_DEPENDENCIES[@]}"))
+  local apt_deps
+  mapfile -t apt_deps < <(__get_missing_deps "${APT_DEPENDENCIES[@]}")
 
   if [ ${#apt_deps[@]} -gt 0 ]; then
     echo -e "\n📦 Installing standard APT dependencies: ${apt_deps[*]}..."
@@ -64,7 +65,8 @@ __bootstrap_brew() {
     return 1
   fi
 
-  local brew_deps=($(__get_missing_deps "${BREW_DEPENDENCIES[@]}"))
+  local brew_deps
+  mapfile -t brew_deps < <(__get_missing_deps "${BREW_DEPENDENCIES[@]}")
 
   if [ ${#brew_deps[@]} -gt 0 ]; then
     echo -e "\n📦 Installing standard Homebrew dependencies: ${brew_deps[*]}..."
@@ -80,7 +82,8 @@ __bootstrap_brew() {
 # System: Bootstrap Python tooling dependencies via pipx/pip3
 #######################################
 __bootstrap_python() {
-  local pip_deps=($(__get_missing_deps "${PYTHON_DEPENDENCIES[@]}"))
+  local pip_deps
+  mapfile -t pip_deps < <(__get_missing_deps "${PYTHON_DEPENDENCIES[@]}")
 
   if [ ${#pip_deps[@]} -gt 0 ]; then
     echo -e "\n🐍 Installing Python tooling (${pip_deps[*]})..."
@@ -173,7 +176,8 @@ __install_speedtest() {
 # System: Check and report missing external dependencies
 #######################################
 __bootstrap_external() {
-  local missing_external=($(__get_missing_deps "${EXTERNAL_DEPENDENCIES[@]}"))
+  local missing_external
+  mapfile -t missing_external < <(__get_missing_deps "${EXTERNAL_DEPENDENCIES[@]}")
 
   for dep in "${missing_external[@]}"; do
     case "$dep" in
@@ -191,7 +195,8 @@ __bootstrap_external() {
 # System: Check and report missing complex dependencies
 #######################################
 __bootstrap_check_complex() {
-  local missing_complex=($(__get_missing_deps "${COMPLEX_DEPENDENCIES[@]}"))
+  local missing_complex
+  mapfile -t missing_complex < <(__get_missing_deps "${COMPLEX_DEPENDENCIES[@]}")
 
   if [ ${#missing_complex[@]} -gt 0 ]; then
     echo -e "\n⚠️  The following tools are missing and require manual repo config:"
@@ -265,10 +270,11 @@ __check_missing_deps() {
     "${COMPLEX_DEPENDENCIES[@]}"
     "${EXTERNAL_DEPENDENCIES[@]}"
   )
-  local missing_list=($(__get_missing_deps "${to_check[@]}"))
+  local missing_list
+  mapfile -t missing_list < <(__get_missing_deps "${to_check[@]}")
 
   if [ ${#missing_list[@]} -gt 0 ]; then
-    echo -e "\n\e[33m⚠️  Missing required dependencies detected in your environment:\e[0m"
+    echo -e "\n${C_YELLOW}⚠️  Missing required dependencies detected in your environment:${C_RESET}"
     for dep in "${missing_list[@]}"; do
       echo "  - $dep"
     done
@@ -316,7 +322,7 @@ sys-install() {
     return 0
   fi
   sys-update
-  rm -f "$HOME/.bash.d/.update_pending"
+  rm -f "$HOME/.bash.d/data/cache/.update_pending"
 }
 
 __check_missing_deps

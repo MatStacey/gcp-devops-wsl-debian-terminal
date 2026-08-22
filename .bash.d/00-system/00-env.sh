@@ -10,6 +10,7 @@ export PATH="$PATH:$HOME/.local/bin"
 
 # NVM initialisation
 export NVM_DIR="$HOME/.nvm"
+# shellcheck disable=SC1091
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
 
 command -v zoxide > /dev/null 2>&1 && eval "$(zoxide init bash)"

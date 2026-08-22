@@ -100,7 +100,6 @@ def load_env():
 
     # Providers
     gem_cfg = prov_cfg.get("gemini") or ai_cfg.get("gemini") or {}
-    export("GEMINI_API_KEY", gem_cfg.get("api_key", ""))
     export(
         "GEMINI_VERSION",
         gem_cfg.get("model", gem_cfg.get("version", "gemini-3.6-flash")),
@@ -112,14 +111,12 @@ def load_env():
     )
 
     cla_cfg = prov_cfg.get("claude") or ai_cfg.get("claude") or {}
-    export("CLAUDE_API_KEY", cla_cfg.get("api_key", ""))
     export(
         "CLAUDE_VERSION",
         cla_cfg.get("model", cla_cfg.get("version", "claude-3-7-sonnet-latest")),
     )
 
     loc_cfg = prov_cfg.get("local") or ai_cfg.get("local") or {}
-    export("LOCAL_AI_API_KEY", loc_cfg.get("api_key", "ollama"))
     export("LOCAL_AI_BASE_URL", loc_cfg.get("base_url", "http://localhost:11434/v1"))
     export("LOCAL_AI_MODEL", loc_cfg.get("model", "llama3.2"))
 

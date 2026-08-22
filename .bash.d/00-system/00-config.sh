@@ -1,4 +1,4 @@
-# shellcheck shell=bash
+# shellcheck shell=bash disable=SC2119,SC2120
 # ------------------------------------------
 # Configuration Management
 # ------------------------------------------
@@ -11,7 +11,11 @@ YAML_TEMPLATE="$HOME/.bash.d/lib/templates/config.yaml.tpl"
 
 if [ ! -s "$CONFIG_FILE" ]; then
   mkdir -p "$(dirname "$CONFIG_FILE")"
-  [ -f "$YAML_TEMPLATE" ] && cp "$YAML_TEMPLATE" "$CONFIG_FILE" || touch "$CONFIG_FILE"
+  if [ -f "$YAML_TEMPLATE" ]; then
+    cp "$YAML_TEMPLATE" "$CONFIG_FILE"
+  else
+    touch "$CONFIG_FILE"
+  fi
 fi
 chmod 600 "$CONFIG_FILE" 2> /dev/null
 
@@ -24,7 +28,14 @@ __reload_config_if_modified() {
       local old_theme="$BASH_THEME"
       python3 "$CONFIG_MANAGER" load-env > "$ENV_CACHE"
       chmod 600 "$ENV_CACHE" 2> /dev/null
+      # shellcheck disable=SC1090
       source "$ENV_CACHE"
+
+      # Load externalized secrets
+      if [ -f "$HOME/vcs/secrets/secrets.sh" ]; then
+        # shellcheck disable=SC1091
+        source "$HOME/vcs/secrets/secrets.sh"
+      fi
 
       if [ "$old_theme" != "$BASH_THEME" ]; then
         source "$HOME/.bash.d/01-ui/01-colors.sh"
@@ -38,7 +49,14 @@ __reload_config_if_modified
 
 # Force load the cache for fresh terminal sessions
 if [ -f "$ENV_CACHE" ]; then
+  # shellcheck disable=SC1090
   source "$ENV_CACHE"
+
+  # Load externalized secrets
+  if [ -f "$HOME/vcs/secrets/secrets.sh" ]; then
+    # shellcheck disable=SC1091
+    source "$HOME/vcs/secrets/secrets.sh"
+  fi
 fi
 
 # Ensure color definitions are loaded before running startup checks
@@ -50,7 +68,7 @@ if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GE
   unset GEMINI_API_KEY
   if [[ "${DEFAULT_AI:-gemini}" == "gemini" ]]; then
     echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:${C_RESET}"
-    echo -e "    ${C_RESET}mt-add-gemini-key 'your-api-key'\033[0m"
+    echo -e "    ${C_RESET}vim ~/vcs/secrets/secrets.sh"
   fi
 fi
 
@@ -58,7 +76,7 @@ if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CL
   unset CLAUDE_API_KEY
   if [[ "${DEFAULT_AI:-gemini}" == "claude" ]]; then
     echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:${C_RESET}"
-    echo -e "    ${C_RESET}mt-add-claude-key 'your-api-key'\033[0m"
+    echo -e "    ${C_RESET}vim ~/vcs/secrets/secrets.sh"
   fi
 fi
 
@@ -207,9 +225,11 @@ mt-open-config() {
   fi
 
   echo "🚀 Opening bash config in $selected_ide..."
-  [ "$selected_ide" = "intellij" ] &&
-    { __launch_intellij "$config_dir" "$config_file" || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS."; } ||
+  if [ "$selected_ide" = "intellij" ]; then
+    __launch_intellij "$config_dir" "$config_file" || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS."
+  else
     code "$config_dir" "$config_file"
+  fi
 }
 
 #######################################
@@ -296,11 +316,11 @@ __mt_setup_quick() {
   if [ "$active_provider" = "gemini" ]; then
     read -r -s -p "🔑 Enter Gemini API Key (Enter to skip): " key
     echo
-    [ -n "$key" ] && mt-add-gemini-key "$key"
+    [ -n "$key" ] && vim ~/vcs/secrets/secrets.sh
   elif [ "$active_provider" = "claude" ]; then
     read -r -s -p "🔑 Enter Claude API Key (Enter to skip): " key
     echo
-    [ -n "$key" ] && mt-add-claude-key "$key"
+    [ -n "$key" ] && vim ~/vcs/secrets/secrets.sh
   fi
 
   read -r -p "3️⃣ CI/CD Provider (github/bitbucket/gitlab/azure/jenkins) [${CICD_PROVIDER:-github}]: " cicd
@@ -308,7 +328,11 @@ __mt_setup_quick() {
 
   local default_sync="${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"
   read -r -p "4️⃣ Git Sync Repo URL [${SYNC_REPO_URL:-$default_sync}]: " sync_url
-  [ -n "$sync_url" ] && mt-add-sync-url "$sync_url" || { [ -z "$SYNC_REPO_URL" ] && mt-add-sync-url "$default_sync"; }
+  if [ -n "$sync_url" ]; then
+    mt-add-sync-url "$sync_url"
+  elif [ -z "$SYNC_REPO_URL" ]; then
+    mt-add-sync-url "$default_sync"
+  fi
 }
 
 #######################################
@@ -346,16 +370,12 @@ mt-setup-ai() {
   echo -e "\n${CB_CYAN}Gemini Settings:${C_RESET}"
   read -r -p "Gemini Model Version [${GEMINI_VERSION:-gemini-3.6-flash}]: " g_ver
   [ -n "$g_ver" ] && python3 "$CONFIG_MANAGER" update "ai.gemini" "version" "$g_ver"
-  read -r -s -p "Update Gemini API Key (Leave blank to keep current): " g_key
-  echo
-  [ -n "$g_key" ] && python3 "$CONFIG_MANAGER" update "ai.gemini" "api_key" "$g_key"
+  echo -e "  ${C_DIM}🔑 Manage your Gemini API Key directly in ~/vcs/secrets/secrets.sh${C_RESET}"
 
   echo -e "\n${CB_CYAN}Claude Settings:${C_RESET}"
   read -r -p "Claude Model Version [${CLAUDE_VERSION:-claude-3-7-sonnet-latest}]: " c_ver
   [ -n "$c_ver" ] && python3 "$CONFIG_MANAGER" update "ai.claude" "version" "$c_ver"
-  read -r -s -p "Update Claude API Key (Leave blank to keep current): " c_key
-  echo
-  [ -n "$c_key" ] && python3 "$CONFIG_MANAGER" update "ai.claude" "api_key" "$c_key"
+  echo -e "  ${C_DIM}🔑 Manage your Claude API Key directly in ~/vcs/secrets/secrets.sh${C_RESET}"
 
   echo -e "\n${CB_CYAN}Local AI Settings:${C_RESET}"
   read -r -p "Local AI Base URL [${LOCAL_AI_BASE_URL:-http://localhost:11434/v1}]: " l_url
@@ -486,7 +506,12 @@ mt-load-config() {
   if [ -f "$CONFIG_MANAGER" ]; then
     python3 "$CONFIG_MANAGER" load-env > "$env_cache"
     chmod 600 "$env_cache" 2> /dev/null
+    # shellcheck disable=SC1090
     source "$env_cache"
+    if [ -f "$HOME/vcs/secrets/secrets.sh" ]; then
+      # shellcheck disable=SC1091
+      source "$HOME/vcs/secrets/secrets.sh"
+    fi
     echo -e "${CB_GREEN}✅ Config reloaded! Active variables updated.${C_RESET}"
   else
     echo -e "${CB_RED}🚨 Error: config_manager.py not found.${C_RESET}"

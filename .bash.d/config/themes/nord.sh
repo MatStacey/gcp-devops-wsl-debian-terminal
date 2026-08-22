@@ -12,3 +12,9 @@ export CB_GREEN=$'\e[1;38;2;163;190;140m'
 export CB_YELLOW=$'\e[1;38;2;235;203;139m'
 export CB_BLUE=$'\e[1;38;2;129;161;193m'
 export CB_CYAN=$'\e[1;38;2;136;192;208m'
+
+export C_MAGENTA=$'\e[38;2;180;142;173m'
+export C_ORANGE=$'\e[38;2;208;135;112m'
+
+export CB_MAGENTA=$'\e[1;38;2;180;142;173m'
+export CB_ORANGE=$'\e[1;38;2;208;135;112m'

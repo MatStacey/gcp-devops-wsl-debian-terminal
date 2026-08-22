@@ -163,7 +163,7 @@ gcl-as-json() {
 # GCP: Autocompletion for gcp-get-secret
 #######################################
 _gcp_sec_read_completions() {
-  COMPREPLY=($(compgen -W "$(gcloud secrets list --format="value(name)" 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}"))
+  mapfile -t COMPREPLY < <(compgen -W "$(gcloud secrets list --format="value(name)" 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}")
 }
 complete -F _gcp_sec_read_completions gcp-get-secret
 
@@ -171,7 +171,7 @@ complete -F _gcp_sec_read_completions gcp-get-secret
 # GCP: Autocompletion for gce-ssh
 #######################################
 _gce_ssh_completions() {
-  COMPREPLY=($(compgen -W "$(gcloud compute instances list --format="value(name)" 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}"))
+  mapfile -t COMPREPLY < <(compgen -W "$(gcloud compute instances list --format="value(name)" 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}")
 }
 complete -F _gce_ssh_completions gce-ssh
 
@@ -179,6 +179,6 @@ complete -F _gce_ssh_completions gce-ssh
 # GCP: Autocompletion for gcp-crf-logs
 #######################################
 _gcp_crf_logs_completions() {
-  COMPREPLY=($(compgen -W "$(gcloud functions list --format="value(name)" 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}"))
+  mapfile -t COMPREPLY < <(compgen -W "$(gcloud functions list --format="value(name)" 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}")
 }
 complete -F _gcp_crf_logs_completions gcp-crf-logs

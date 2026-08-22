@@ -1,4 +1,4 @@
-# shellcheck shell=bash
+# shellcheck shell=bash disable=SC2119,SC2120
 # ------------------------------------------
 # MyTools Documentation & Runner
 # ------------------------------------------
@@ -123,7 +123,7 @@ mt-cat() {
   local target_cat="${1,,}"
 
   echo -e "\n${CB_BLUE}▶ CATEGORY: ${1}${C_RESET}\n"
-  awk -F'\t' -v target="$target_cat" 'tolower($2) == target { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
+  awk -F'\t' -v target="$target_cat" -v dim="$C_DIM" -v cyan="$CB_CYAN" -v white="$C_WHITE" -v rst="$C_RESET" 'tolower($2) == target { printf "  %s•%s %s%-24s%s %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
   echo ""
 }
 
@@ -137,7 +137,7 @@ mt-funcs() {
   }
   mytools > /dev/null
   echo -e "\n${CB_BLUE}▶ FUNCTIONS${C_RESET}\n"
-  awk -F'\t' '$1 == "func" { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
+  awk -F'\t' -v dim="$C_DIM" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" '$1 == "func" { printf "  %s•%s %s%-24s%s (%s%s%s) %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, yellow, $2, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
   echo ""
 }
 
@@ -151,7 +151,7 @@ mt-aliases() {
   }
   mytools > /dev/null
   echo -e "\n${CB_BLUE}▶ ALIASES${C_RESET}\n"
-  awk -F'\t' '$1 == "alias" { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
+  awk -F'\t' -v dim="$C_DIM" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" '$1 == "alias" { printf "  %s•%s %s%-24s%s (%s%s%s) %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, yellow, $2, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
   echo ""
 }
 
@@ -232,7 +232,7 @@ mt-lookup() {
       return 1
     fi
     # Standard non-interactive output
-    awk -F'\t' -v q="${query,,}" 'tolower($0) ~ q { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$tsv_file"
+    awk -F'\t' -v q="${query,,}" -v dim="$C_DIM" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" 'tolower($0) ~ q { printf "  %s•%s %s%-24s%s (%s%s%s) %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, yellow, $2, rst, dim, rst, white, $4, rst }' "$tsv_file"
   fi
 }
 
@@ -247,7 +247,7 @@ _mt_lookup_completions() {
   if [ -f "$tsv" ]; then
     local candidates
     candidates=$(awk -F'\t' '{print $3 "\n" $2}' "$tsv" | sort -u)
-    COMPREPLY=($(compgen -W "$candidates" -- "$cur"))
+    mapfile -t COMPREPLY < <(compgen -W "$candidates" -- "$cur")
   fi
 }
 complete -F _mt_lookup_completions mt-lookup mt-search
@@ -434,14 +434,14 @@ _mt_cat_completions() {
   local IFS=$'\n'
   local cats
   cats=$(cut -f2 "$HOME/.bash.d/data/cache/.mt_data.tsv" 2> /dev/null | sort -u)
-  COMPREPLY=($(compgen -W "$cats" -- "${COMP_WORDS[COMP_CWORD]}"))
+  mapfile -t COMPREPLY < <(compgen -W "$cats" -- "${COMP_WORDS[COMP_CWORD]}")
 }
 complete -F _mt_cat_completions mt-cat
 
 _mt_help_completions() {
   local tools
   tools=$(cut -f3 "$HOME/.bash.d/data/cache/.mt_data.tsv" 2> /dev/null)
-  COMPREPLY=($(compgen -W "$tools" -- "${COMP_WORDS[COMP_CWORD]}"))
+  mapfile -t COMPREPLY < <(compgen -W "$tools" -- "${COMP_WORDS[COMP_CWORD]}")
 }
 complete -F _mt_help_completions mt-help
 
@@ -485,6 +485,10 @@ mt-refresh-caches() {
 
   echo -e "${CB_YELLOW}🧹 Clearing background caches...${C_RESET}"
   rm -f "$HOME/.bash.d/config/.env.cache"
+  # Legacy pre-migration cache locations (harmless no-op post-migration)
+  rm -f "$HOME/.bash.d/.mt_cache" "$HOME/.bash.d/.mt_cache.time" "$HOME/.bash.d/.mt_data.tsv" 2> /dev/null
+  rm -f "$HOME/.bash.d/.zoxide_cache.sh" "$HOME/.bash.d/.update_check_cache" "$HOME/.bash.d/.update_pending" 2> /dev/null
+  rm -f "$HOME/.bash.d/.profile_update_cache" "$HOME/.bash.d/.profile_update_pending" 2> /dev/null
   rm -f "$HOME/.bash.d/data/cache/.mt_cache" "$HOME/.bash.d/data/cache/.mt_cache.time" "$HOME/.bash.d/data/cache/.mt_data.tsv"
   rm -f "$HOME/.bash.d/data/cache/.update_check_cache" "$HOME/.bash.d/data/cache/.update_pending"
   rm -f "$HOME/.bash.d/data/cache/.zoxide_cache.sh"
@@ -626,6 +630,7 @@ HDR
   mytools > /dev/null
 
   if [ -f "$tsv_index" ]; then
+    # shellcheck disable=SC2129  # part of a long, loop/conditional-heavy markdown generator; grouping would require restructuring control flow
     echo "" >> "$out_file"
     echo "## 🔗 Shell Aliases" >> "$out_file"
     echo "" >> "$out_file"
@@ -642,11 +647,13 @@ HDR
 
       if [ "$cat" != "$current_cat" ]; then
         current_cat="$cat"
+        # shellcheck disable=SC2129
         echo "" >> "$out_file"
         echo "### 📂 ${current_cat}" >> "$out_file"
         echo "" >> "$out_file"
       fi
 
+      # shellcheck disable=SC2129
       echo "" >> "$out_file"
       echo "#### \`$name\`" >> "$out_file"
       echo "" >> "$out_file"
@@ -656,6 +663,7 @@ HDR
       local src_file
       src_file=$(grep -rlE "^${name}\(\)[ \t]*\{" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
       if [ -n "$src_file" ]; then
+        # shellcheck disable=SC2129
         echo "\`\`\`bash" >> "$out_file"
         awk -v target="$name" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$src_file" >> "$out_file"
         echo "\`\`\`" >> "$out_file"
@@ -664,6 +672,7 @@ HDR
   fi
 
   if [ "$include_private" = true ]; then
+    # shellcheck disable=SC2129
     echo "" >> "$out_file"
     echo "---" >> "$out_file"
     echo "" >> "$out_file"
@@ -680,6 +689,7 @@ HDR
       [ -z "$func_name" ] && continue
       local rel_fpath="${fpath#"$HOME"/.bash.d/}"
 
+      # shellcheck disable=SC2129
       echo "" >> "$out_file"
       echo "### \`$func_name\` *(File: \`00-system/${rel_fpath}\`)*" >> "$out_file"
       echo "" >> "$out_file"
@@ -698,6 +708,6 @@ HDR
 
 _mt_dump_completions() {
   local cur="${COMP_WORDS[COMP_CWORD]}"
-  COMPREPLY=($(compgen -W "-d --dir --private -h --help" -- "$cur"))
+  mapfile -t COMPREPLY < <(compgen -W "-d --dir --private -h --help" -- "$cur")
 }
 complete -F _mt_dump_completions mt-dump

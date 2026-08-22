@@ -192,6 +192,7 @@ if command -v zoxide > /dev/null 2>&1; then
   if [ ! -f "$ZOXIDE_CACHE" ]; then
     zoxide init bash > "$ZOXIDE_CACHE"
   fi
+  # shellcheck disable=SC1090
   source "$ZOXIDE_CACHE"
 
   #######################################
