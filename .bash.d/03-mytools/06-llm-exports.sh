@@ -481,3 +481,443 @@ mt-copy() {
   fi
   rm -f "$temp_file"
 }
+
+#######################################
+# LLM: Format a byte count as a human-readable KB/MB string
+# Arguments:
+#   $1 - Byte count
+#######################################
+__mt_export_cleanup_human_size() {
+  local bytes="$1"
+  if [ "$bytes" -ge 1048576 ]; then
+    awk -v b="$bytes" 'BEGIN { printf "%.1fMB", b / 1048576 }'
+  else
+    awk -v b="$bytes" 'BEGIN { printf "%.1fKB", b / 1024 }'
+  fi
+}
+
+#######################################
+# LLM: Resolve which EXPORT_DIR subdirectories a cleanup run should target.
+# Rejects any target that would resolve outside EXPORT_DIR.
+# Arguments:
+#   $1 - EXPORT_DIR (parent of all per-project export subdirectories)
+#   $2 - Optional single subdirectory name/path to scope to (empty = all)
+# Outputs:
+#   Prints one resolved absolute directory path per line
+# Returns:
+#   1 if a specific target was requested but does not exist or escapes
+#   EXPORT_DIR
+#######################################
+__mt_export_cleanup_resolve_targets() {
+  local export_dir="$1" target_filter="$2"
+
+  if [ -z "$target_filter" ]; then
+    find "$export_dir" -mindepth 1 -maxdepth 1 -type d 2> /dev/null | sort
+    return 0
+  fi
+
+  local candidate="$target_filter"
+  [[ "$candidate" != /* ]] && candidate="${export_dir}/${candidate}"
+
+  local resolved export_dir_resolved
+  resolved=$(realpath -m "$candidate" 2> /dev/null)
+  export_dir_resolved=$(realpath -m "$export_dir" 2> /dev/null)
+
+  if [[ "$resolved" != "$export_dir_resolved"/* ]] || [ ! -d "$resolved" ]; then
+    echo -e "${CB_RED}🚨 Error: '$target_filter' is not a valid subdirectory of EXPORT_DIR ($export_dir).${C_RESET}" >&2
+    return 1
+  fi
+
+  echo "$resolved"
+}
+
+#######################################
+# LLM: Scan a single export subdirectory and classify its files against the
+# mt-export naming convention (YYYYMMDD_name_N.txt|zip) and the retention
+# window. Never recurses and never touches anything but plain files.
+# Arguments:
+#   $1 - Absolute path to one EXPORT_DIR subdirectory
+# Globals (read):
+#   retention_days
+# Globals (written, expected pre-declared local by the caller):
+#   scan_dir_name, scan_remove_count, scan_keep_count, scan_remove_bytes,
+#   scan_oldest, scan_newest, scan_exts, scan_remove_list
+#######################################
+__mt_export_cleanup_scan_dir() {
+  local dir="$1"
+  scan_dir_name=$(basename "$dir")
+  scan_remove_count=0
+  scan_keep_count=0
+  scan_remove_bytes=0
+  scan_oldest=""
+  scan_newest=""
+  scan_remove_list=$(mktemp)
+
+  local now_epoch exts_seen=""
+  now_epoch=$(date +%s)
+
+  local file
+  while IFS= read -r -d '' file; do
+    local base="${file##*/}"
+
+    if [[ ! "$base" =~ ^[0-9]{8}_.+_[0-9]+\.(txt|zip)$ ]]; then
+      ((scan_keep_count++))
+      continue
+    fi
+
+    local file_date="${base:0:8}"
+    local file_epoch
+    file_epoch=$(date -d "$file_date" +%s 2> /dev/null || date -j -f "%Y%m%d" "$file_date" +%s 2> /dev/null)
+    if [ -z "$file_epoch" ]; then
+      ((scan_keep_count++))
+      continue
+    fi
+
+    local age_days=$(((now_epoch - file_epoch) / 86400))
+    if [ "$age_days" -lt "$retention_days" ]; then
+      ((scan_keep_count++))
+      continue
+    fi
+
+    ((scan_remove_count++))
+    echo "$file" >> "$scan_remove_list"
+
+    local bytes
+    bytes=$(wc -c < "$file" 2> /dev/null || echo 0)
+    scan_remove_bytes=$((scan_remove_bytes + bytes))
+
+    if [ -z "$scan_oldest" ] || [ "$file_date" -lt "$scan_oldest" ]; then
+      scan_oldest="$file_date"
+    fi
+    if [ -z "$scan_newest" ] || [ "$file_date" -gt "$scan_newest" ]; then
+      scan_newest="$file_date"
+    fi
+
+    local ext="${base##*.}"
+    [[ ",$exts_seen," == *",$ext,"* ]] || exts_seen="${exts_seen:+$exts_seen,}$ext"
+  done < <(find "$dir" -maxdepth 1 -type f -print0 2> /dev/null)
+
+  scan_exts="${exts_seen:-none}"
+}
+
+#######################################
+# LLM: Scan every candidate directory, print the pre-flight cleanup table,
+# and record a dir->file-list plan for the delete step
+# Arguments:
+#   $@ - Absolute paths of EXPORT_DIR subdirectories to scan
+# Globals (read):
+#   retention_days
+# Globals (written, expected pre-declared local by the caller):
+#   total_remove_count, total_remove_bytes, cleanup_dir_list
+#######################################
+__mt_export_cleanup_render_table() {
+  local scan_dir_name scan_remove_count scan_keep_count scan_remove_bytes
+  local scan_oldest scan_newest scan_exts scan_remove_list
+  total_remove_count=0
+  total_remove_bytes=0
+  cleanup_dir_list=$(mktemp)
+
+  printf "\n${CB_BLUE}%-20s %8s %8s %10s %-12s %-12s %-10s${C_RESET}\n" \
+    "DIRECTORY" "REMOVE" "KEEP" "FREED" "OLDEST" "NEWEST" "EXT"
+  echo -e "${CB_BLUE}---------------------------------------------------------------------------------${C_RESET}"
+
+  local dir
+  for dir in "$@"; do
+    __mt_export_cleanup_scan_dir "$dir"
+
+    if [ "$scan_remove_count" -eq 0 ]; then
+      rm -f "$scan_remove_list"
+      continue
+    fi
+
+    echo -e "${dir}\t${scan_remove_list}" >> "$cleanup_dir_list"
+    total_remove_count=$((total_remove_count + scan_remove_count))
+    total_remove_bytes=$((total_remove_bytes + scan_remove_bytes))
+
+    local freed_human oldest_fmt newest_fmt
+    freed_human=$(__mt_export_cleanup_human_size "$scan_remove_bytes")
+    oldest_fmt="${scan_oldest:0:4}-${scan_oldest:4:2}-${scan_oldest:6:2}"
+    newest_fmt="${scan_newest:0:4}-${scan_newest:4:2}-${scan_newest:6:2}"
+
+    printf "%-20s ${CB_RED}%8s${C_RESET} ${CB_CYAN}%8s${C_RESET} %10s %-12s %-12s %-10s\n" \
+      "$scan_dir_name" "$scan_remove_count" "$scan_keep_count" "$freed_human" "$oldest_fmt" "$newest_fmt" "$scan_exts"
+  done
+
+  echo -e "${CB_BLUE}---------------------------------------------------------------------------------${C_RESET}"
+  if [ "$total_remove_count" -eq 0 ]; then
+    echo -e "${C_DIM}(nothing eligible for removal)${C_RESET}"
+  else
+    local total_freed
+    total_freed=$(__mt_export_cleanup_human_size "$total_remove_bytes")
+    echo -e "${CB_YELLOW}TOTAL: ${total_remove_count} file(s), ${total_freed} to be freed${C_RESET}"
+  fi
+}
+
+#######################################
+# LLM: Prompt the user to confirm before deleting the planned files
+# Returns:
+#   0 to proceed, 1 if the user declined
+#######################################
+__mt_export_cleanup_confirm() {
+  echo ""
+  read -r -p "🗑️  Proceed with deletion? [y/N] " -n 1 < /dev/tty
+  echo ""
+  [[ "$REPLY" =~ ^[Yy]$ ]]
+}
+
+#######################################
+# LLM: Discard a pending cleanup plan's temp file lists without deleting
+# any real files (used when the user declines the confirmation prompt)
+# Globals (read):
+#   cleanup_dir_list
+#######################################
+__mt_export_cleanup_discard_plan() {
+  local plan_dir plan_list
+  while IFS=$'\t' read -r plan_dir plan_list; do
+    rm -f "$plan_list"
+  done < "$cleanup_dir_list"
+  rm -f "$cleanup_dir_list"
+}
+
+#######################################
+# LLM: Delete every file recorded in a scan's removal list, logging each
+# outcome individually so one bad file (in use, permission denied) does not
+# abort the rest of the batch
+# Arguments:
+#   $1 - Path to a newline-delimited file list (from __mt_export_cleanup_scan_dir)
+# Globals (written, expected pre-declared local by the caller):
+#   cleanup_deleted_count, cleanup_failed_count
+#######################################
+__mt_export_cleanup_delete_files() {
+  local list_file="$1"
+  local file err
+  while IFS= read -r file; do
+    [ -z "$file" ] && continue
+    if err=$(rm -f -- "$file" 2>&1); then
+      ((cleanup_deleted_count++))
+      mt-log INFO "Removed export: $file"
+    else
+      ((cleanup_failed_count++))
+      mt-log ERROR "Failed to remove '$file': ${err:-unknown error}"
+    fi
+  done < "$list_file"
+  rm -f "$list_file"
+}
+
+#######################################
+# LLM: Core cleanup worker -- scans, previews, confirms, backs up, and
+# deletes stale mt-export output. Shared by the foreground and
+# --background code paths so behavior is identical either way (invoked
+# directly, or via __mt_bg_run's eval of this same function name).
+# Arguments:
+#   $1 - EXPORT_DIR
+#   $2 - Optional target subdirectory name/path (empty = all)
+#   $3 - force (true/false)
+#   $4 - quiet (true/false)
+#   $5 - backup (true/false)
+#   $6 - background (true/false) -- when true, the pre-flight table and
+#        summary still print even though --background always forces
+#        quiet=true, since that output is what __mt_bg_run captures into
+#        the job's log file for later viewing via `mt-jobs -i`
+# Globals:
+#   AUTO_CLEANUP_DAYS
+# Returns:
+#   0 on success (including "nothing to do"), 1 on validation/lock failure
+#######################################
+__mt_export_cleanup_run() {
+  local export_dir="$1" target_filter="$2" force="$3" quiet="$4" backup="$5" background="$6"
+  local retention_days="${AUTO_CLEANUP_DAYS:-7}"
+
+  if ! [[ "$retention_days" =~ ^[0-9]+$ ]]; then
+    echo -e "${CB_RED}🚨 Error: 'auto_cleanup_days' in config.yaml is invalid ('$retention_days'). It must be a whole number.${C_RESET}"
+    return 1
+  fi
+
+  local verbose_ok=true
+  [ "$quiet" = true ] && [ "$background" = false ] && verbose_ok=false
+
+  local lock_dir="$HOME/.bash.d/data/cache/.mt_export_cleanup.lock"
+  mkdir -p "$(dirname "$lock_dir")"
+  if ! mkdir "$lock_dir" 2> /dev/null; then
+    echo -e "${CB_YELLOW}⚠️ Another export cleanup is already running.${C_RESET}"
+    mt-log WARN "mt-export-cleanup skipped: lock held at $lock_dir"
+    return 1
+  fi
+  # shellcheck disable=SC2064
+  trap "rmdir '$lock_dir' 2> /dev/null" RETURN
+
+  local -a targets=()
+  local t
+  while IFS= read -r t; do
+    [ -n "$t" ] && targets+=("$t")
+  done < <(__mt_export_cleanup_resolve_targets "$export_dir" "$target_filter")
+
+  if [ "${#targets[@]}" -eq 0 ]; then
+    [ -n "$target_filter" ] && return 1
+    [ "$verbose_ok" = true ] && echo -e "${C_DIM}No export directories found under ${export_dir}.${C_RESET}"
+    return 0
+  fi
+
+  local total_remove_count total_remove_bytes cleanup_dir_list
+  if [ "$verbose_ok" = true ]; then
+    __mt_export_cleanup_render_table "${targets[@]}"
+  else
+    __mt_export_cleanup_render_table "${targets[@]}" > /dev/null
+  fi
+
+  if [ "$total_remove_count" -eq 0 ]; then
+    mt-log INFO "mt-export-cleanup: nothing eligible for removal in $export_dir"
+    rm -f "$cleanup_dir_list"
+    return 0
+  fi
+
+  if [ "$force" = false ] && ! __mt_export_cleanup_confirm; then
+    echo -e "${CB_RED}🛑 Aborted.${C_RESET}"
+    __mt_export_cleanup_discard_plan
+    return 0
+  fi
+
+  local -a backup_failed=()
+  if [ "$backup" = true ]; then
+    local bdir
+    while IFS=$'\t' read -r bdir _; do
+      if (cd "$bdir" && mt-backup -f > /dev/null 2>&1); then
+        mt-log SUCCESS "Backed up '$bdir' before export cleanup."
+      else
+        mt-log ERROR "Backup FAILED for '$bdir'; skipping its deletion."
+        backup_failed+=("$bdir")
+      fi
+    done < "$cleanup_dir_list"
+  fi
+
+  local cleanup_deleted_count=0 cleanup_failed_count=0
+  local plan_dir plan_list
+  while IFS=$'\t' read -r plan_dir plan_list; do
+    if [[ " ${backup_failed[*]} " == *" ${plan_dir} "* ]]; then
+      rm -f "$plan_list"
+      continue
+    fi
+    __mt_export_cleanup_delete_files "$plan_list"
+  done < "$cleanup_dir_list"
+  rm -f "$cleanup_dir_list"
+
+  local freed_human
+  freed_human=$(__mt_export_cleanup_human_size "$total_remove_bytes")
+  if [ "$verbose_ok" = true ]; then
+    echo -e "${CB_GREEN}✅ Removed ${cleanup_deleted_count} file(s), freed ~${freed_human}.${C_RESET}"
+    [ "$cleanup_failed_count" -gt 0 ] && echo -e "${CB_RED}⚠️ ${cleanup_failed_count} file(s) failed to delete — see mt-log for details.${C_RESET}"
+  fi
+  mt-log SUCCESS "mt-export-cleanup: removed ${cleanup_deleted_count} file(s) (~${freed_human}), ${cleanup_failed_count} failure(s)."
+}
+
+#######################################
+# LLM: Interactive fzf menu to pick a target export directory and toggle
+# force/backup flags, then run the cleanup non-interactively
+# Globals:
+#   EXPORT_DIR
+#######################################
+__mt_export_cleanup_interactive() {
+  local export_dir="${EXPORT_DIR:-/tmp/exports}"
+
+  local -a dir_choices=("(all directories)")
+  local d
+  while IFS= read -r d; do
+    [ -n "$d" ] && dir_choices+=("$(basename "$d")")
+  done < <(find "$export_dir" -mindepth 1 -maxdepth 1 -type d 2> /dev/null | sort)
+
+  if [ "${#dir_choices[@]}" -eq 1 ]; then
+    echo -e "${CB_YELLOW}⚠️ No export directories found under ${export_dir}.${C_RESET}"
+    return 0
+  fi
+
+  local chosen
+  chosen=$(printf '%s\n' "${dir_choices[@]}" | fzf --prompt="🗑️  Select export directory to clean > ")
+  if [ -z "$chosen" ]; then
+    echo -e "${CB_RED}🛑 Aborted.${C_RESET}"
+    return 0
+  fi
+
+  local target=""
+  [ "$chosen" != "(all directories)" ] && target="$chosen"
+
+  local toggles
+  toggles=$(printf '%s\n' "Force (skip confirmation)" "Backup before delete" | fzf --multi --prompt="⚙️  Toggle options (TAB to select, ENTER to confirm) > ")
+
+  local force=false backup=false
+  [[ "$toggles" == *"Force"* ]] && force=true
+  [[ "$toggles" == *"Backup"* ]] && backup=true
+
+  __mt_export_cleanup_run "$export_dir" "$target" "$force" false "$backup" false
+}
+
+#######################################
+# LLM: Safely remove stale mt-export output from EXPORT_DIR
+# Usage: mt-export-cleanup [-f] [-q] [-b] [-B] [-i] [target_dir]
+# Options:
+#   -f, --force        Skip the pre-flight table and confirmation prompt
+#   -q, --quiet        Suppress terminal output (implies --force)
+#   -b, --backup       Zip each target directory to BACKUP_DIR before
+#                      deleting (reuses mt-backup); a failed backup skips
+#                      deletion for that directory only
+#   -B, --background   Run as a background job (implies --force and
+#                      --quiet); track and view its result via `mt-jobs -i`
+#   -i, --interactive  Pick a target directory and toggle flags via fzf
+#   target_dir         Optional: scope to one EXPORT_DIR subdirectory
+#                      (name or path; defaults to all of EXPORT_DIR)
+# Globals:
+#   EXPORT_DIR, AUTO_CLEANUP_DAYS, LOG_DIR
+#######################################
+mt-export-cleanup() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local force=false quiet=false backup=false background=false interactive=false
+  local target=""
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -f | --force) force=true ;;
+      -q | --quiet)
+        quiet=true
+        force=true
+        ;;
+      -b | --backup) backup=true ;;
+      -B | --background) background=true ;;
+      -i | --interactive) interactive=true ;;
+      -*)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+      *) target="$1" ;;
+    esac
+    shift
+  done
+
+  if [ "$interactive" = true ] && [ "$background" = true ]; then
+    echo -e "${CB_RED}🚨 Error: --interactive and --background cannot be combined.${C_RESET}"
+    return 1
+  fi
+
+  local export_dir="${EXPORT_DIR:-/tmp/exports}"
+
+  if [ "$interactive" = true ]; then
+    __mt_export_cleanup_interactive
+    return $?
+  fi
+
+  if [ "$background" = true ]; then
+    force=true
+    quiet=true
+    local log_out
+    log_out="${LOG_DIR:-$HOME/.bash.d/data/logs}/export_cleanup_$(date +%s).log"
+    local cmd_str
+    printf -v cmd_str '__mt_export_cleanup_run %q %q %q %q %q %q' \
+      "$export_dir" "$target" "$force" "$quiet" "$backup" "$background"
+    __mt_bg_run "mt-export-cleanup" "$log_out" "$cmd_str"
+    return 0
+  fi
+
+  __mt_export_cleanup_run "$export_dir" "$target" "$force" "$quiet" "$backup" "$background"
+}
