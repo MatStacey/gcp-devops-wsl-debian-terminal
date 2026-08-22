@@ -353,12 +353,17 @@ __mt_push_update_commit_and_raise_pr() {
 
 #######################################
 # System: Sync local bash configs to terminal dotfiles repo and create a Pull Request
-# Usage: mt-push-update [-i|--issue issue_num] [-s|--shellcheck] [-b|--backup] [optional_message]
+# Usage: mt-push-update [-i|--issue <num>] [-s|--shellcheck] [-b|--backup] [-m|--no-ai] [-d|--delete-merged] [--prompt-remote] [-g|--merge] [message]
 # Options:
-#   -i, --issue <num>  Optional issue number to link to the Pull Request
-#   -s, --shellcheck   Run ShellCheck locally before pushing to catch errors early
-#   -b, --backup       Create a zip backup of .bash.d and .bashrc before syncing
-#   $@                 Optional commit message string
+#   -i, --issue <num>    Optional issue number to link to the Pull Request
+#   -s, --shellcheck     Run ShellCheck locally before pushing to catch errors early
+#   -b, --backup         Create a zip backup of .bash.d and .bashrc before syncing
+#   -m, --no-ai          Skip AI commit-grouping/README summarization; the next
+#                        non-flag argument (if any) is used as the commit message
+#   -d, --delete-merged  Clean up local branches already merged into the default branch
+#   --prompt-remote      With -d, also prompt to delete the matching remote branches
+#   -g, --merge          Auto-merge the created PR via 'gh pr merge --admin --squash'
+#   $@                   Optional commit message string
 #######################################
 mt-push-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
