@@ -228,6 +228,21 @@ Complex bash functions, framework utilities, and automated workflows.
 |---|---|
 | `kns` | Kubernetes: Get or explicitly set the active namespace in the current context |
 
+### Docker: Container Management Utilities
+| Command | Description |
+|---|---|
+| `docker-ls` | Docker: List all running containers in a clean table format |
+| `docker-nuke` | Docker: Aggressive cleanup of all unused containers, images, and volumes |
+| `docker-reboot-all` | Docker: Restart all currently running Docker containers |
+| `docker-sandbox` | Docker: Spin up a temporary, throwaway container sandbox |
+| `docker-shell` | Docker: Interactive fuzzy-finder to exec into a running container |
+| `docker-tail` | Docker: Concurrently tail logs from multiple selected containers, each |
+
+### Framework: Repository Scaffolding from Blueprints
+| Command | Description |
+|---|---|
+| `mt-blueprint` | Framework: Scaffold a new repository using standardized DevOps blueprints |
+
 ### GCP: Configuration & Authentication
 | Command | Description |
 |---|---|
