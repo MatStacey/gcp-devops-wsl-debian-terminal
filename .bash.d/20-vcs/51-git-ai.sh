@@ -312,7 +312,9 @@ Complex bash functions, framework utilities, and automated workflows." >> "$repo
 
   local clean_updates
   if echo "$raw_text" | jq -e . > /dev/null 2>&1; then
-    clean_updates=$(echo "$raw_text" | jq -r '.message // .code')
+    # Only ever take the prose 'message' field -- 'code' is for the
+    # patch-generation workflow, never for the README summary.
+    clean_updates=$(echo "$raw_text" | jq -r '.message // empty')
   else
     clean_updates="$raw_text"
   fi
