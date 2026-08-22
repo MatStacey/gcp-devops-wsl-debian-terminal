@@ -61,7 +61,18 @@ tf-val-all() {
     ' _ "{}"
 }
 
-# Bypass the custom kubectl wrapper when generating completions to prevent terminal echo
-# shellcheck disable=SC1090
-if command -v kubectl > /dev/null 2>&1; then source <(command kubectl completion bash); fi
+# Bypass the custom kubectl wrapper when generating completions to prevent terminal echo.
+# Cached: spawning `kubectl completion bash` fresh costs ~25ms every shell
+# start, but its output only changes when the kubectl binary itself is
+# upgraded, so generate it once and source the cached copy (same pattern as
+# the zoxide cache in 02-utilities/20-aliases.sh).
+if command -v kubectl > /dev/null 2>&1; then
+  KUBECTL_COMPLETION_CACHE="$HOME/.bash.d/data/cache/.kubectl_completion.bash"
+  if [ ! -f "$KUBECTL_COMPLETION_CACHE" ]; then
+    mkdir -p "$HOME/.bash.d/data/cache"
+    command kubectl completion bash > "$KUBECTL_COMPLETION_CACHE" 2> /dev/null
+  fi
+  # shellcheck disable=SC1090
+  source "$KUBECTL_COMPLETION_CACHE"
+fi
 if command -v terraform > /dev/null 2>&1; then complete -C "$(which terraform)" terraform; fi
