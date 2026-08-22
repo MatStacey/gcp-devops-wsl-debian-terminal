@@ -285,13 +285,17 @@ mt-ai-readme() {
 }
 
 #######################################
-# Git: Generate COMMANDS.md reference and ask AI to update README.md summary
+# Git: Generate the COMMANDS.md reference from the mytools TSV index. Pure
+# local rendering, no AI/network calls -- must run unconditionally on every
+# sync regardless of whether AI summarization (-m) is enabled, since it's
+# the framework's only source of an up-to-date command list.
 # Arguments:
 #   $1 - Target repository directory path
 #######################################
-__git_sync_ai_docs() {
+__git_sync_generate_commands_md() {
   local repo_dir="$1"
   echo "📚 Generating COMMANDS.md reference..."
+  mytools > /dev/null
   cat << 'MARKDOWN_EOF' > "$repo_dir/COMMANDS.md"
 # MT DevOps Framework - Command Reference
 
@@ -303,22 +307,31 @@ This document is automatically generated on every sync and lists all available f
 Shortcuts for common commands and CLI replacements.
 MARKDOWN_EOF
 
-  if [ -f "$HOME/.bash.d/data/cache/.mt_data.tsv" ]; then
-    local awk_script="$HOME/.bash.d/lib/awk/commands_md.awk"
-    local tsv_data="$HOME/.bash.d/data/cache/.mt_data.tsv"
+  [ -f "$HOME/.bash.d/data/cache/.mt_data.tsv" ] || return 0
 
-    # shellcheck disable=SC2129  # sequential appends interleaved with a heredoc block below; grouping would hurt readability
-    awk -v target_type="alias" -f "$awk_script" <(sort -t$'	' -k2,2 -k3,3 "$tsv_data") >> "$repo_dir/COMMANDS.md"
+  local awk_script="$HOME/.bash.d/lib/awk/commands_md.awk"
+  local tsv_data="$HOME/.bash.d/data/cache/.mt_data.tsv"
 
-    echo -e "
+  # shellcheck disable=SC2129  # sequential appends interleaved with a heredoc block below; grouping would hurt readability
+  awk -v target_type="alias" -f "$awk_script" <(sort -t$'	' -k2,2 -k3,3 "$tsv_data") >> "$repo_dir/COMMANDS.md"
+
+  echo -e "
 ---
 
 ## 🛠️ Functions
 Complex bash functions, framework utilities, and automated workflows." >> "$repo_dir/COMMANDS.md"
 
-    awk -v target_type="func" -f "$awk_script" <(sort -t$'	' -k2,2 -k3,3 "$tsv_data") >> "$repo_dir/COMMANDS.md"
-  fi
+  awk -v target_type="func" -f "$awk_script" <(sort -t$'	' -k2,2 -k3,3 "$tsv_data") >> "$repo_dir/COMMANDS.md"
+}
 
+#######################################
+# Git: Ask the configured AI to summarize the staged diff and replace
+# README.md's "Recent Updates & Enhancements" section with the result
+# Arguments:
+#   $1 - Target repository directory path
+#######################################
+__git_sync_ai_update_readme_summary() {
+  local repo_dir="$1"
   local provider="${DEFAULT_AI:-gemini}"
   if [ "$provider" = "gemini" ] && [[ -z "${GEMINI_API_KEY:-}" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" ]]; then return 0; fi
   if [ "$provider" = "claude" ] && [[ -z "${CLAUDE_API_KEY:-}" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" ]]; then return 0; fi

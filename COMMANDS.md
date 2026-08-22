@@ -111,7 +111,6 @@ Shortcuts for common commands and CLI replacements.
 | `cd-bashd` | System: Change directory to ~/.bash.d |
 | `cd-git-home` | System: Change directory to ~/vcs |
 | `cd-git-personal` | System: Change directory to ~/vcs/personal |
-| `mt` | System: Print all aliases and functions (MyTools Engine) |
 | `mt-home` | System: Change directory to ~/.bash.d |
 | `refresh` | System: Reload Bash profile and caches |
 | `reload` | System: Reload Bash profile and caches |
@@ -183,8 +182,9 @@ Complex bash functions, framework utilities, and automated workflows.
 ### Base64 Encoding & Decoding Utilities
 | Command | Description |
 |---|---|
-| `base64-dec` | System: Decode a Base64 string, file, or stream |
-| `base64-enc` | System: Encode a string, file, or stream to Base64 |
+| `base64-cli` | System: Encode or decode a string, file, or stream to/from Base64 |
+| `base64-dec` | System: Decode a Base64 string, file, or stream (shortcut for `base64-cli -d`) |
+| `base64-enc` | System: Encode a string, file, or stream to Base64 (shortcut for `base64-cli`) |
 
 ### Configuration Management
 | Command | Description |
@@ -193,20 +193,28 @@ Complex bash functions, framework utilities, and automated workflows.
 | `mt-get-gemini-status` | AI: Print current Gemini API model version and extended reasoning mode toggle |
 | `mt-load-config` | Config: Forcefully re-parse config.yaml and reload environment variables |
 | `mt-open-config` | Config: Open bash.d directory and config.yaml in IDE |
+| `mt-set-cicd` | Config: Set default CI/CD provider |
 | `mt-set-default-ai` | Config: Set default AI model provider |
 | `mt-set-default-ide` | Config: Set default terminal IDE launcher |
 | `mt-set-theme` | Config: Set terminal color theme |
 | `mt-setup` | Config: Launch the interactive Master Setup Wizard Menu |
-| `mt-setup-ai` | Config: Interactive AI Setup Menu |
-| `mt-setup-cicd` | Config: Interactive CI/CD Setup Menu |
-| `mt-setup-docker` | Config: Interactive Docker Setup Menu |
-| `mt-setup-exports` | Config: Interactive Exports Setup Menu |
-| `mt-setup-git` | Config: Interactive Git Setup Menu |
-| `mt-setup-paths` | Config: Interactive Paths Setup Menu |
+| `mt-setup-ai` | Config: Interactive AI Setup Menu (deprecated alias) |
+| `mt-setup-cicd` | Config: Interactive CI/CD Setup Menu (deprecated alias) |
+| `mt-setup-docker` | Config: Interactive Docker Setup Menu (deprecated alias) |
+| `mt-setup-exports` | Config: Interactive Exports Setup Menu (deprecated alias) |
+| `mt-setup-git` | Config: Interactive Git Setup Menu (deprecated alias) |
+| `mt-setup-paths` | Config: Interactive Paths Setup Menu (deprecated alias) |
 | `mt-set-upstream-path` | Config: Set the upstream repository path for framework updates |
-| `mt-setup-system` | Config: Interactive System Setup Menu |
+| `mt-setup-system` | Config: Interactive System Setup Menu (deprecated alias) |
 | `mt-toggle-ai` | Config: Toggle global AI prompt and workflow integration (true/false) |
 | `mt-toggle-format-on-push` | Config: Toggle global format-on-push behavior (true/false) |
+| `mt-wizard-ai` | Config: Interactive AI Setup Menu |
+| `mt-wizard-cicd` | Config: Interactive CI/CD Setup Menu |
+| `mt-wizard-docker` | Config: Interactive Docker Setup Menu |
+| `mt-wizard-exports` | Config: Interactive Exports Setup Menu |
+| `mt-wizard-git` | Config: Interactive Git Setup Menu |
+| `mt-wizard-paths` | Config: Interactive Paths Setup Menu -- prompts for and persists the |
+| `mt-wizard-system` | Config: Interactive System Setup Menu |
 
 ### Container Orchestration
 | Command | Description |
@@ -223,11 +231,12 @@ Complex bash functions, framework utilities, and automated workflows.
 |---|---|
 | `gcl-config` | GCP: List active configuration properties |
 | `gcl-export-vars` | GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell |
-| `gcl-get-project` | GCP: Print active project ID |
-| `gcl-get-project-number` | GCP: Print active project Number (API call required) |
-| `gcl-get-region` | GCP: Print active compute region |
-| `gcl-get-user` | GCP: Print active user account |
-| `gcl-get-zone` | GCP: Print active compute zone |
+| `gcl-get` | GCP: Print an active gcloud configuration property |
+| `gcl-get-project` | GCP: Print active project ID (shortcut for `gcl-get project`) |
+| `gcl-get-project-number` | GCP: Print active project Number, API call required (shortcut for `gcl-get project-number`) |
+| `gcl-get-region` | GCP: Print active compute region (shortcut for `gcl-get region`) |
+| `gcl-get-user` | GCP: Print active user account (shortcut for `gcl-get user`) |
+| `gcl-get-zone` | GCP: Print active compute zone (shortcut for `gcl-get zone`) |
 | `gcl-org-policies` | GCP: List org policies for active project |
 | `gcl-update` | GCP: Update Google Cloud CLI tools |
 | `gcp-login` | GCP: Login to user & application default |
@@ -272,7 +281,9 @@ Complex bash functions, framework utilities, and automated workflows.
 ### LLM Context & Export Utilities
 | Command | Description |
 |---|---|
+| `mt-copy` | LLM: Copy a file or directory tree to clipboard with headers and extension filters |
 | `mt-export` | LLM: Export codebase to text/zip for LLM context window using dynamic schemas |
+| `mt-export-cleanup` | LLM: Safely remove stale mt-export output from EXPORT_DIR |
 
 ### MT Repo Hub - AI & Heuristic Metadata Dashboard
 | Command | Description |
@@ -282,15 +293,17 @@ Complex bash functions, framework utilities, and automated workflows.
 ### MyTools Documentation & Runner
 | Command | Description |
 |---|---|
-| `mt-aliases` | MyTools: List all documented shell aliases |
-| `mt-cat` | MyTools: List all tools within a specific category |
-| `mt-cats` | MyTools: List all available command categories |
+| `mt` | MyTools: Central dispatcher -- run any framework command as `mt <name>` |
+| `mt-aliases` | MyTools: List all documented shell aliases (shortcut for `mt-list --alias`) |
+| `mt-cat` | MyTools: List all tools within a specific category (shortcut for `mt-list <category>`) |
+| `mt-cats` | MyTools: List all available command categories (shortcut for `mt-list`) |
 | `mt-config` | MyTools: Display active framework configuration variables |
 | `mt-dump` | MyTools: Generate a detailed technical Markdown dump of all functions and aliases |
-| `mt-funcs` | MyTools: List all documented shell functions |
+| `mt-funcs` | MyTools: List all documented shell functions (shortcut for `mt-list --func`) |
 | `mt-fzf` | MyTools: Interactive fuzzy-finder to search for a command |
 | `mt-get-version` | System: Print the current local version of the terminal profile |
 | `mt-help` | MyTools: Display detailed help and source code for a command |
+| `mt-list` | MyTools: List all available command categories |
 | `mt-lookup` | MyTools: Search through available mytools commands with tab-completion |
 | `mt-refresh-caches` | System: Forcefully clear and rebuild all background caches (.env, mytools, updates) |
 | `mt-run` | MyTools: Interactive fuzzy-finder to select and execute a command |
@@ -305,9 +318,9 @@ Complex bash functions, framework utilities, and automated workflows.
 | `ide` | System: Open current directory in the default IDE (VSCode/IntelliJ) |
 | `mt-dotfiles` | System: Change directory to dotfiles repository root |
 | `mt-open-homepage` | System: Open dotfiles repository remote URL in default web browser |
-| `win-ai-workspace` | AI: Open unified AI workspace in the platform's native file manager |
-| `win-docker` | Docker: Open Docker root directory in the platform's native file manager |
-| `win-sync` | System: Open sync repository in the platform's native file manager |
+| `win-ai-workspace` | AI: Open unified AI workspace in the platform's native file manager (shortcut for `win ai`) |
+| `win-docker` | Docker: Open Docker root directory in the platform's native file manager (shortcut for `win docker`) |
+| `win-sync` | System: Open sync repository in the platform's native file manager (shortcut for `win sync`) |
 
 ### System & Environment Bootstrap
 | Command | Description |
@@ -320,9 +333,9 @@ Complex bash functions, framework utilities, and automated workflows.
 | Command | Description |
 |---|---|
 | `clip` | System: Pipe output to the system clipboard (e.g. cat file | clip) |
-| `win` | System: Open current directory in the platform's native file manager |
-| `win-export` | System: Open ~/vcs/personal/exports in the platform's native file manager |
-| `win-vcs` | System: Open ~/vcs in the platform's native file manager |
+| `win` | System: Open a directory in the platform's native file manager |
+| `win-export` | System: Open ~/vcs/personal/exports in the platform's native file manager (shortcut for `win export`) |
+| `win-vcs` | System: Open ~/vcs in the platform's native file manager (shortcut for `win vcs`) |
 
 ### Terraform & AI Integrations
 | Command | Description |

@@ -258,10 +258,12 @@ __mt_push_update_commit_and_raise_pr() {
     shfmt -i 2 -ci -sr -w . > /dev/null 2>&1 || true
   fi
 
+  __git_sync_generate_commands_md "$repo_dir"
+
   if [ "$skip_ai" = true ]; then
     echo -e "${C_DIM}⏩ Skipping AI README summarization (-m active)...${C_RESET}"
   else
-    __git_sync_ai_docs "$repo_dir"
+    __git_sync_ai_update_readme_summary "$repo_dir"
   fi
   if [ $? -eq 100 ]; then
     echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
