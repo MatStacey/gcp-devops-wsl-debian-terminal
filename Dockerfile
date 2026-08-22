@@ -22,15 +22,15 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     && apt-get update && apt-get install -y --no-install-recommends \
     google-cloud-cli terraform packer gh \
     && rm -rf /var/lib/apt/lists/* \
-    && useradd -m -s /bin/bash devops \
+    && useradd -m -s /bin/bash -u 1000 devops \
     && echo "devops ALL=(ALL) NOPASSWD:ALL" >> /etc/sudoers
 
 # 2. Add a lightweight healthcheck to monitor container responsiveness
 HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
-    CMD python3 --version || exit 1
+    CMD ["sh", "-c", "python3 --version || exit 1"]
 
 # 3. Drop root privileges and switch to the development user
-USER devops
+USER 1000:1000
 WORKDIR /home/devops
 
 # 4. Inject pipx binaries into the path
@@ -41,7 +41,7 @@ COPY .bashrc install.sh /tmp/mt-devops-framework/
 COPY .bash.d/ /tmp/mt-devops-framework/.bash.d/
 
 # 6. Install Python tooling and run the profile installer in a single layer
-# hadolint ignore=DL3003,DL3004,DL3013,SC1091
+# hadolint ignore=DL3003,DL3004,DL3013,SC1091,SC3054
 RUN source /tmp/mt-devops-framework/.bash.d/config/dependencies.sh \
     && for dep in "${PYTHON_DEPENDENCIES[@]}"; do pipx install "${dep##*:}"; done \
     && cd /tmp/mt-devops-framework \
