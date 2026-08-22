@@ -174,6 +174,26 @@ mt-set-default-ai() {
 }
 
 #######################################
+# Config: Set default CI/CD provider
+# Usage: mt-set-cicd "github|bitbucket|gitlab|azure|jenkins"
+# Arguments:
+#   $1 - CI/CD provider identifier
+#######################################
+mt-set-cicd() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [[ "$1" != "github" && "$1" != "bitbucket" && "$1" != "gitlab" && "$1" != "azure" && "$1" != "jenkins" ]]; then
+    echo "Usage: mt-set-cicd <github|bitbucket|gitlab|azure|jenkins>"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "cicd" "provider" "$1"
+  export CICD_PROVIDER="$1"
+  echo "✅ CI/CD provider set to $1."
+}
+
+#######################################
 # Config: Toggle global AI prompt and workflow integration (true/false)
 #######################################
 mt-toggle-ai() {
@@ -284,13 +304,13 @@ mt-setup() {
 
   case "$choice" in
     1*) __mt_setup_quick ;;
-    2*) mt-setup-system ;;
-    3*) mt-setup-ai ;;
-    4*) mt-setup-exports ;;
-    5*) mt-setup-paths ;;
-    6*) mt-setup-git ;;
-    7*) mt-setup-cicd ;;
-    8*) mt-setup-docker ;;
+    2*) mt-wizard-system ;;
+    3*) mt-wizard-ai ;;
+    4*) mt-wizard-exports ;;
+    5*) mt-wizard-paths ;;
+    6*) mt-wizard-git ;;
+    7*) mt-wizard-cicd ;;
+    8*) mt-wizard-docker ;;
     *)
       echo "⚠️ Setup cancelled."
       return 0
@@ -338,7 +358,7 @@ __mt_setup_quick() {
 #######################################
 # Config: Interactive System Setup Menu
 #######################################
-mt-setup-system() {
+mt-wizard-system() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -354,9 +374,21 @@ mt-setup-system() {
 }
 
 #######################################
+# Config: Interactive System Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-system instead.
+#######################################
+mt-setup-system() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-system "$@"
+}
+
+#######################################
 # Config: Interactive AI Setup Menu
 #######################################
-mt-setup-ai() {
+mt-wizard-ai() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -387,9 +419,21 @@ mt-setup-ai() {
 }
 
 #######################################
+# Config: Interactive AI Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-ai instead.
+#######################################
+mt-setup-ai() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-ai "$@"
+}
+
+#######################################
 # Config: Interactive Exports Setup Menu
 #######################################
-mt-setup-exports() {
+mt-wizard-exports() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -405,9 +449,21 @@ mt-setup-exports() {
 }
 
 #######################################
+# Config: Interactive Exports Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-exports instead.
+#######################################
+mt-setup-exports() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-exports "$@"
+}
+
+#######################################
 # Config: Interactive Paths Setup Menu
 #######################################
-mt-setup-paths() {
+mt-wizard-paths() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -435,9 +491,21 @@ mt-setup-paths() {
 }
 
 #######################################
+# Config: Interactive Paths Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-paths instead.
+#######################################
+mt-setup-paths() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-paths "$@"
+}
+
+#######################################
 # Config: Interactive Git Setup Menu
 #######################################
-mt-setup-git() {
+mt-wizard-git() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -462,9 +530,21 @@ mt-setup-git() {
 }
 
 #######################################
+# Config: Interactive Git Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-git instead.
+#######################################
+mt-setup-git() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-git "$@"
+}
+
+#######################################
 # Config: Interactive CI/CD Setup Menu
 #######################################
-mt-setup-cicd() {
+mt-wizard-cicd() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -476,9 +556,21 @@ mt-setup-cicd() {
 }
 
 #######################################
+# Config: Interactive CI/CD Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-cicd instead.
+#######################################
+mt-setup-cicd() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-cicd "$@"
+}
+
+#######################################
 # Config: Interactive Docker Setup Menu
 #######################################
-mt-setup-docker() {
+mt-wizard-docker() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -487,6 +579,18 @@ mt-setup-docker() {
   read -r -p "Restart Blocklist (comma-separated) [${DOCKER_BLOCKLIST:-redis,postgres,local-db}]: " blk
   [ -n "$blk" ] && python3 "$CONFIG_MANAGER" update "docker" "restart_blocklist" "$blk"
   echo -e "${CB_GREEN}✅ Docker config updated.${C_RESET}"
+}
+
+#######################################
+# Config: Interactive Docker Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-docker instead.
+#######################################
+mt-setup-docker() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-docker "$@"
 }
 
 #######################################
