@@ -214,11 +214,7 @@ mt-backup() {
   local list_mode=false
   local format="zip"
 
-  # Explicitly query config.yaml first to ensure we get the latest value even if env cache lags
-  local cfg_backup_dir
-  cfg_backup_dir=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("paths", {}).get("backup_dir", ""))' 2> /dev/null)
-
-  local base_dest="${BACKUP_DIR:-${cfg_backup_dir:-/tmp/backups}}"
+  local base_dest="${BACKUP_DIR:-/tmp/backups}"
 
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
@@ -245,9 +241,7 @@ mt-backup() {
     shift
   done
 
-  # Dynamically load the warning threshold from config.yaml (default 500MB)
-  local threshold_mb
-  threshold_mb=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("system", yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("core", {})).get("backup_warning_mb", 500))' 2> /dev/null)
+  local threshold_mb="${BACKUP_WARNING_MB:-500}"
 
   if ! [[ "$threshold_mb" =~ ^[0-9]+$ ]]; then
     echo -e "${CB_RED}🚨 Error: 'backup_warning_mb' in config.yaml is invalid ('$threshold_mb'). It must be a whole number.${C_RESET}"
