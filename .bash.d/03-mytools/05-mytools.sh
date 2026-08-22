@@ -812,7 +812,7 @@ mt-dump() {
 
   echo -e "${CB_BLUE}📝 Generating technical reference manual...${C_RESET}"
 
-  cat << 'HDR' > "$out_file"
+  cat << HDR > "$out_file"
 # 🛠️ MT DevOps Framework - Technical Command Reference
 
 > **Auto-generated Reference Document**  

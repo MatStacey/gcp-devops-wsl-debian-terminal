@@ -1,12 +1,14 @@
 # 🛠️ MT DevOps Framework - Technical Command Reference
 
 > **Auto-generated Reference Document**  
-> Generated: $(date)  
-> Environment: $(uname -s) ($(uname -m))
+> Generated: Sat Aug 22 05:30:05 PM BST 2026  
+> Environment: Linux (x86_64)
 
 ---
 
+
 ## 🔗 Shell Aliases
+
 - **`mt-reload-config`** *(Configuration Management)*: Config: Forcefully re-parse config.yaml and reload environment variables
 - **`k`** *(Container Orchestration (Kubernetes) Aliases)*: Kubernetes: Core Kubectl Wrapper
 - **`ka`** *(Container Orchestration (Kubernetes) Aliases)*: Kubernetes: Apply configuration from file
@@ -58,6 +60,7 @@
 - **`gcl-ps-topics`** *(GCP: Resources & Services)*: GCP: PubSub - List topics
 - **`gcp-crf-ls`** *(GCP: Resources & Services)*: GCP: Cloud Run Functions - List functions
 - **`gcs-ls`** *(GCP: Resources & Services)*: GCP: Cloud Storage - List buckets or contents
+- **`mt-history`** *(General System Utilities)*: System: Display history of executed framework commands (Alias)
 - **`cat`** *(Modern CLI Replacements)*: CLI: bat - Print file contents with syntax highlighting
 - **`ccat`** *(Modern CLI Replacements)*: CLI: bat - Print file contents with line numbers & Git gutters
 - **`json-fmt`** *(Modern CLI Replacements)*: CLI: jq - Pretty-print JSON stream
@@ -65,13 +68,13 @@
 - **`ls`** *(Modern CLI Replacements)*: CLI: eza - List files with directories first
 - **`rg`** *(Modern CLI Replacements)*: CLI: rg - Search with smart case, include hidden, ignore .git
 - **`tree`** *(Modern CLI Replacements)*: CLI: eza - Display directory structure as a tree
+- **`tree-clean`** *(Modern CLI Replacements)*: CLI: eza - Display directory structure ignoring bloat (.git, node_modules, etc)
 - **`yaml-fmt`** *(Modern CLI Replacements)*: CLI: yq - Pretty-print YAML stream
 - **`mt-search`** *(MyTools Documentation & Runner)*: MyTools: Search through available mytools commands (Alias)
 - **`cd-mt-git-local`** *(Path & URL Launchers (Config-Driven))*: System: Change directory to dotfiles repository root (Alias)
 - **`cd-bashd`** *(System & Navigation Aliases)*: System: Change directory to ~/.bash.d
 - **`cd-git-home`** *(System & Navigation Aliases)*: System: Change directory to ~/vcs
 - **`cd-git-personal`** *(System & Navigation Aliases)*: System: Change directory to ~/vcs/personal
-- **`mt`** *(System & Navigation Aliases)*: System: Print all aliases and functions (MyTools Engine)
 - **`mt-home`** *(System & Navigation Aliases)*: System: Change directory to ~/.bash.d
 - **`refresh`** *(System & Navigation Aliases)*: System: Reload Bash profile and caches
 - **`reload`** *(System & Navigation Aliases)*: System: Reload Bash profile and caches
@@ -108,6 +111,9 @@
 - **`tf-scan`** *(Terraform & Kubernetes Wrappers)*: Terraform: Scan local terraform directory (./terraform) with Checkov
 - **`git-clean-local`** *(Version Control (Git) - Core Helpers)*: Git: Delete local and remote branches merged into default branch
 - **`mt-hard-reload`** *(Zoxide (Smart cd replacement))*: System: Forcefully clear and rebuild all background caches and reload profile
+- **`mtindp`** *(Zoxide (Smart cd replacement))*: MT-Framework: Update the DevOps-MT-Framework with Shellcheck and Backup Creation
+- **`mtupd`** *(Zoxide (Smart cd replacement))*: Version Control (Git) - Profile Synchronisation: Auto-sync framework with Shellcheck, Backup and Auto-Merge
+- **`mtupd-ai`** *(Zoxide (Smart cd replacement))*: Version Control (Git) - Update: Update Framework with Shellcheck, Backup, Auto-Merge and AI
 
 ---
 
@@ -116,10 +122,27 @@
 
 ### 📂 AI Workflows & LLM API Integration
 
+
 #### `ai`
-> AI: Query configured LLM with prompt and optional context
+
+> AI: Query configured LLM with prompt and optional context	/home/mst/.bash.d/30-ai/60-ai.sh
 
 ```bash
+#######################################
+# AI: Query configured LLM with prompt and optional context
+# Globals:
+#   DEFAULT_AI
+# Usage: ai [OPTIONS] <prompt>
+# Options:
+#   -m <model>     Override provider model (gemini, claude, local)
+#   -t <title>     Set context title
+#   -e             Attach entire active directory as context
+#   -f <file>      Attach a single file as context
+#   -o <out_file>  Save output directly to specified file
+#   -v <version>   Override model version
+#   -x             Force extended reasoning mode
+#   -h, --help     Show this help menu
+#######################################
 ai() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -177,9 +200,16 @@ ai() {
 ```
 
 #### `ai-explain`
-> AI: Explain a terminal command in detail
+
+> AI: Explain a terminal command in detail	/home/mst/.bash.d/30-ai/60-ai.sh
 
 ```bash
+#######################################
+# AI: Explain a terminal command in detail
+# Usage: ai-explain "<command>"
+# Arguments:
+#   $1 - Command string to explain
+#######################################
 ai-explain() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -195,9 +225,13 @@ ai-explain() {
 ```
 
 #### `mt-ai-debug`
-> AI: Debug and explain the last failed terminal command
+
+> AI: Debug and explain the last failed terminal command	/home/mst/.bash.d/30-ai/60-ai.sh
 
 ```bash
+#######################################
+# AI: Debug and explain the last failed terminal command
+#######################################
 mt-ai-debug() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -218,124 +252,194 @@ mt-ai-debug() {
 }
 ```
 
+#### `mt-ai-quota`
+
+> AI: Check API quota and rate limits for the active AI provider	/home/mst/.bash.d/30-ai/60-ai.sh
+
+```bash
+#######################################
+# AI: Check API quota and rate limits for the active AI provider
+# Usage: mt-ai-quota
+# Globals:
+#   DEFAULT_AI
+#######################################
+mt-ai-quota() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local provider="${DEFAULT_AI:-gemini}"
+
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+  echo -e "${CB_CYAN} 📊 AI Provider Quota Check (${provider^})${C_RESET}"
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+
+  case "$provider" in
+    claude) __mt_ai_quota_check_claude ;;
+    gemini) __mt_ai_quota_check_gemini ;;
+    local)
+      echo -e "  ${CB_GREEN}✅ Local LLM selected.${C_RESET}"
+      echo -e "  ${C_DIM}No cloud quotas apply to localhost environments! Run indefinitely.${C_RESET}"
+      ;;
+  esac
+
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+}
+```
 
 ### 📂 Base64 Encoding & Decoding Utilities
 
-#### `base64-dec`
-> System: Decode a Base64 string, file, or stream
+
+#### `base64-cli`
+
+> System: Encode or decode a string, file, or stream to/from Base64	/home/mst/.bash.d/02-utilities/25-encoding.sh
 
 ```bash
+#######################################
+# System: Encode or decode a string, file, or stream to/from Base64
+# Usage: base64-cli [-d] [-f file] [-o file] [string]
+# Arguments:
+#   -d          Decode instead of encode
+#   -f <file>   Path to local input file
+#   -o <file>   Path to write output file (defaults to stdout)
+#   [string]    Literal string to encode/decode if no file or stdin is provided
+#######################################
+base64-cli() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local input_file="" output_file="" input_str="" decode=false
+
+  local OPTIND opt
+  while getopts "df:o:" opt; do
+    case ${opt} in
+      d) decode=true ;;
+      f) input_file="$OPTARG" ;;
+      o) output_file="$OPTARG" ;;
+      \?)
+        echo "Usage: base64-cli [-d] [-f file] [-o file] [string]" >&2
+        return 1
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+  input_str="$*"
+
+  local b64_flag=() verb="Encoded"
+  if [ "$decode" = true ]; then
+    b64_flag=(-d)
+    verb="Decoded"
+  fi
+
+  local result=""
+
+  if [ -n "$input_file" ]; then
+    if [ ! -f "$input_file" ]; then
+      echo -e "${C_RED}🚨 Error: Input file '$input_file' not found.${C_RESET}" >&2
+      return 1
+    fi
+    result=$(base64 "${b64_flag[@]}" < "$input_file")
+  elif [ -n "$input_str" ]; then
+    result=$(echo -n "$input_str" | base64 "${b64_flag[@]}")
+  else
+    if [ ! -t 0 ]; then
+      result=$(base64 "${b64_flag[@]}")
+    else
+      echo "Usage: base64-cli [-d] [-f file] [-o file] [string]" >&2
+      return 1
+    fi
+  fi
+
+  if [ -n "$output_file" ]; then
+    echo -n "$result" > "$output_file"
+    echo -e "${C_GREEN}✅ ${verb} output written to $output_file${C_RESET}"
+  else
+    echo "$result"
+  fi
+}
+```
+
+#### `base64-dec`
+
+> System: Decode a Base64 string, file, or stream (shortcut for `base64-cli -d`)	/home/mst/.bash.d/02-utilities/25-encoding.sh
+
+```bash
+#######################################
+# System: Decode a Base64 string, file, or stream (shortcut for `base64-cli -d`)
+# Arguments:
+#   -f <file>   Path to local input file containing Base64 text
+#   -o <file>   Path to write output file (defaults to stdout)
+#   [string]    Literal Base64 string to decode if no file or stdin is provided
+#######################################
 base64-dec() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-
-  local input_file="" output_file="" input_str=""
-
-  local OPTIND opt
-  while getopts "f:o:" opt; do
-    case ${opt} in
-      f) input_file="$OPTARG" ;;
-      o) output_file="$OPTARG" ;;
-      \?)
-        echo "Usage: base64-dec [-f file] [-o file] [string]" >&2
-        return 1
-        ;;
-    esac
-  done
-  shift $((OPTIND - 1))
-  input_str="$*"
-
-  local decoded=""
-
-  if [ -n "$input_file" ]; then
-    if [ ! -f "$input_file" ]; then
-      echo -e "${C_RED}🚨 Error: Input file '$input_file' not found.${C_RESET}" >&2
-      return 1
-    fi
-    decoded=$(base64 -d < "$input_file")
-  elif [ -n "$input_str" ]; then
-    decoded=$(echo -n "$input_str" | base64 -d)
-  else
-    if [ ! -t 0 ]; then
-      decoded=$(base64 -d)
-    else
-      echo "Usage: base64-dec [-f file] [-o file] [string]" >&2
-      return 1
-    fi
-  fi
-
-  if [ -n "$output_file" ]; then
-    echo -n "$decoded" > "$output_file"
-    echo -e "${C_GREEN}✅ Decoded output written to $output_file${C_RESET}"
-  else
-    echo "$decoded"
-  fi
+  base64-cli -d "$@"
 }
 ```
 
 #### `base64-enc`
-> System: Encode a string, file, or stream to Base64
+
+> System: Encode a string, file, or stream to Base64 (shortcut for `base64-cli`)	/home/mst/.bash.d/02-utilities/25-encoding.sh
 
 ```bash
+#######################################
+# System: Encode a string, file, or stream to Base64 (shortcut for `base64-cli`)
+# Arguments:
+#   -f <file>   Path to local input file
+#   -o <file>   Path to write output file (defaults to stdout)
+#   [string]    Literal string to encode if no file or stdin is provided
+#######################################
 base64-enc() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-
-  local input_file="" output_file="" input_str=""
-
-  local OPTIND opt
-  while getopts "f:o:" opt; do
-    case ${opt} in
-      f) input_file="$OPTARG" ;;
-      o) output_file="$OPTARG" ;;
-      \?)
-        echo "Usage: base64-enc [-f file] [-o file] [string]" >&2
-        return 1
-        ;;
-    esac
-  done
-  shift $((OPTIND - 1))
-  input_str="$*"
-
-  local encoded=""
-
-  if [ -n "$input_file" ]; then
-    if [ ! -f "$input_file" ]; then
-      echo -e "${C_RED}🚨 Error: Input file '$input_file' not found.${C_RESET}" >&2
-      return 1
-    fi
-    encoded=$(base64 < "$input_file")
-  elif [ -n "$input_str" ]; then
-    encoded=$(echo -n "$input_str" | base64)
-  else
-    if [ ! -t 0 ]; then
-      encoded=$(base64)
-    else
-      echo "Usage: base64-enc [-f file] [-o file] [string]" >&2
-      return 1
-    fi
-  fi
-
-  if [ -n "$output_file" ]; then
-    echo -n "$encoded" > "$output_file"
-    echo -e "${C_GREEN}✅ Encoded output written to $output_file${C_RESET}"
-  else
-    echo "$encoded"
-  fi
+  base64-cli "$@"
 }
 ```
 
-
 ### 📂 Configuration Management
 
-#### `mt-get-gemini-status`
-> AI: Print current Gemini API model version and extended reasoning mode toggle
+
+#### `mt-add-sync-url`
+
+> Config: Set the sync repository URL	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
+#######################################
+# Config: Set the sync repository URL
+# Arguments:
+#   $1 - Remote repository URL
+#######################################
+mt-add-sync-url() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [ -z "$1" ]; then
+    echo "Usage: mt-add-sync-url <repo_url>"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "git" "sync_repo_url" "$1"
+  export SYNC_REPO_URL="$1"
+  echo "✅ Sync repository URL set to $1."
+}
+```
+
+#### `mt-get-gemini-status`
+
+> AI: Print current Gemini API model version and extended reasoning mode toggle	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# AI: Print current Gemini API model version and extended reasoning mode toggle
+#######################################
 mt-get-gemini-status() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -352,9 +456,13 @@ mt-get-gemini-status() {
 ```
 
 #### `mt-load-config`
-> Config: Forcefully re-parse config.yaml and reload environment variables
+
+> Config: Forcefully re-parse config.yaml and reload environment variables	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
+#######################################
+# Config: Forcefully re-parse config.yaml and reload environment variables
+#######################################
 mt-load-config() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -369,7 +477,12 @@ mt-load-config() {
   if [ -f "$CONFIG_MANAGER" ]; then
     python3 "$CONFIG_MANAGER" load-env > "$env_cache"
     chmod 600 "$env_cache" 2> /dev/null
+    # shellcheck disable=SC1090
     source "$env_cache"
+    if [ -f "$HOME/vcs/secrets/secrets.sh" ]; then
+      # shellcheck disable=SC1091
+      source "$HOME/vcs/secrets/secrets.sh"
+    fi
     echo -e "${CB_GREEN}✅ Config reloaded! Active variables updated.${C_RESET}"
   else
     echo -e "${CB_RED}🚨 Error: config_manager.py not found.${C_RESET}"
@@ -379,9 +492,16 @@ mt-load-config() {
 ```
 
 #### `mt-open-config`
-> Config: Open bash.d directory and config.yaml in IDE
+
+> Config: Open bash.d directory and config.yaml in IDE	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
+#######################################
+# Config: Open bash.d directory and config.yaml in IDE
+# Usage: mt-open-config [-ide vscode|intellij]
+# Options:
+#   -ide <name>   Override default IDE launcher
+#######################################
 mt-open-config() {
   local selected_ide="${DEFAULT_IDE:-vscode}"
   local args=()
@@ -413,16 +533,51 @@ mt-open-config() {
   fi
 
   echo "🚀 Opening bash config in $selected_ide..."
-  [ "$selected_ide" = "intellij" ] &&
-    { __launch_intellij "$config_dir" "$config_file" || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS."; } ||
+  if [ "$selected_ide" = "intellij" ]; then
+    __launch_intellij "$config_dir" "$config_file" || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS."
+  else
     code "$config_dir" "$config_file"
+  fi
+}
+```
+
+#### `mt-set-cicd`
+
+> Config: Set default CI/CD provider	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# Config: Set default CI/CD provider
+# Usage: mt-set-cicd "github|bitbucket|gitlab|azure|jenkins"
+# Arguments:
+#   $1 - CI/CD provider identifier
+#######################################
+mt-set-cicd() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [[ "$1" != "github" && "$1" != "bitbucket" && "$1" != "gitlab" && "$1" != "azure" && "$1" != "jenkins" ]]; then
+    echo "Usage: mt-set-cicd <github|bitbucket|gitlab|azure|jenkins>"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "cicd" "provider" "$1"
+  export CICD_PROVIDER="$1"
+  echo "✅ CI/CD provider set to $1."
 }
 ```
 
 #### `mt-set-default-ai`
-> Config: Set default AI model provider
+
+> Config: Set default AI model provider	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
+#######################################
+# Config: Set default AI model provider
+# Usage: mt-set-default-ai "gemini|claude|local"
+# Arguments:
+#   $1 - AI provider identifier
+#######################################
 mt-set-default-ai() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -439,9 +594,16 @@ mt-set-default-ai() {
 ```
 
 #### `mt-set-default-ide`
-> Config: Set default terminal IDE launcher
+
+> Config: Set default terminal IDE launcher	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
+#######################################
+# Config: Set default terminal IDE launcher
+# Usage: mt-set-default-ide "vscode|intellij"
+# Arguments:
+#   $1 - IDE identifier (vscode or intellij)
+#######################################
 mt-set-default-ide() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -458,9 +620,16 @@ mt-set-default-ide() {
 ```
 
 #### `mt-set-theme`
-> Config: Set terminal color theme
+
+> Config: Set terminal color theme	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
+#######################################
+# Config: Set terminal color theme
+# Usage: mt-set-theme "theme_name"
+# Arguments:
+#   $1 - Valid theme name (e.g. default, dracula, monokai)
+#######################################
 mt-set-theme() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -479,9 +648,13 @@ mt-set-theme() {
 ```
 
 #### `mt-setup`
-> Config: Launch the interactive Master Setup Wizard Menu
+
+> Config: Launch the interactive Master Setup Wizard Menu	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
+#######################################
+# Config: Launch the interactive Master Setup Wizard Menu
+#######################################
 mt-setup() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -509,13 +682,13 @@ mt-setup() {
 
   case "$choice" in
     1*) __mt_setup_quick ;;
-    2*) mt-setup-system ;;
-    3*) mt-setup-ai ;;
-    4*) mt-setup-exports ;;
-    5*) mt-setup-paths ;;
-    6*) mt-setup-git ;;
-    7*) mt-setup-cicd ;;
-    8*) mt-setup-docker ;;
+    2*) mt-wizard-system ;;
+    3*) mt-wizard-ai ;;
+    4*) mt-wizard-exports ;;
+    5*) mt-wizard-paths ;;
+    6*) mt-wizard-git ;;
+    7*) mt-wizard-cicd ;;
+    8*) mt-wizard-docker ;;
     *)
       echo "⚠️ Setup cancelled."
       return 0
@@ -528,10 +701,209 @@ mt-setup() {
 ```
 
 #### `mt-setup-ai`
-> Config: Interactive AI Setup Menu
+
+> Config: Interactive AI Setup Menu (deprecated alias)	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
+#######################################
+# Config: Interactive AI Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-ai instead.
+#######################################
 mt-setup-ai() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-ai "$@"
+}
+```
+
+#### `mt-setup-cicd`
+
+> Config: Interactive CI/CD Setup Menu (deprecated alias)	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# Config: Interactive CI/CD Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-cicd instead.
+#######################################
+mt-setup-cicd() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-cicd "$@"
+}
+```
+
+#### `mt-setup-docker`
+
+> Config: Interactive Docker Setup Menu (deprecated alias)	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# Config: Interactive Docker Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-docker instead.
+#######################################
+mt-setup-docker() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-docker "$@"
+}
+```
+
+#### `mt-setup-exports`
+
+> Config: Interactive Exports Setup Menu (deprecated alias)	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# Config: Interactive Exports Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-exports instead.
+#######################################
+mt-setup-exports() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-exports "$@"
+}
+```
+
+#### `mt-setup-git`
+
+> Config: Interactive Git Setup Menu (deprecated alias)	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# Config: Interactive Git Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-git instead.
+#######################################
+mt-setup-git() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-git "$@"
+}
+```
+
+#### `mt-setup-paths`
+
+> Config: Interactive Paths Setup Menu (deprecated alias)	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# Config: Interactive Paths Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-paths instead.
+#######################################
+mt-setup-paths() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-paths "$@"
+}
+```
+
+#### `mt-set-upstream-path`
+
+> Config: Set the upstream repository path for framework updates	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# Config: Set the upstream repository path for framework updates
+# Arguments:
+#   $1 - The repository path (e.g., "MatStacey/mt-devops-framework")
+#######################################
+mt-set-upstream-path() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  if [ -z "$1" ]; then
+    echo "Usage: mt-set-upstream-path <MatStacey/mt-devops-framework>"
+    return 1
+  fi
+  python3 "$CONFIG_MANAGER" update "git" "upstream_repo_path" "$1"
+  export UPSTREAM_REPO_PATH="$1"
+  echo "✅ Upstream repository path set to $1."
+}
+```
+
+#### `mt-setup-system`
+
+> Config: Interactive System Setup Menu (deprecated alias)	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# Config: Interactive System Setup Menu (deprecated alias)
+# Deprecated: use mt-wizard-system instead.
+#######################################
+mt-setup-system() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  mt-wizard-system "$@"
+}
+```
+
+#### `mt-toggle-ai`
+
+> Config: Toggle global AI prompt and workflow integration (true/false)	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# Config: Toggle global AI prompt and workflow integration (true/false)
+#######################################
+mt-toggle-ai() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local new_val="true"
+  [ "${AI_ENABLED:-true}" = "true" ] && new_val="false"
+  python3 "$CONFIG_MANAGER" update "ai" "enabled" "$new_val"
+  export AI_ENABLED="$new_val"
+  echo "✅ AI integration set to $new_val."
+}
+```
+
+#### `mt-toggle-format-on-push`
+
+> Config: Toggle global format-on-push behavior (true/false)	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# Config: Toggle global format-on-push behavior (true/false)
+#######################################
+mt-toggle-format-on-push() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local current="${GIT_FORMAT_ON_PUSH:-true}"
+  local next="true"
+  [ "$current" = "true" ] && next="false"
+
+  python3 "$CONFIG_MANAGER" update "git" "format_on_push" "$next"
+  export GIT_FORMAT_ON_PUSH="$next"
+  echo "✅ Format-on-push set to $next."
+}
+```
+
+#### `mt-wizard-ai`
+
+> Config: Interactive AI Setup Menu	/home/mst/.bash.d/00-system/00-config.sh
+
+```bash
+#######################################
+# Config: Interactive AI Setup Menu
+#######################################
+mt-wizard-ai() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -545,16 +917,12 @@ mt-setup-ai() {
   echo -e "\n${CB_CYAN}Gemini Settings:${C_RESET}"
   read -r -p "Gemini Model Version [${GEMINI_VERSION:-gemini-3.6-flash}]: " g_ver
   [ -n "$g_ver" ] && python3 "$CONFIG_MANAGER" update "ai.gemini" "version" "$g_ver"
-  read -r -s -p "Update Gemini API Key (Leave blank to keep current): " g_key
-  echo
-  [ -n "$g_key" ] && python3 "$CONFIG_MANAGER" update "ai.gemini" "api_key" "$g_key"
+  echo -e "  ${C_DIM}🔑 Manage your Gemini API Key directly in ~/vcs/secrets/secrets.sh${C_RESET}"
 
   echo -e "\n${CB_CYAN}Claude Settings:${C_RESET}"
   read -r -p "Claude Model Version [${CLAUDE_VERSION:-claude-3-7-sonnet-latest}]: " c_ver
   [ -n "$c_ver" ] && python3 "$CONFIG_MANAGER" update "ai.claude" "version" "$c_ver"
-  read -r -s -p "Update Claude API Key (Leave blank to keep current): " c_key
-  echo
-  [ -n "$c_key" ] && python3 "$CONFIG_MANAGER" update "ai.claude" "api_key" "$c_key"
+  echo -e "  ${C_DIM}🔑 Manage your Claude API Key directly in ~/vcs/secrets/secrets.sh${C_RESET}"
 
   echo -e "\n${CB_CYAN}Local AI Settings:${C_RESET}"
   read -r -p "Local AI Base URL [${LOCAL_AI_BASE_URL:-http://localhost:11434/v1}]: " l_url
@@ -566,11 +934,15 @@ mt-setup-ai() {
 }
 ```
 
-#### `mt-setup-cicd`
-> Config: Interactive CI/CD Setup Menu
+#### `mt-wizard-cicd`
+
+> Config: Interactive CI/CD Setup Menu	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
-mt-setup-cicd() {
+#######################################
+# Config: Interactive CI/CD Setup Menu
+#######################################
+mt-wizard-cicd() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -582,11 +954,15 @@ mt-setup-cicd() {
 }
 ```
 
-#### `mt-setup-docker`
-> Config: Interactive Docker Setup Menu
+#### `mt-wizard-docker`
+
+> Config: Interactive Docker Setup Menu	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
-mt-setup-docker() {
+#######################################
+# Config: Interactive Docker Setup Menu
+#######################################
+mt-wizard-docker() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -598,11 +974,15 @@ mt-setup-docker() {
 }
 ```
 
-#### `mt-setup-exports`
-> Config: Interactive Exports Setup Menu
+#### `mt-wizard-exports`
+
+> Config: Interactive Exports Setup Menu	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
-mt-setup-exports() {
+#######################################
+# Config: Interactive Exports Setup Menu
+#######################################
+mt-wizard-exports() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -618,11 +998,15 @@ mt-setup-exports() {
 }
 ```
 
-#### `mt-setup-git`
-> Config: Interactive Git Setup Menu
+#### `mt-wizard-git`
+
+> Config: Interactive Git Setup Menu	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
-mt-setup-git() {
+#######################################
+# Config: Interactive Git Setup Menu
+#######################################
+mt-wizard-git() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -647,58 +1031,66 @@ mt-setup-git() {
 }
 ```
 
-#### `mt-setup-paths`
-> Config: Interactive Paths Setup Menu
+#### `mt-wizard-paths`
+
+> Config: Interactive Paths Setup Menu -- prompts for and persists the	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
-mt-setup-paths() {
+#######################################
+# Config: Interactive Paths Setup Menu -- prompts for and persists the
+# framework's core filesystem paths (VCS roots, dotfiles repo, AI
+# workspace, IAM scripts, Docker root, export/backup directories)
+# Usage: mt-wizard-paths
+# Globals:
+#   VCS_ROOT, VCS_PERSONAL, VCS_EXPORTS, DOTFILES_DIR, AI_WORKSPACE_DIR,
+#   SCRIPTS_IAM_DIR, DOCKER_ROOT_DIR, EXPORT_DIR, BACKUP_DIR, CONFIG_MANAGER
+#######################################
+mt-wizard-paths() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
   echo -e "${CB_BLUE}--- Paths Configuration ---${C_RESET}"
-  read -r -p "VCS Root [${VCS_ROOT:-~/vcs}]: " p1
-  [ -n "$p1" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_root" "$p1"
-  read -r -p "VCS Personal [${VCS_PERSONAL:-~/vcs/personal}]: " p2
-  [ -n "$p2" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_personal" "$p2"
-  read -r -p "VCS Exports [${VCS_EXPORTS:-~/vcs/personal/exports}]: " p3
-  [ -n "$p3" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_exports" "$p3"
-  read -r -p "Dotfiles Repo [${DOTFILES_DIR:-~/vcs/personal/mt-devops-framework}]: " p4
-  [ -n "$p4" ] && python3 "$CONFIG_MANAGER" update "paths" "dotfiles_dir" "$p4"
-  read -r -p "AI Workspace [${AI_WORKSPACE_DIR:-~/vcs/ai-workspace}]: " p5
-  [ -n "$p5" ] && python3 "$CONFIG_MANAGER" update "paths" "ai_workspace" "$p5"
-  read -r -p "IAM Scripts [${SCRIPTS_IAM_DIR:-~/vcs/scripts/iam}]: " p6
-  [ -n "$p6" ] && python3 "$CONFIG_MANAGER" update "paths" "scripts_iam" "$p6"
-  read -r -p "Docker Root [${DOCKER_ROOT_DIR:-~/.docker}]: " p7
-  [ -n "$p7" ] && python3 "$CONFIG_MANAGER" update "paths" "docker_root" "$p7"
+  local vcs_root_input
+  read -r -p "VCS Root [${VCS_ROOT:-~/vcs}]: " vcs_root_input
+  [ -n "$vcs_root_input" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_root" "$vcs_root_input"
+  local vcs_personal_input
+  read -r -p "VCS Personal [${VCS_PERSONAL:-~/vcs/personal}]: " vcs_personal_input
+  [ -n "$vcs_personal_input" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_personal" "$vcs_personal_input"
+  local vcs_exports_input
+  read -r -p "VCS Exports [${VCS_EXPORTS:-~/vcs/personal/exports}]: " vcs_exports_input
+  [ -n "$vcs_exports_input" ] && python3 "$CONFIG_MANAGER" update "paths" "vcs_exports" "$vcs_exports_input"
+  local dotfiles_dir_input
+  read -r -p "Dotfiles Repo [${DOTFILES_DIR:-~/vcs/personal/mt-devops-framework}]: " dotfiles_dir_input
+  [ -n "$dotfiles_dir_input" ] && python3 "$CONFIG_MANAGER" update "paths" "dotfiles_dir" "$dotfiles_dir_input"
+  local ai_workspace_input
+  read -r -p "AI Workspace [${AI_WORKSPACE_DIR:-~/vcs/workspaces/ai}]: " ai_workspace_input
+  [ -n "$ai_workspace_input" ] && python3 "$CONFIG_MANAGER" update "paths" "ai_workspace" "$ai_workspace_input"
+  local iam_scripts_input
+  read -r -p "IAM Scripts [${SCRIPTS_IAM_DIR:-/tmp/scripts/iam}]: " iam_scripts_input
+  [ -n "$iam_scripts_input" ] && python3 "$CONFIG_MANAGER" update "paths" "scripts_iam" "$iam_scripts_input"
+  local docker_root_input
+  read -r -p "Docker Root [${DOCKER_ROOT_DIR:-~/.docker}]: " docker_root_input
+  [ -n "$docker_root_input" ] && python3 "$CONFIG_MANAGER" update "paths" "docker_root" "$docker_root_input"
+  local export_dir_input
+  read -r -p "Export Dir [${EXPORT_DIR:-/tmp/exports}]: " export_dir_input
+  [ -n "$export_dir_input" ] && python3 "$CONFIG_MANAGER" update "paths" "export_dir" "$export_dir_input"
+  local backup_dir_input
+  read -r -p "Backup Dir [${BACKUP_DIR:-~/backups}]: " backup_dir_input
+  [ -n "$backup_dir_input" ] && python3 "$CONFIG_MANAGER" update "paths" "backup_dir" "$backup_dir_input"
   echo -e "${CB_GREEN}✅ Paths config updated.${C_RESET}"
 }
 ```
 
-#### `mt-set-upstream-path`
-> Config: Set the upstream repository path for framework updates
+#### `mt-wizard-system`
+
+> Config: Interactive System Setup Menu	/home/mst/.bash.d/00-system/00-config.sh
 
 ```bash
-mt-set-upstream-path() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  if [ -z "$1" ]; then
-    echo "Usage: mt-set-upstream-path <MatStacey/mt-devops-framework>"
-    return 1
-  fi
-  python3 "$CONFIG_MANAGER" update "git" "upstream_repo_path" "$1"
-  export UPSTREAM_REPO_PATH="$1"
-  echo "✅ Upstream repository path set to $1."
-}
-```
-
-#### `mt-setup-system`
-> Config: Interactive System Setup Menu
-
-```bash
-mt-setup-system() {
+#######################################
+# Config: Interactive System Setup Menu
+#######################################
+mt-wizard-system() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
@@ -714,62 +1106,38 @@ mt-setup-system() {
 }
 ```
 
-#### `mt-toggle-ai`
-> Config: Toggle global AI prompt and workflow integration (true/false)
-
-```bash
-mt-toggle-ai() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local new_val="true"
-  [ "${AI_ENABLED:-true}" = "true" ] && new_val="false"
-  python3 "$CONFIG_MANAGER" update "ai" "enabled" "$new_val"
-  export AI_ENABLED="$new_val"
-  echo "✅ AI integration set to $new_val."
-}
-```
-
-#### `mt-toggle-format-on-push`
-> Config: Toggle global format-on-push behavior (true/false)
-
-```bash
-mt-toggle-format-on-push() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local current="${GIT_FORMAT_ON_PUSH:-true}"
-  local next="true"
-  [ "$current" = "true" ] && next="false"
-
-  python3 "$CONFIG_MANAGER" update "git" "format_on_push" "$next"
-  export GIT_FORMAT_ON_PUSH="$next"
-  echo "✅ Format-on-push set to $next."
-}
-```
-
-
 ### 📂 Container Orchestration
 
+
 #### `kubectl`
-> Kubernetes: Core kubectl wrapper (preserves args)
+
+> Kubernetes: Core kubectl wrapper (preserves args)	/home/mst/.bash.d/10-infra/40-terraform-k8s.sh
 
 ```bash
+#######################################
+# Kubernetes: Core kubectl wrapper (preserves args)
+# Note: Does NOT intercept --help to preserve native kubectl help.
+# Run `mt-help kubectl` for framework documentation.
+#######################################
 kubectl() {
   echo "+ kubectl $*" >&2
   command kubectl "$@"
 }
 ```
 
-
 ### 📂 Container Orchestration (Kubernetes) Aliases
 
+
 #### `kns`
-> Kubernetes: Get or explicitly set the active namespace in the current context
+
+> Kubernetes: Get or explicitly set the active namespace in the current context	/home/mst/.bash.d/10-infra/42-kubectl-aliases.sh
 
 ```bash
+#######################################
+# Kubernetes: Get or explicitly set the active namespace in the current context
+# Arguments:
+#   $1 - (Optional) Namespace name to switch to. If blank, prints active namespace.
+#######################################
 kns() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -786,13 +1154,19 @@ kns() {
 }
 ```
 
-
 ### 📂 GCP: Configuration & Authentication
 
+
 #### `gcl-config`
-> GCP: List active configuration properties
+
+> GCP: List active configuration properties	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: List active configuration properties
+# Arguments:
+#   $@ - (Optional) Additional arguments passed directly to 'gcloud config list'
+#######################################
 gcl-config() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -803,9 +1177,17 @@ gcl-config() {
 ```
 
 #### `gcl-export-vars`
-> GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell
+
+> GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: Export PROJECT_ID and PROJECT_NUMBER env vars to shell
+# Arguments:
+#   $1 - (Optional) <project_id> to export.
+#        Pass '-ls' to list available projects.
+#        If left blank, opens an interactive fzf menu.
+#######################################
 gcl-export-vars() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -839,77 +1221,131 @@ gcl-export-vars() {
 }
 ```
 
-#### `gcl-get-project`
-> GCP: Print active project ID
+#### `gcl-get`
+
+> GCP: Print an active gcloud configuration property	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: Print an active gcloud configuration property
+# Usage: gcl-get <project|project-number|region|user|zone>
+#######################################
+gcl-get() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  case "$1" in
+    project) __get_gcp_config_val "project" ;;
+    project-number)
+      local project_id
+      project_id=$(__get_gcp_config_val "project")
+      [ -n "$project_id" ] && gcloud projects describe "$project_id" --format="value(projectNumber)"
+      ;;
+    region) __get_gcp_config_val "region" ;;
+    zone) __get_gcp_config_val "zone" ;;
+    user) __get_gcp_config_val "account" ;;
+    *)
+      echo "Usage: gcl-get <project|project-number|region|user|zone>" >&2
+      return 1
+      ;;
+  esac
+}
+```
+
+#### `gcl-get-project`
+
+> GCP: Print active project ID (shortcut for `gcl-get project`)	/home/mst/.bash.d/10-infra/30-gcp-config.sh
+
+```bash
+#######################################
+# GCP: Print active project ID (shortcut for `gcl-get project`)
+#######################################
 gcl-get-project() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __get_gcp_config_val "project"
+  gcl-get project
 }
 ```
 
 #### `gcl-get-project-number`
-> GCP: Print active project Number (API call required)
+
+> GCP: Print active project Number, API call required (shortcut for `gcl-get project-number`)	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: Print active project Number, API call required (shortcut for `gcl-get project-number`)
+#######################################
 gcl-get-project-number() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  local project_id
-  project_id=$(gcl-get-project)
-  [ -n "$project_id" ] && gcloud projects describe "$project_id" --format="value(projectNumber)"
+  gcl-get project-number
 }
 ```
 
 #### `gcl-get-region`
-> GCP: Print active compute region
+
+> GCP: Print active compute region (shortcut for `gcl-get region`)	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: Print active compute region (shortcut for `gcl-get region`)
+#######################################
 gcl-get-region() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __get_gcp_config_val "region"
+  gcl-get region
 }
 ```
 
 #### `gcl-get-user`
-> GCP: Print active user account
+
+> GCP: Print active user account (shortcut for `gcl-get user`)	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: Print active user account (shortcut for `gcl-get user`)
+#######################################
 gcl-get-user() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __get_gcp_config_val "account"
+  gcl-get user
 }
 ```
 
 #### `gcl-get-zone`
-> GCP: Print active compute zone
+
+> GCP: Print active compute zone (shortcut for `gcl-get zone`)	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: Print active compute zone (shortcut for `gcl-get zone`)
+#######################################
 gcl-get-zone() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __get_gcp_config_val "zone"
+  gcl-get zone
 }
 ```
 
 #### `gcl-org-policies`
-> GCP: List org policies for active project
+
+> GCP: List org policies for active project	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: List org policies for active project
+#######################################
 gcl-org-policies() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -922,9 +1358,13 @@ gcl-org-policies() {
 ```
 
 #### `gcl-update`
-> GCP: Update Google Cloud CLI tools
+
+> GCP: Update Google Cloud CLI tools	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: Update Google Cloud CLI tools
+#######################################
 gcl-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -940,9 +1380,13 @@ gcl-update() {
 ```
 
 #### `gcp-login`
-> GCP: Login to user & application default
+
+> GCP: Login to user & application default	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: Login to user & application default
+#######################################
 gcp-login() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -953,9 +1397,13 @@ gcp-login() {
 ```
 
 #### `gcp-login-adc`
-> GCP: Login to application default only
+
+> GCP: Login to application default only	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: Login to application default only
+#######################################
 gcp-login-adc() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -966,9 +1414,17 @@ gcp-login-adc() {
 ```
 
 #### `gcp-set-project`
-> GCP: Switch active project
+
+> GCP: Switch active project	/home/mst/.bash.d/10-infra/30-gcp-config.sh
 
 ```bash
+#######################################
+# GCP: Switch active project
+# Arguments:
+#   $1 - (Optional) <project_id> to switch to.
+#        Pass '-ls' to list available projects.
+#        If left blank, opens an interactive fzf menu.
+#######################################
 gcp-set-project() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -994,13 +1450,21 @@ gcp-set-project() {
 }
 ```
 
-
 ### 📂 GCP: Resources & Services
 
+
 #### `bq-query`
-> GCP: Run standard SQL query in BigQuery
+
+> GCP: Run standard SQL query in BigQuery	/home/mst/.bash.d/10-infra/31-gcp-services.sh
 
 ```bash
+#######################################
+# GCP: Run standard SQL query in BigQuery
+# Arguments:
+#   $1 - SQL query string (e.g., "SELECT...")
+# Outputs:
+#   Prints query results table to STDOUT
+#######################################
 bq-query() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1011,9 +1475,17 @@ bq-query() {
 ```
 
 #### `gcl-as-json`
-> GCP: Run any gcloud command and output as formatted JSON
+
+> GCP: Run any gcloud command and output as formatted JSON	/home/mst/.bash.d/10-infra/31-gcp-services.sh
 
 ```bash
+#######################################
+# GCP: Run any gcloud command and output as formatted JSON
+# Arguments:
+#   $@ - gcloud command and arguments
+# Outputs:
+#   Prints formatted JSON to STDOUT
+#######################################
 gcl-as-json() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1024,9 +1496,18 @@ gcl-as-json() {
 ```
 
 #### `gcp-crf-logs`
-> GCP: Tail logs of a Cloud Run Function
+
+> GCP: Tail logs of a Cloud Run Function	/home/mst/.bash.d/10-infra/31-gcp-services.sh
 
 ```bash
+#######################################
+# GCP: Tail logs of a Cloud Run Function
+# Arguments:
+#   $1 - Function Name
+#   $2 - Limit (default: 50)
+# Outputs:
+#   Prints log stream to STDOUT
+#######################################
 gcp-crf-logs() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1041,9 +1522,15 @@ gcp-crf-logs() {
 ```
 
 #### `gcp-gar-docker`
-> GCP: Configure Docker auth for Artifact Registry
+
+> GCP: Configure Docker auth for Artifact Registry	/home/mst/.bash.d/10-infra/31-gcp-services.sh
 
 ```bash
+#######################################
+# GCP: Configure Docker auth for Artifact Registry
+# Arguments:
+#   $1 - Region (e.g., us-central1)
+#######################################
 gcp-gar-docker() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1054,9 +1541,17 @@ gcp-gar-docker() {
 ```
 
 #### `gcp-get-secret`
-> GCP: Read the latest payload of a secret
+
+> GCP: Read the latest payload of a secret	/home/mst/.bash.d/10-infra/31-gcp-services.sh
 
 ```bash
+#######################################
+# GCP: Read the latest payload of a secret
+# Arguments:
+#   $1 - Secret Name
+# Outputs:
+#   Prints secret payload string to STDOUT
+#######################################
 gcp-get-secret() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1067,9 +1562,17 @@ gcp-get-secret() {
 ```
 
 #### `gcp-iam-show`
-> GCP: View IAM policy for the active project
+
+> GCP: View IAM policy for the active project	/home/mst/.bash.d/10-infra/31-gcp-services.sh
 
 ```bash
+#######################################
+# GCP: View IAM policy for the active project
+# Globals:
+#   gcl-get-project (Framework Function)
+# Outputs:
+#   Prints tabular IAM policy bindings to STDOUT
+#######################################
 gcp-iam-show() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1080,9 +1583,17 @@ gcp-iam-show() {
 ```
 
 #### `gcp-ps-pull`
-> GCP: Pull and auto-ack one message from a Pub/Sub subscription
+
+> GCP: Pull and auto-ack one message from a Pub/Sub subscription	/home/mst/.bash.d/10-infra/31-gcp-services.sh
 
 ```bash
+#######################################
+# GCP: Pull and auto-ack one message from a Pub/Sub subscription
+# Arguments:
+#   $1 - Subscription Name
+# Outputs:
+#   Prints the pulled message to STDOUT
+#######################################
 gcp-ps-pull() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1092,13 +1603,660 @@ gcp-ps-pull() {
 }
 ```
 
-
 ### 📂 General System Utilities
 
-#### `mt-top-files`
-> System: Display the top largest files in a directory
+
+#### `mt-alias`
+
+> System: Interactively create or update an alias	/home/mst/.bash.d/02-utilities/99-utils.sh
 
 ```bash
+#######################################
+# System: Interactively create or update an alias
+# Usage: mt-alias [-u alias_name] [-i]
+# Options:
+#   -u, --update <name>   Update a specific existing alias
+#   -i, --interactive     Select an existing alias to update via fzf
+#######################################
+mt-alias() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local update_name="" interactive=false
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -u | --update)
+        update_name="$2"
+        shift 2
+        ;;
+      -i | --interactive)
+        interactive=true
+        shift
+        ;;
+      *)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+    esac
+  done
+  if [ "$interactive" = true ]; then
+    update_name=$(awk -F'\t' '$1 == "alias" { printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv" | fzf --ansi --prompt="Select Alias to Update > " | awk '{print $1}')
+    [ -z "$update_name" ] && return 0
+  fi
+  local alias_name="$update_name" default_cmd="" default_cat="User Custom" default_desc="" aliases_file="$HOME/.bash.d/02-utilities/20-aliases.sh"
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+  if [ -n "$alias_name" ]; then
+    if ! grep -qE "^[ \t]*alias ${alias_name}=" "$aliases_file"; then
+      echo -e "${CB_RED}🚨 Error: Alias '${alias_name}' not found.${C_RESET}"
+      return 1
+    fi
+    echo -e "${CB_CYAN} 🛠️  Update Existing Alias: ${alias_name}${C_RESET}"
+    default_cmd=$(grep -E "^[ \t]*alias ${alias_name}=" "$aliases_file" | sed -E "s/^[ \t]*alias ${alias_name}=['\"]?//;s/['\"]?$//")
+    local tsv_line
+    tsv_line=$(awk -F'\t' -v n="$alias_name" '$1=="alias" && $3==n {print $2 "|" $4}' "$HOME/.bash.d/data/cache/.mt_data.tsv" | head -n 1)
+    if [ -n "$tsv_line" ]; then
+      default_cat=$(echo "$tsv_line" | cut -d'|' -f1)
+      default_desc=$(echo "$tsv_line" | cut -d'|' -f2)
+    fi
+  else
+    echo -e "${CB_CYAN} 🛠️  Create New Alias${C_RESET}"
+    read -r -p "1️⃣  Alias Name (e.g., kgpo)     : " alias_name
+    [ -z "$alias_name" ] && return 1
+    if grep -qE "^[ \t]*alias ${alias_name}=" "$aliases_file"; then
+      echo -e "${CB_RED}🚨 Alias already exists. Use -u to update.${C_RESET}"
+      return 1
+    fi
+  fi
+  echo -e "${CB_BLUE}==========================================================${C_RESET}"
+  local alias_cmd="" alias_cat="" alias_desc=""
+  read -r -e -i "$default_cmd" -p "2️⃣  Target Command             : " alias_cmd
+  [ -z "$alias_cmd" ] && return 1
+  read -r -e -i "$default_cat" -p "3️⃣  Category (e.g., Docker)    : " alias_cat
+  [ -z "$alias_cat" ] && alias_cat="User Custom"
+  read -r -e -i "$default_desc" -p "4️⃣  Description                : " alias_desc
+  [ -z "$alias_desc" ] && alias_desc="Custom shortcut for ${alias_cmd}"
+  if [ -n "$update_name" ]; then
+    python3 -c "import sys; p, n = sys.argv[1], sys.argv[2]
+with open(p, 'r') as f: l = f.read().split('\n')
+o, i = [], 0
+while i < len(l):
+    if l[i].startswith('#######################################'):
+        if any(x.startswith(f'alias {n}=') for x in l[i+1:i+10]):
+            while not l[i].startswith(f'alias {n}='): i += 1
+            i += 1
+            continue
+    if l[i].startswith(f'alias {n}='): i += 1; continue
+    o.append(l[i]); i += 1
+while o and o[-1].strip() == '': o.pop()
+with open(p, 'w') as f: f.write('\n'.join(o) + '\n')" "$aliases_file" "$alias_name"
+  fi
+  cat << ALIASEOF >> "$aliases_file"
+
+alias ${alias_name}='${alias_cmd}'
+ALIASEOF
+  # shellcheck disable=SC1090
+  source "$aliases_file"
+  mt-refresh-caches > /dev/null 2>&1
+  echo -e "${CB_GREEN}🎉 Success! You can now use '${alias_name}'.${C_RESET}"
+}
+```
+
+#### `mt-apply`
+
+> System: Safely execute or write clipboard code without terminal paste truncation	/home/mst/.bash.d/02-utilities/99-utils.sh
+
+```bash
+#######################################
+# System: Safely execute or write clipboard code without terminal paste truncation
+# Usage: mt-apply [optional_target_file_path]
+#######################################
+#######################################
+# System: Safely execute or write clipboard code without terminal paste truncation
+# Usage: mt-apply [optional_target_file_path]
+#######################################
+mt-apply() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local tmp_raw tmp_clean
+  tmp_raw=$(mktemp /tmp/mt_apply_raw_XXXXXX)
+  tmp_clean=$(mktemp /tmp/mt_apply_clean_XXXXXX)
+  local target_file="${1:-}"
+
+  if command -v powershell.exe > /dev/null 2>&1; then
+    powershell.exe -Command "Get-Clipboard" | tr -d "\r" > "$tmp_raw"
+  elif command -v xclip > /dev/null 2>&1; then
+    xclip -o -selection clipboard > "$tmp_raw"
+  elif command -v pbpaste > /dev/null 2>&1; then
+    pbpaste > "$tmp_raw"
+  else
+    echo -e "${CB_RED}🚨 No clipboard helper found.${C_RESET}"
+    rm -f "$tmp_raw" "$tmp_clean"
+    return 1
+  fi
+
+  if [ ! -s "$tmp_raw" ]; then
+    echo -e "${CB_YELLOW}⚠️ Clipboard is empty!${C_RESET}"
+    rm -f "$tmp_raw" "$tmp_clean"
+    return 1
+  fi
+
+  grep -v -E "^[[:space:]]*\`\`\`" "$tmp_raw" | sed -E "s/^[[:space:]]*\$[[:space:]]*//" > "$tmp_clean"
+
+  if [ -n "$target_file" ]; then
+    mkdir -p "$(dirname "$target_file")"
+    mv "$tmp_clean" "$target_file"
+    rm -f "$tmp_raw"
+    echo -e "${CB_GREEN}✅ Successfully written clipboard content to ${target_file}!${C_RESET}"
+    return 0
+  fi
+
+  if python3 -c 'import sys; txt=open(sys.argv[1]).read(); sys.exit(0 if ("import " in txt or "shutil." in txt or "os.path" in txt) and not "python3 -c" in txt else 1)' "$tmp_clean"; then
+    echo -e "${CB_BLUE}⚡ Executing native Python script from clipboard...${C_RESET}"
+    python3 "$tmp_clean"
+  else
+    echo -e "${CB_BLUE}⚡ Executing Bash script from clipboard...${C_RESET}"
+    bash "$tmp_clean"
+  fi
+
+  local exit_code=$?
+  rm -f "$tmp_raw" "$tmp_clean"
+  return $exit_code
+}
+```
+
+#### `mt-backup`
+
+> System: Create an archive backup of the current directory	/home/mst/.bash.d/02-utilities/99-utils.sh
+
+```bash
+#######################################
+# System: Create an archive backup of the current directory
+# Usage: mt-backup [-f|--force] [-l|--list] [-o|--output format] [-d|--dir path]
+# Options:
+#   -l, --list     List existing backups for the current directory
+#   -f, --force    Skip the size limit warning check
+#   -o, --output   Archive format: zip (default), rar, tz, gzip
+#   -d, --dir      Override the base destination directory
+# Globals:
+#   BACKUP_DIR
+#######################################
+mt-backup() {
+  local force=false
+  local list_mode=false
+  local format="zip"
+
+  local base_dest="${BACKUP_DIR:-/tmp/backups}"
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -l | --list) list_mode=true ;;
+      -f | --force) force=true ;;
+      -o | --output)
+        format="${2,,}"
+        shift
+        ;;
+      -d | --dir)
+        base_dest="$2"
+        shift
+        ;;
+      -h | --help)
+        mt-help "${FUNCNAME[0]}"
+        return 0
+        ;;
+      -*)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+      *) base_dest="$1" ;;
+    esac
+    shift
+  done
+
+  local threshold_mb="${BACKUP_WARNING_MB:-500}"
+
+  if ! [[ "$threshold_mb" =~ ^[0-9]+$ ]]; then
+    echo -e "${CB_RED}🚨 Error: 'backup_warning_mb' in config.yaml is invalid ('$threshold_mb'). It must be a whole number.${C_RESET}"
+    return 1
+  fi
+
+  if [ "$list_mode" = false ]; then
+    __mt_backup_check_size_warning || return 1
+  fi
+
+  # Sanitize target directory name (strip dots, special chars)
+  local raw_dir_name
+  raw_dir_name=$(basename "$(realpath "$PWD")")
+  local safe_dir_name
+  safe_dir_name=$(echo "$raw_dir_name" | tr -d '.' | sed 's/[^a-zA-Z0-9]/_/g')
+
+  # Resolve base destination, expanding ~ if present
+  local expanded_base="${base_dest/#\~/$HOME}"
+  local dest="${expanded_base}/${safe_dir_name}"
+
+  if [ "$list_mode" = true ]; then
+    __mt_backup_list
+    return 0
+  fi
+
+  __mt_backup_create
+}
+```
+
+#### `mt-cmd-history`
+
+> System: Display history of executed framework commands	/home/mst/.bash.d/02-utilities/99-utils.sh
+
+```bash
+#######################################
+# System: Display history of executed framework commands
+# Usage: mt-cmd-history [-i|--interactive] [-n count]
+# Options:
+#   -i, --interactive  Select a past framework command via fzf to re-run
+#   -n, --lines <num>  Number of entries to show (default: 20)
+#######################################
+mt-cmd-history() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local interactive=false
+  local limit=20
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -i | --interactive) interactive=true ;;
+      -n | --lines)
+        limit="$2"
+        shift
+        ;;
+      *)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  local tsv_file="$HOME/.bash.d/data/cache/.mt_data.tsv"
+  if [ ! -f "$tsv_file" ]; then
+    mt-refresh-caches > /dev/null 2>&1
+  fi
+
+  local tmp_cmds tmp_hist
+  tmp_cmds=$(mktemp)
+  tmp_hist=$(mktemp)
+
+  # Extract list of framework functions and aliases into a clean file
+  awk -F"\t" "{print \$3}" "$tsv_file" | sort -u | grep -v "^$" > "$tmp_cmds"
+
+  if [ ! -s "$tmp_cmds" ]; then
+    echo -e "${CB_RED}🚨 Failed to load framework command definitions.${C_RESET}"
+    rm -f "$tmp_cmds" "$tmp_hist"
+    return 1
+  fi
+
+  # Flush current in-memory history to disk
+  history -a 2> /dev/null || true
+
+  local hist_source="$HOME/.bash_history"
+
+  if [ -f "$hist_source" ]; then
+    # Force grep -a (text mode) and strip non-printable characters
+    strings "$hist_source" 2> /dev/null | grep -a -v -E "^(#|[[:space:]]*$)" |
+      sed "s/^[[:space:]]*[0-9]*[[:space:]]*//" |
+      awk -v cmd_file="$tmp_cmds" '
+      BEGIN {
+        while ((getline line < cmd_file) > 0) {
+          if (line != "") cmds[line] = 1
+        }
+        close(cmd_file)
+      }
+      {
+        cmd = $1
+        sub(/^.*::/, "", cmd)
+        
+        # Match only if the FIRST word is an exact framework tool name
+        if (cmd in cmds) {
+          print $0
+        }
+      }
+    ' | awk "!seen[\$0]++" | tail -n "$limit" > "$tmp_hist"
+  fi
+
+  rm -f "$tmp_cmds"
+
+  if [ ! -s "$tmp_hist" ]; then
+    echo -e "${CB_YELLOW}⚠️ No recorded framework commands found in shell history.${C_RESET}"
+    rm -f "$tmp_hist"
+    return 0
+  fi
+
+  if [ "$interactive" = true ]; then
+    local selected_cmd
+    selected_cmd=$(fzf --prompt="Re-run Framework Command > " --header="Framework Command History" < "$tmp_hist")
+    rm -f "$tmp_hist"
+
+    if [ -n "$selected_cmd" ]; then
+      echo -e "${CB_GREEN}🚀 Executing:${C_RESET} ${selected_cmd}"
+      eval "$selected_cmd"
+    fi
+  else
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
+    echo -e "${CB_CYAN} 📜 Recent Framework Command History${C_RESET}"
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
+    awk -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" '{printf "  %s%3d%s  %s%s%s\n", yellow, NR, rst, white, $0, rst}' "$tmp_hist"
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
+    echo -e "${C_DIM}Run 'mt-history -i' to select and re-run a command via fzf.${C_RESET}"
+    rm -f "$tmp_hist"
+  fi
+}
+```
+
+#### `mt-jobs`
+
+> System: List and manage MT background jobs	/home/mst/.bash.d/02-utilities/99-utils.sh
+
+```bash
+#######################################
+# System: List and manage MT background jobs
+# Usage: mt-jobs [-i|--interactive] [-p|--purge] [-c|--clean]
+#######################################
+mt-jobs() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local jobs_file="$HOME/.bash.d/data/cache/.mt_jobs.tsv"
+
+  local interactive=false do_purge=false do_clean=false
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -i | --interactive) interactive=true ;;
+      -p | --purge) do_purge=true ;;
+      -c | --clean) do_clean=true ;;
+      *)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  if [ ! -f "$jobs_file" ] || [ ! -s "$jobs_file" ]; then
+    echo -e "${CB_YELLOW}⚠️ No background jobs found.${C_RESET}"
+    return 0
+  fi
+
+  local current_time
+  current_time=$(date +%s)
+
+  if [ "$do_purge" = true ]; then
+    __mt_jobs_purge
+    return 0
+  fi
+
+  if [ "$do_clean" = true ]; then
+    __mt_jobs_clean
+    return 0
+  fi
+
+  __mt_jobs_reap_orphans
+
+  local tmp_out
+  __mt_jobs_render_table
+
+  if [ "$interactive" = false ]; then
+    __mt_jobs_print_table
+    return 0
+  fi
+
+  __mt_jobs_interactive_select
+}
+```
+
+#### `mt-log`
+
+> System: Centralized logging for MyTools	/home/mst/.bash.d/02-utilities/99-utils.sh
+
+```bash
+#######################################
+# System: Centralized logging for MyTools
+# Arguments:
+#   $1 - Log level (INFO, SUCCESS, WARN, ERROR)
+#   $2 - Message
+#######################################
+mt-log() {
+  local level="$1"
+  local msg="$2"
+  local log_dir="${LOG_DIR:-$HOME/.bash.d/data/logs}"
+  local log_file="$log_dir/framework.log"
+
+  # Console Output
+  case "$level" in
+    INFO) echo -e "${CB_BLUE}ℹ️ ${msg}${C_RESET}" ;;
+    SUCCESS) echo -e "${CB_GREEN}✅ ${msg}${C_RESET}" ;;
+    WARN) echo -e "${CB_YELLOW}⚠️ ${msg}${C_RESET}" ;;
+    ERROR) echo -e "${CB_RED}🚨 ${msg}${C_RESET}" >&2 ;;
+    *) echo "$msg" ;;
+  esac
+
+  # File Logging (with 1MB basic rotation)
+  mkdir -p "$log_dir" 2> /dev/null
+  if [ -f "$log_file" ]; then
+    local size
+    size=$(wc -c < "$log_file" 2> /dev/null || echo 0)
+    if [ "$size" -gt "${LOG_ROTATE_BYTES:-1048576}" ]; then
+      mv "$log_file" "${log_file}.old" 2> /dev/null
+    fi
+  fi
+
+  local ts
+  ts=$(date +"%Y-%m-%d %H:%M:%S")
+  echo "[$ts] [$level] $msg" >> "$log_file" 2> /dev/null
+}
+```
+
+#### `mt-logs`
+
+> System: View, filter, and manage framework logs	/home/mst/.bash.d/02-utilities/99-utils.sh
+
+```bash
+#######################################
+# System: View, filter, and manage framework logs
+# Usage: mt-logs [-n lines] [-l level] [-s keyword] [-o] [-f] [-c]
+# Options:
+#   -n, --lines <num>     Number of lines to display (default: 50)
+#   -l, --level <level>   Filter by severity (INFO, SUCCESS, WARN, ERROR)
+#   -s, --search <term>   Search for a specific keyword
+#   -o, --open            Open the log file in your default IDE
+#   -f, --follow          Tail the logs live
+#   -c, --clear           Clear the log file
+#######################################
+mt-logs() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local log_file="${LOG_DIR:-$HOME/.bash.d/data/logs}/framework.log"
+  local lines=50
+  local level_filter=""
+  local search_term=""
+  local do_open=false
+  local do_follow=false
+  local do_clear=false
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -n | --lines)
+        lines="$2"
+        shift
+        ;;
+      -l | --level)
+        level_filter="${2^^}"
+        shift
+        ;;
+      -s | --search)
+        search_term="$2"
+        shift
+        ;;
+      -o | --open) do_open=true ;;
+      -f | --follow) do_follow=true ;;
+      -c | --clear) do_clear=true ;;
+      -*)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  if [ ! -f "$log_file" ]; then
+    echo -e "${CB_YELLOW}⚠️ No log file found at $log_file${C_RESET}"
+    return 0
+  fi
+
+  if [ "$do_clear" = true ]; then
+    true > "$log_file"
+    echo -e "${CB_GREEN}✅ Log file cleared.${C_RESET}"
+    return 0
+  fi
+
+  if [ "$do_open" = true ]; then
+    echo -e "${CB_BLUE}📂 Opening $log_file in ${DEFAULT_IDE:-vscode}...${C_RESET}"
+    if [ "${DEFAULT_IDE:-vscode}" = "intellij" ]; then
+      idea "$log_file" 2> /dev/null || cat "$log_file"
+    else
+      code "$log_file" 2> /dev/null || cat "$log_file"
+    fi
+    return 0
+  fi
+
+  if [ "$do_follow" = true ]; then
+    tail -f "$log_file"
+    return 0
+  fi
+
+  local cmd="cat \"$log_file\""
+  [ -n "$level_filter" ] && cmd="$cmd | grep \"\[$level_filter\]\""
+  [ -n "$search_term" ] && cmd="$cmd | grep -i \"$search_term\""
+  cmd="$cmd | tail -n $lines"
+
+  echo -e "${CB_CYAN}📜 Showing last $lines lines of framework logs...${C_RESET}"
+  [ -n "$level_filter" ] && echo -e "${C_DIM}   Level: $level_filter${C_RESET}"
+  [ -n "$search_term" ] && echo -e "${C_DIM}   Search: $search_term${C_RESET}"
+  echo -e "${CB_BLUE}----------------------------------------------------------${C_RESET}"
+
+  eval "$cmd"
+}
+```
+
+#### `mt-restore`
+
+> System: Restore framework from a zip backup	/home/mst/.bash.d/02-utilities/99-utils.sh
+
+```bash
+#######################################
+# System: Restore framework from a zip backup
+# Usage: mt-restore [backup_file] [-i|--interactive]
+# Options:
+#   -i, --interactive  Choose a backup from an fzf menu
+#######################################
+mt-restore() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local selected_backup=""
+  local backup_base_dir="${BACKUP_DIR:-$HOME/backups}"
+
+  if [ -n "$1" ] && [ "$1" != "-i" ] && [ "$1" != "--interactive" ]; then
+    if [ -f "$1" ]; then
+      selected_backup="$1"
+    elif [ -f "${backup_base_dir}/$1" ]; then
+      selected_backup="${backup_base_dir}/$1"
+    elif [ -f "${backup_base_dir}/bashd/$1" ]; then
+      selected_backup="${backup_base_dir}/bashd/$1"
+    else
+      echo -e "${CB_RED}🚨 Backup file not found: $1${C_RESET}"
+      return 1
+    fi
+  else
+    echo -e "${CB_BLUE}🔍 Scanning for available backups in ${backup_base_dir}...${C_RESET}"
+    local tmp_list
+    tmp_list=$(mktemp)
+    find "$backup_base_dir" -type f -name "*.zip" 2> /dev/null | sort -r > "$tmp_list"
+
+    if [ ! -s "$tmp_list" ]; then
+      echo -e "${CB_YELLOW}⚠️ No backup zip files found in ${backup_base_dir}.${C_RESET}"
+      rm -f "$tmp_list"
+      return 1
+    fi
+
+    selected_backup=$(fzf --prompt="Select Backup to Restore > " --header="Available Framework Backups" < "$tmp_list")
+    rm -f "$tmp_list"
+
+    [ -z "$selected_backup" ] && return 0
+  fi
+
+  echo -e "${CB_CYAN}📦 Selected Backup: ${selected_backup}${C_RESET}"
+  read -r -p "🚀 Are you sure you want to restore this backup? [y/N] " -n 1
+  echo
+  if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+    echo -e "${CB_RED}🛑 Restore aborted.${C_RESET}"
+    return 0
+  fi
+
+  # 1. Pre-restore Safety Backup
+  echo -e "${CB_BLUE}🛡️ Creating safety backup of current codebase before restoring...${C_RESET}"
+  local pre_dest="${backup_base_dir}/pre-restore"
+  mkdir -p "$pre_dest"
+  local timestamp
+  timestamp=$(date +"%Y%m%d_%H%M%S")
+  local safety_file="${pre_dest}/pre_restore_safety_${timestamp}.zip"
+
+  (
+    cd "$HOME" || exit 1
+    zip -q -r "$safety_file" .bash.d -x ".bash.d/.git/*" -x ".bash.d/data/cache/*" -x ".bash.d/node_modules/*" -x ".bash.d/**/__pycache__/*"
+  )
+  echo -e "${CB_GREEN}✅ Safety backup saved: ${safety_file}${C_RESET}"
+
+  # 2. Extract selected backup
+  echo -e "${CB_YELLOW}🔄 Restoring .bash.d directory...${C_RESET}"
+  if ! unzip -q -o "$selected_backup" -d "$HOME/"; then
+    echo -e "${CB_RED}🚨 Unzip failed during restore!${C_RESET}"
+    return 1
+  fi
+
+  # 3. Sync to Git Workspace
+  local git_repo_path="${DOTFILES_DIR:-$HOME/vcs/personal/mt-devops-framework}"
+  if [ -d "$git_repo_path" ]; then
+    echo -e "${CB_BLUE}🔄 Syncing restored files to Git workspace (${git_repo_path})...${C_RESET}"
+    rsync -a -u --delete "$HOME/.bash.d/" "${git_repo_path}/.bash.d/"
+  fi
+
+  echo -e "${CB_GREEN}🎉 Restore complete! Rebuilding caches...${C_RESET}"
+  mt-refresh-caches > /dev/null 2>&1
+}
+```
+
+#### `mt-top-files`
+
+> System: Display the top largest files in a directory	/home/mst/.bash.d/02-utilities/99-utils.sh
+
+```bash
+#######################################
+# System: Display the top largest files in a directory
+# Arguments:
+#   $1 - Count (default: 10)
+#   $2 - Target directory (default: .)
+#######################################
 mt-top-files() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1111,13 +2269,50 @@ mt-top-files() {
 }
 ```
 
+#### `mt-vcs-audit`
+
+> System: Audit VCS root for unorganized files and directories	/home/mst/.bash.d/02-utilities/99-utils.sh
+
+```bash
+#######################################
+# System: Audit VCS root for unorganized files and directories
+#######################################
+mt-vcs-audit() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local vcs_dir="${VCS_ROOT:-$HOME/vcs}"
+  echo -e "${CB_BLUE}🔍 Auditing ${vcs_dir} for unorganized items...${C_RESET}\n"
+
+  if command -v eza > /dev/null 2>&1; then
+    # Print a tree up to 3 levels deep, ignoring our organized folders
+    eza -la --tree --level=3 --group-directories-first -I "external|personal|work|workspaces|misc|.git" "$vcs_dir"
+  else
+    # Fallback to standard ls if eza is unavailable
+    # shellcheck disable=SC2010
+    ls -la "$vcs_dir" | grep -vE "(external|personal|work|workspaces|misc)"
+  fi
+}
+```
 
 ### 📂 Google Style Code Formatting
 
+
 #### `google-fmt`
-> Formats Python and Shell scripts according to Google Style Guides.
+
+> Formats Python and Shell scripts according to Google Style Guides.	/home/mst/.bash.d/03-mytools/07-formatting.sh
 
 ```bash
+#######################################
+# Formats Python and Shell scripts according to Google Style Guides.
+# Uses yapf for Python and shfmt for Shell scripts.
+# Outputs:
+#   Writes formatting status updates to STDOUT.
+# Returns:
+#   0 on success.
+#######################################
 google-fmt() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1149,13 +2344,17 @@ google-fmt() {
 }
 ```
 
-
 ### 📂 Infrastructure as Code
 
+
 #### `tf-val-all`
-> Terraform: Recursively validate and scan all Terraform directories
+
+> Terraform: Recursively validate and scan all Terraform directories	/home/mst/.bash.d/10-infra/40-terraform-k8s.sh
 
 ```bash
+#######################################
+# Terraform: Recursively validate and scan all Terraform directories
+#######################################
 tf-val-all() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1164,6 +2363,7 @@ tf-val-all() {
 
   local threads="${MAX_PARALLEL_THREADS:-8}"
 
+  # shellcheck disable=SC2016  # inner bash -c script intentionally uses its own $1, passed via the trailing _ "{}" args
   find terraform/ -type f -name "*.tf" -exec dirname {} \; | sort -u | xargs -I {} -P "$threads" bash -c '
         echo -e "\n🔍 Validating $1..."
         terraform -chdir="$1" init -backend=false > /dev/null 2>&1
@@ -1177,13 +2377,115 @@ tf-val-all() {
 }
 ```
 
-
 ### 📂 LLM Context & Export Utilities
 
-#### `mt-export`
-> LLM: Export codebase to text/zip for LLM context window using dynamic schemas
+
+#### `mt-copy`
+
+> LLM: Copy a file or directory tree to clipboard with headers and extension filters	/home/mst/.bash.d/03-mytools/06-llm-exports.sh
 
 ```bash
+#######################################
+# LLM: Copy a file or directory tree to clipboard with headers and extension filters
+# Usage: mt-copy [-e <extensions>] <file-or-directory>
+#######################################
+mt-copy() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local ext_list="" target=""
+  local OPTIND opt
+  while getopts "e:" opt; do
+    case ${opt} in
+      e) ext_list="$OPTARG" ;;
+      *)
+        echo "Usage: mt-copy [-e <extensions>] <file-or-directory>" >&2
+        return 1
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
+  target="${1:-.}"
+  if [ ! -e "$target" ]; then
+    echo -e "${CB_RED}🚨 Error: '$target' missing.${C_RESET}"
+    return 1
+  fi
+
+  local clip_cmd=""
+  if command -v clip.exe > /dev/null 2>&1; then
+    clip_cmd="clip.exe"
+  elif command -v pbcopy > /dev/null 2>&1; then
+    clip_cmd="pbcopy"
+  elif command -v xclip > /dev/null 2>&1; then
+    clip_cmd="xclip -selection clipboard"
+  else
+    echo "🚨 No clipboard utility."
+    return 1
+  fi
+
+  echo -e "${CB_BLUE}🔍 Scanning '$target'...${C_RESET}"
+
+  local temp_file
+  temp_file=$(mktemp)
+
+  local blocklist_regex="${EXPORT_BLOCKLIST:-(secret|token|credential|pass|key|rsa|env|lock\.hcl|__pycache__)}"
+
+  local filter_ext=".*"
+  if [ -n "$ext_list" ]; then
+    local ext_fmt
+    ext_fmt=$(echo "$ext_list" | sed 's/,/|/g; s/ //g')
+    filter_ext="\.(${ext_fmt})$"
+    echo -e "${C_DIM}   (Filtering for: $ext_list)${C_RESET}"
+  fi
+
+  local prune_dirs=(-name .git -o -name node_modules -o -name .terraform -o -name __pycache__ -o -name .venv)
+
+  if [ -d "$target" ]; then
+    find "$target" -type d \( "${prune_dirs[@]}" \) -prune -o -type f -print | grep -E -v "$blocklist_regex" | grep -Ei "$filter_ext" | while IFS= read -r file; do
+      if file -b --mime-encoding "$file" | grep -qv "binary"; then
+        echo -e "\n==> $file <==" >> "$temp_file"
+        cat "$file" >> "$temp_file"
+      fi
+    done
+  elif [ -f "$target" ]; then
+    echo -e "==> $target <==" >> "$temp_file"
+    cat "$target" >> "$temp_file"
+  fi
+
+  local bytes
+  bytes=$(wc -c < "$temp_file")
+  if [ "$bytes" -eq 0 ]; then
+    echo -e "${CB_YELLOW}⚠️ Nothing copied.${C_RESET}"
+  else
+    eval "$clip_cmd" < "$temp_file"
+    local lines
+    lines=$(wc -l < "$temp_file")
+    echo -e "${CB_GREEN}✅ Copied $lines lines to clipboard!${C_RESET}"
+  fi
+  rm -f "$temp_file"
+}
+```
+
+#### `mt-export`
+
+> LLM: Export codebase to text/zip for LLM context window using dynamic schemas	/home/mst/.bash.d/03-mytools/06-llm-exports.sh
+
+```bash
+#######################################
+# LLM: Export codebase to text/zip for LLM context window using dynamic schemas
+# Usage: mt-export [-d dir] [-s schema] [-z] [-q] [-p] [-v] [-i]
+# Options:
+#   -d, --dir <path>     Target directory to export (default: current directory)
+#   -s, --schema <name>  Export schema to apply (default, terraform, shell, python, springboot)
+#   -z, --zip            Compress output into a .zip file
+#   -q, --quiet          Do not automatically open the output directory
+#   -p, --plan           Dry-run: show estimated size and included files, prompt to proceed
+#   -v, --verbose        Show detailed terraform-style plan of inclusions/exclusions
+#   -i, --interactive    Open an interactive menu to adjust export files, format, and schema
+#######################################
 mt-export() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1194,15 +2496,26 @@ mt-export() {
   local schema_query="default"
   local zip_out=false
   local quiet_mode=false
+  local plan_mode=false
+  local verbose_mode=false
+  local interactive_mode=false
 
-  # Parse Arguments
   while [[ "$#" -gt 0 ]]; do
     case "$1" in
-      -d | --dir) target_dir="$2"; shift ;;
-      -s | --schema) schema_query="$2"; shift ;;
+      -d | --dir)
+        target_dir="$2"
+        shift
+        ;;
+      -s | --schema)
+        schema_query="$2"
+        shift
+        ;;
       -z | --zip) zip_out=true ;;
       -q | --quiet) quiet_mode=true ;;
-      *) target_dir="$1" ;; # Handle positional fallback
+      -p | --plan) plan_mode=true ;;
+      -v | --verbose) verbose_mode=true ;;
+      -i | --interactive) interactive_mode=true ;;
+      *) target_dir="$1" ;;
     esac
     shift
   done
@@ -1214,165 +2527,328 @@ mt-export() {
 
   local schemas_dir="$HOME/.bash.d/config/export/schemas"
   local schema_file=""
-
-  # Resolve the correct schema using Python
-  local py_script="
-import os, yaml, sys
-schemas_dir = sys.argv[1]
-query = sys.argv[2].lower()
-for f in os.listdir(schemas_dir):
-    if not f.endswith('.yaml'): continue
-    path = os.path.join(schemas_dir, f)
-    try:
-        with open(path, 'r') as yf:
-            data = yaml.safe_load(yf)
-            aliases = data.get('aliases', [])
-            if query in aliases or query == data.get('name', '').lower() or query == f.split('.')[0]:
-                print(path)
-                sys.exit(0)
-    except: pass
-print('')
-"
-  if command -v python3 > /dev/null 2>&1; then
-      schema_file=$(python3 -c "$py_script" "$schemas_dir" "$schema_query")
-  fi
-
-  if [ -z "$schema_file" ] || [ ! -f "$schema_file" ]; then
-    echo -e "${CB_YELLOW}⚠️ Schema '${schema_query}' not found. Falling back to default.${C_RESET}"
-    schema_file="$schemas_dir/default.yaml"
-  fi
-
-  # Extract Schema Values using yq
   local s_name="Code Export"
   local s_inc=".*"
   local s_exc=""
 
-  if command -v yq > /dev/null 2>&1; then
-    s_name=$(yq -r '.name // "Code Export"' "$schema_file")
-    s_inc=$(yq -r '.include_extensions // ".*"' "$schema_file")
-    s_exc=$(yq -r '.exclude_patterns // ""' "$schema_file")
-  fi
-
-  echo -e "${CB_BLUE}📦 Running: $s_name${C_RESET}"
-
-  # Resolve centralized exports directory
-  local dest_dir="${AI_WORKSPACE_DIR:-$HOME/vcs/ai-workspace}/exports"
-  mkdir -p "$dest_dir"
-
-  # Build the dynamic filename
-  local safe_dir_name
-  safe_dir_name=$(basename "$(realpath "$target_dir")")
-  local timestamp
-  timestamp=$(date +"%Y%m%d_%H%M%S")
-  local base_out_name="${timestamp}_${safe_dir_name}_${schema_query}"
-
   local tmp_file="/tmp/mt_export_${RANDOM}.txt"
   local file_list="/tmp/mt_export_files_${RANDOM}.txt"
+  local all_files="/tmp/mt_export_all_${RANDOM}.txt"
 
-  # Find files, exclude global blocklist, include specified extensions
-  eval "find \"$target_dir\" -type f" 2> /dev/null |
-    grep -E -vi "(${EXPORT_BLOCKLIST})" |
-    grep -E -i "\.(${s_inc})$" > "$file_list"
+  local date_prefix
+  date_prefix=$(date +"%Y%m%d")
 
-  # Optionally filter out schema-specific excluded patterns
-  if [ -n "$s_exc" ] && [ "$s_exc" != "null" ] && [ "$s_exc" != '""' ]; then
-    grep -E -vi "(${s_exc})" "$file_list" > "${file_list}.filtered"
-    mv "${file_list}.filtered" "$file_list"
+  local safe_dir_name
+  safe_dir_name=$(basename "$(realpath "$target_dir")" | tr '.' '_')
+
+  local dest_dir="${EXPORT_DIR:-/tmp/exports}/${safe_dir_name}"
+  mkdir -p "$dest_dir"
+  local out_ext="txt"
+  local v_num=1
+  local base_out_name=""
+
+  __mt_export_calc_output_name
+  __mt_export_build_file_lists
+
+  local __mt_export_aborted=false
+  if [ "$interactive_mode" = true ]; then
+    __mt_export_interactive_menu
+    [ "$__mt_export_aborted" = true ] && return 0
+  elif [ "$plan_mode" = true ]; then
+    __mt_export_plan_mode
+    [ "$__mt_export_aborted" = true ] && return 0
   fi
 
-  local total_files
-  total_files=$(wc -l < "$file_list")
+  __mt_export_check_file_count_guards || return 1
 
-  if [ "$total_files" -eq 0 ]; then
-    echo -e "${CB_YELLOW}⚠️ No files matched the schema '${schema_query}' in ${target_dir}.${C_RESET}"
-    rm -f "$file_list"
+  if [ "$plan_mode" = false ] && [ "$interactive_mode" = false ]; then
+    echo -e "${CB_BLUE}📦 Running: $s_name${C_RESET}"
+  fi
+
+  __mt_export_write_context_file
+  __mt_export_finalize
+}
+```
+
+#### `mt-export-cleanup`
+
+> LLM: Safely remove stale mt-export output from EXPORT_DIR	/home/mst/.bash.d/03-mytools/06-llm-exports.sh
+
+```bash
+#######################################
+# LLM: Safely remove stale mt-export output from EXPORT_DIR
+# Usage: mt-export-cleanup [-f] [-q] [-b] [-B] [-i] [target_dir]
+# Options:
+#   -f, --force        Skip the pre-flight table and confirmation prompt
+#   -q, --quiet        Suppress terminal output (implies --force)
+#   -b, --backup       Zip each target directory to BACKUP_DIR before
+#                      deleting (reuses mt-backup); a failed backup skips
+#                      deletion for that directory only
+#   -B, --background   Run as a background job (implies force and quiet);
+#                      track and view its result via mt-jobs -i
+#   -i, --interactive  Pick a target directory and toggle flags via fzf
+#   target_dir         Optional: scope to one EXPORT_DIR subdirectory
+#                      (name or path; defaults to all of EXPORT_DIR)
+# Globals:
+#   EXPORT_DIR, AUTO_CLEANUP_DAYS, LOG_DIR
+#######################################
+mt-export-cleanup() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
     return 0
   fi
 
-  # === AI Context Size Protection (Killswitch) ===
-  if [ "$total_files" -gt 2000 ]; then
-     echo -e "${CB_RED}🚨 KILLSWITCH: $total_files files detected. Export aborted to prevent system lockup and LLM overload.${C_RESET}"
-     rm -f "$file_list"
-     return 1
-  elif [ "$total_files" -gt 500 ]; then
-     echo -e "${CB_YELLOW}⚠️ Warning: $total_files files detected. This may exceed AI context limits.${C_RESET}"
-     read -r -p "Proceed anyway? [y/N] " -n 1 < /dev/tty
-     echo
-     if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo -e "${CB_RED}🛑 Aborted.${C_RESET}"
-        rm -f "$file_list"
+  local force=false quiet=false backup=false background=false interactive=false
+  local target=""
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -f | --force) force=true ;;
+      -q | --quiet)
+        quiet=true
+        force=true
+        ;;
+      -b | --backup) backup=true ;;
+      -B | --background) background=true ;;
+      -i | --interactive) interactive=true ;;
+      -*)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
         return 1
-     fi
+        ;;
+      *) target="$1" ;;
+    esac
+    shift
+  done
+
+  if [ "$interactive" = true ] && [ "$background" = true ]; then
+    echo -e "${CB_RED}🚨 Error: --interactive and --background cannot be combined.${C_RESET}"
+    return 1
   fi
 
-  echo "=== MT DevOps Export: $s_name ===" > "$tmp_file"
-  echo "Generated: $(date)" >> "$tmp_file"
-  echo "Directory: $(realpath "$target_dir")" >> "$tmp_file"
-  echo "Schema: $schema_query" >> "$tmp_file"
-  echo "-----------------------------------" >> "$tmp_file"
+  local export_dir="${EXPORT_DIR:-/tmp/exports}"
 
-  # Inject the directory tree overview
-  echo "Directory Tree:" >> "$tmp_file"
-  if command -v tree > /dev/null 2>&1; then
-    tree -a -I '.git|.dev|.vscode|.idea|node_modules|__pycache__|.terraform|venv|.venv|.mt_cache*' "$target_dir" >> "$tmp_file" 2> /dev/null
-  else
-    # Fallback to sed-formatted find if tree is missing
-    # shellcheck disable=SC2086
-    find "$target_dir" -print | grep -E -v '/(\.git|\.dev|\.vscode|\.idea|node_modules|__pycache__|\.terraform|venv|\.venv)/' | sed -e 's;[^/]*/;|____;g;s;____|; |;g' >> "$tmp_file" 2> /dev/null
-  fi
-  echo "-----------------------------------" >> "$tmp_file"
-
-  # Append actual file contents
-  while IFS= read -r file; do
-    echo -e "\n==> $file <==" >> "$tmp_file"
-    cat "$file" >> "$tmp_file" 2> /dev/null || echo "[Unreadable File]" >> "$tmp_file"
-  done < "$file_list"
-
-  local final_out=""
-  if [ "$zip_out" = true ]; then
-    final_out="${dest_dir}/${base_out_name}.zip"
-    zip -qj "$final_out" "$tmp_file" > /dev/null 2>&1
-    echo -e "${CB_GREEN}✅ Export saved to $final_out${C_RESET}"
-  else
-    final_out="${dest_dir}/${base_out_name}.txt"
-    cp "$tmp_file" "$final_out"
-    echo -e "${CB_GREEN}✅ Export saved to $final_out${C_RESET}"
+  if [ "$interactive" = true ]; then
+    __mt_export_cleanup_interactive
+    return $?
   fi
 
-  rm -f "$tmp_file" "$file_list"
+  if [ "$background" = true ]; then
+    force=true
+    quiet=true
+    local log_out
+    log_out="${LOG_DIR:-$HOME/.bash.d/data/logs}/export_cleanup_$(date +%s).log"
+    local cmd_str
+    printf -v cmd_str '__mt_export_cleanup_run %q %q %q %q %q %q' \
+      "$export_dir" "$target" "$force" "$quiet" "$backup" "$background"
+    __mt_bg_run "mt-export-cleanup" "$log_out" "$cmd_str"
+    return 0
+  fi
 
-  # Open GUI Explorer unless quiet mode is on
-  if [ "$quiet_mode" = false ]; then
-    if type __open_path_gui > /dev/null 2>&1; then
-      __open_path_gui "$dest_dir" 2> /dev/null || true
+  __mt_export_cleanup_run "$export_dir" "$target" "$force" "$quiet" "$backup" "$background"
+}
+```
+
+### 📂 MT Repo Hub - AI & Heuristic Metadata Dashboard
+
+
+#### `mt-hub`
+
+> System: Interactive AI-powered Repository Dashboard	/home/mst/.bash.d/20-vcs/53-vcs-insight.sh
+
+```bash
+#######################################
+# System: Interactive AI-powered Repository Dashboard
+# Usage: mt-hub [--index] [-t|--type type] [-r|--repo name]
+# Options:
+#   --index       Scan and build the AI metadata cache
+#   -t, --type    Filter indexing to a specific folder (e.g. personal, work)
+#   -r, --repo    Filter indexing to a specific repository name
+#######################################
+mt-hub() {
+  local cache_file="$HOME/.bash.d/data/cache/.vcs_hub.json"
+  mkdir -p "$(dirname "$cache_file")"
+  [ ! -f "$cache_file" ] && echo "{}" > "$cache_file"
+
+  local do_index=false
+  local run_bg=false
+  local force_index=false
+  local filter_type=""
+  local filter_repo=""
+
+  # Argument parsing
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      --index) do_index=true ;;
+      -b | --bg | --background) run_bg=true ;;
+      -f | --force) force_index=true ;;
+      -t | --type)
+        filter_type="$2"
+        shift
+        ;;
+      -r | --repo)
+        filter_repo="$2"
+        shift
+        ;;
+      --preview)
+        __mt_hub_preview "$2" "$cache_file"
+        return 0
+        ;;
+      -h | --help)
+        mt-help "${FUNCNAME[0]}"
+        return 0
+        ;;
+      *)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  if [ "$do_index" = true ]; then
+    if [ "$run_bg" = true ]; then
+      local log_out
+      log_out="${LOG_DIR:-$HOME/.bash.d/data/logs}/indexer_$(date +%s).log"
+      local cmd_str="__mt_hub_index \"$cache_file\" \"$filter_type\" \"$filter_repo\" \"$force_index\""
+      __mt_bg_run "mt-hub-indexer" "$log_out" "$cmd_str"
+    else
+      __mt_hub_index "$cache_file" "$filter_type" "$filter_repo" "$force_index"
     fi
+    return 0
+  fi
+
+  local search_dir="${VCS_ROOT:-$HOME/vcs}"
+  local tmp_out
+  tmp_out=$(mktemp)
+
+  while IFS= read -r repo_path; do
+    [ -z "$repo_path" ] && continue
+    local repo_name
+    repo_name=$(basename "$repo_path")
+
+    local rel_path="${repo_path#"$search_dir"/}"
+    local repo_type="Root"
+    if [[ "$rel_path" == */* ]]; then
+      repo_type="${rel_path%%/*}"
+    fi
+    repo_type="$(tr '[:lower:]' '[:upper:]' <<< "${repo_type:0:1}")${repo_type:1}"
+
+    local branch
+    branch=$(git -C "$repo_path" branch --show-current 2> /dev/null || echo "HEAD detached")
+    [ -z "$branch" ] && branch="No commits"
+
+    echo "${repo_type}|${repo_name}|${branch}|${repo_path}" >> "$tmp_out"
+  done < <(find "$search_dir" -type d -exec test -d "{}/.git" \; -prune -print)
+
+  sort -t'|' -k1,1 -k2,2 "$tmp_out" -o "$tmp_out"
+
+  local selected
+  selected=$(awk -F'|' '
+    function pad(str, len) {
+      if (length(str) > len) return substr(str, 1, len-3) "..."
+      return str sprintf("%*s", len - length(str), "")
+    }
+    {
+      printf "%s │ %s │ %s │ %s\n", pad($1, 15), pad($2, 35), pad($3, 20), $4
+    }
+  ' "$tmp_out" | fzf --ansi --prompt="VCS Hub > " --header="TYPE            │ REPOSITORY                          │ BRANCH               " --with-nth=1..3 --preview="bash -c 'source ~/.bash.d/01-ui/01-colors.sh; source ~/.bash.d/20-vcs/53-vcs-insight.sh; __mt_hub_preview \"{4}\" \"$cache_file\"'")
+
+  rm -f "$tmp_out"
+
+  if [ -n "$selected" ]; then
+    local target_path
+    target_path=$(echo "$selected" | awk -F' │ ' '{print $4}' | sed 's/^[ \t]*//;s/[ \t]*$//')
+    echo -e "${CB_GREEN}📂 Navigating to: $target_path${C_RESET}"
+    cd "$target_path" || true
   fi
 }
 ```
 
-
 ### 📂 MyTools Documentation & Runner
 
-#### `mt-aliases`
-> MyTools: List all documented shell aliases
+
+#### `mt`
+
+> MyTools: Central dispatcher -- run any framework command as `mt <name>`	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# MyTools: Central dispatcher -- run any framework command as `mt <name>`
+# instead of typing its full `mt-<name>` form. Bare `mt` (no arguments)
+# keeps today's behavior and prints the full command listing via mytools.
+# Usage: mt <subcommand> [args...]
+#######################################
+mt() {
+  if [ $# -eq 0 ]; then
+    mytools
+    return $?
+  fi
+
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "mt"
+    return 0
+  fi
+
+  local subcmd="$1"
+  shift
+
+  if [[ ! "$subcmd" =~ ^[a-zA-Z][a-zA-Z0-9_-]*$ ]]; then
+    echo -e "${CB_RED}🚨 Error: invalid subcommand '$subcmd'.${C_RESET}"
+    return 1
+  fi
+
+  local target_cmd="mt-${subcmd}"
+  local kind
+  kind=$(type -t "$target_cmd" 2> /dev/null)
+
+  case "$kind" in
+    function)
+      "$target_cmd" "$@"
+      ;;
+    alias)
+      # target_cmd was just built from a regex-validated, alnum/-/_-only
+      # subcmd and confirmed by `type -t` to be a real registered alias,
+      # so it is safe to re-parse here -- this is the only way to invoke
+      # an alias whose name is held in a variable (bash does not expand
+      # aliases through indirection).
+      eval "$target_cmd \"\$@\""
+      ;;
+    *)
+      echo -e "${CB_RED}🚨 Error: Framework command '${target_cmd}' not found.${C_RESET}"
+      echo -e "${C_DIM}Run 'mt lookup ${subcmd}' or 'mt cat' to discover available tools.${C_RESET}"
+      return 1
+      ;;
+  esac
+}
+```
+
+#### `mt-aliases`
+
+> MyTools: List all documented shell aliases (shortcut for `mt-list --alias`)	/home/mst/.bash.d/03-mytools/05-mytools.sh
+
+```bash
+#######################################
+# MyTools: List all documented shell aliases (shortcut for `mt-list --alias`)
+#######################################
 mt-aliases() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
   }
-  mytools > /dev/null
-  echo -e "\n${CB_BLUE}▶ ALIASES${C_RESET}\n"
-  awk -F'\t' '$1 == "alias" { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
-  echo ""
+  mt-list --alias
 }
 ```
 
 #### `mt-cat`
-> MyTools: List all tools within a specific category
+
+> MyTools: List all tools within a specific category (shortcut for `mt-list <category>`)	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# MyTools: List all tools within a specific category (shortcut for `mt-list <category>`)
+# Arguments:
+#   $1 - Category name
+#######################################
 mt-cat() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -1383,38 +2859,35 @@ mt-cat() {
     mt-cats
     return 1
   }
-
-  mytools > /dev/null
-  local target_cat="${1,,}"
-
-  echo -e "\n${CB_BLUE}▶ CATEGORY: ${1}${C_RESET}\n"
-  awk -F'\t' -v target="$target_cat" 'tolower($2) == target { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
-  echo ""
+  mt-list "$1"
 }
 ```
 
 #### `mt-cats`
-> MyTools: List all available command categories
+
+> MyTools: List all available command categories (shortcut for `mt-list`)	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# MyTools: List all available command categories (shortcut for `mt-list`)
+#######################################
 mt-cats() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
   }
-  mytools > /dev/null
-  echo -e "\n${CB_BLUE}▶ AVAILABLE CATEGORIES${C_RESET}"
-  cut -f2 "$HOME/.bash.d/data/cache/.mt_data.tsv" 2> /dev/null | sort -u | while read -r cat; do
-    [ -n "$cat" ] && echo -e "  ${CB_YELLOW}[${cat}]${C_RESET}"
-  done
-  echo ""
+  mt-list
 }
 ```
 
 #### `mt-config`
-> MyTools: Display active framework configuration variables
+
+> MyTools: Display active framework configuration variables	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# MyTools: Display active framework configuration variables
+#######################################
 mt-config() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -1430,15 +2903,26 @@ mt-config() {
   echo -e " ${CB_CYAN}VCS_PERSONAL      ${C_RESET}: ${VCS_PERSONAL}"
   echo -e " ${CB_CYAN}DOTFILES_DIR      ${C_RESET}: ${DOTFILES_DIR:-$SYNC_REPO_DIR}"
   echo -e " ${CB_CYAN}AI_WORKSPACE      ${C_RESET}: ${AI_WORKSPACE_DIR}"
+  echo -e " ${CB_CYAN}EXPORT_DIR        ${C_RESET}: ${EXPORT_DIR:-/tmp/exports}"
+  echo -e " ${CB_CYAN}BACKUP_DIR        ${C_RESET}: ${BACKUP_DIR:-~/backups}"
   echo -e " ${CB_CYAN}AUTO_CLEANUP      ${C_RESET}: ${AUTO_CLEANUP_EXPORTS:-false} (${AUTO_CLEANUP_DAYS:-7} days)"
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
 }
 ```
 
 #### `mt-dump`
-> MyTools: Generate a detailed technical Markdown dump of all functions and aliases
+
+> MyTools: Generate a detailed technical Markdown dump of all functions and aliases	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# MyTools: Generate a detailed technical Markdown dump of all functions and aliases
+# Usage: mt-dump [OPTIONS]
+# Options:
+#   -d, --dir <path>       Specify export directory (default: ~/.bash.d/docs)
+#   --private              Include private/internal framework functions (starting with _ or __)
+#   -h, --help             Show this help menu
+#######################################
 mt-dump() {
   local export_dir="$HOME/.bash.d/docs"
   local include_private=false
@@ -1469,8 +2953,7 @@ mt-dump() {
 
   echo -e "${CB_BLUE}📝 Generating technical reference manual...${C_RESET}"
 
-  cat << 'HDR' > "$out_file"
-# 🛠️ MT DevOps Framework - Technical Command Reference
+  cat << HDR > "$out_file"
 
 > **Auto-generated Reference Document**  
 > Generated: $(date)  
@@ -1484,11 +2967,16 @@ HDR
   mytools > /dev/null
 
   if [ -f "$tsv_index" ]; then
+    # shellcheck disable=SC2129  # part of a long, loop/conditional-heavy markdown generator; grouping would require restructuring control flow
+    echo "" >> "$out_file"
     echo "## 🔗 Shell Aliases" >> "$out_file"
+    echo "" >> "$out_file"
     awk -F'\t' '$1 == "alias" { printf "- **`%s`** *(%s)*: %s\n", $3, $2, $4 }' "$tsv_index" >> "$out_file"
-    echo -e "\n---" >> "$out_file"
-
-    echo -e "\n## 🛠️ Public Functions\n" >> "$out_file"
+    echo "" >> "$out_file"
+    echo "---" >> "$out_file"
+    echo "" >> "$out_file"
+    echo "## 🛠️ Public Functions" >> "$out_file"
+    echo "" >> "$out_file"
 
     local current_cat=""
     while IFS=$'\t' read -r type cat name desc; do
@@ -1496,24 +2984,37 @@ HDR
 
       if [ "$cat" != "$current_cat" ]; then
         current_cat="$cat"
-        echo -e "\n### 📂 ${current_cat}\n" >> "$out_file"
+        # shellcheck disable=SC2129
+        echo "" >> "$out_file"
+        echo "### 📂 ${current_cat}" >> "$out_file"
+        echo "" >> "$out_file"
       fi
 
-      echo -e "#### \`$name\`" >> "$out_file"
-      echo -e "> $desc\n" >> "$out_file"
+      # shellcheck disable=SC2129
+      echo "" >> "$out_file"
+      echo "#### \`$name\`" >> "$out_file"
+      echo "" >> "$out_file"
+      echo "> $desc" >> "$out_file"
+      echo "" >> "$out_file"
 
       local src_file
       src_file=$(grep -rlE "^${name}\(\)[ \t]*\{" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
       if [ -n "$src_file" ]; then
+        # shellcheck disable=SC2129
         echo "\`\`\`bash" >> "$out_file"
         awk -v target="$name" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$src_file" >> "$out_file"
-        echo -e "\`\`\`\n" >> "$out_file"
+        echo "\`\`\`" >> "$out_file"
       fi
     done < <(sort -t$'\t' -k2,2 -k3,3 "$tsv_index")
   fi
 
   if [ "$include_private" = true ]; then
-    echo -e "\n---\n\n## 🔒 Internal Framework Helpers (Private Functions)\n" >> "$out_file"
+    # shellcheck disable=SC2129
+    echo "" >> "$out_file"
+    echo "---" >> "$out_file"
+    echo "" >> "$out_file"
+    echo "## 🔒 Internal Framework Helpers (Private Functions)" >> "$out_file"
+    echo "" >> "$out_file"
     echo "Private functions prefixed with \`_\` or \`__\` used internally by the framework." >> "$out_file"
 
     find "$HOME/.bash.d" -type f -name "*.sh" -exec grep -HnE "^_{1,2}[a-zA-Z0-9_-]+\(\)[ \t]*\{" {} + | while read -r line; do
@@ -1525,10 +3026,13 @@ HDR
       [ -z "$func_name" ] && continue
       local rel_fpath="${fpath#"$HOME"/.bash.d/}"
 
-      echo -e "\n### \`$func_name\` *(File: \`00-system/${rel_fpath}\`)*" >> "$out_file"
+      # shellcheck disable=SC2129
+      echo "" >> "$out_file"
+      echo "### \`$func_name\` *(File: \`00-system/${rel_fpath}\`)*" >> "$out_file"
+      echo "" >> "$out_file"
       echo "\`\`\`bash" >> "$out_file"
       awk -v target="$func_name" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$fpath" >> "$out_file"
-      echo -e "\`\`\`\n" >> "$out_file"
+      echo "\`\`\`" >> "$out_file"
     done
   fi
 
@@ -1541,25 +3045,30 @@ HDR
 ```
 
 #### `mt-funcs`
-> MyTools: List all documented shell functions
+
+> MyTools: List all documented shell functions (shortcut for `mt-list --func`)	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# MyTools: List all documented shell functions (shortcut for `mt-list --func`)
+#######################################
 mt-funcs() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
   }
-  mytools > /dev/null
-  echo -e "\n${CB_BLUE}▶ FUNCTIONS${C_RESET}\n"
-  awk -F'\t' '$1 == "func" { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
-  echo ""
+  mt-list --func
 }
 ```
 
 #### `mt-fzf`
-> MyTools: Interactive fuzzy-finder to search for a command
+
+> MyTools: Interactive fuzzy-finder to search for a command	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# MyTools: Interactive fuzzy-finder to search for a command
+#######################################
 mt-fzf() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -1573,9 +3082,13 @@ mt-fzf() {
 ```
 
 #### `mt-get-version`
-> System: Print the current local version of the terminal profile
+
+> System: Print the current local version of the terminal profile	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# System: Print the current local version of the terminal profile
+#######################################
 mt-get-version() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1601,37 +3114,115 @@ mt-get-version() {
 ```
 
 #### `mt-help`
-> MyTools: Display detailed help and source code for a command
+
+> MyTools: Display detailed help and source code for a command	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# MyTools: Display detailed help and source code for a command
+# Usage: mt-help [-v|--verbose] <command>
+# Arguments:
+#   $1 - Command name or keyword
+#######################################
 mt-help() {
-  [[ "$1" == "-h" || "$1" == "--help" ]] && {
-    echo "Usage: mt-help <command>"
-    return 0
-  }
-  local target="$1"
+  local show_code=false
+  local target=""
+
+  # Parse Arguments
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -v | --verbose) show_code=true ;;
+      -h | --help)
+        echo -e "${CB_BLUE}Usage:${C_RESET} mt-help [-v|--verbose] <command>"
+        return 0
+        ;;
+      -*)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        echo "Usage: mt-help [-v|--verbose] <command>"
+        return 1
+        ;;
+      *) target="$1" ;;
+    esac
+    shift
+  done
+
   [ -z "$target" ] && {
-    echo "Usage: mt-help <command>"
+    echo "Usage: mt-help [-v|--verbose] <command>"
     return 1
   }
 
   __render_help() {
     local cmd="$1"
     local fpath="$2"
-    echo -e "\033[1;34m==========================================================\033[0m"
-    echo -e "\033[1;36m 🛠️  ${cmd}\033[0m"
-    echo -e "\033[1;34m==========================================================\033[0m"
-    echo -e "\033[1;33m 📄 File: \033[0m $(wslpath -m "$fpath" 2> /dev/null || echo "$fpath")"
-    echo -e "\033[1;34m----------------------------------------------------------\033[0m"
-    awk -v target="$cmd" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$fpath" | "$BAT_BIN" --language=bash --style=plain 2> /dev/null ||
-      awk -v target="$cmd" -f "$HOME/.bash.d/lib/awk/mt_help.awk" "$fpath"
-    echo -e "\033[1;34m==========================================================\033[0m"
+    local show_code="$3"
+
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
+    echo -e "${CB_CYAN} 🛠️  ${cmd}${C_RESET}"
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
+    echo -e "${CB_YELLOW} 📄 File: ${C_RESET} $(wslpath -m "$fpath" 2> /dev/null || echo "$fpath")"
+    echo -e "${CB_BLUE}----------------------------------------------------------${C_RESET}"
+
+    # Use AWK to cleanly separate the docstring from the codeblock
+    local raw_data
+    raw_data=$(awk -v target="$cmd" '
+      BEGIN { flag=0; doc=""; code="" }
+      /^#######################################/ { next }
+      /^#/ {
+          line = substr($0, 2)
+          sub(/^[ \t]/, "", line)
+          doc = doc line "\n"
+          next
+      }
+      $0 ~ "^alias " target "=" { code = $0 "\n"; exit }
+      $0 ~ "^" target "\(\\)[ \t]*\{" { code = $0 "\n"; flag=1; next }
+      flag { code = code $0 "\n"; if ($0 ~ /^}$/) exit }
+      { if (!flag) { doc=""; code="" } }
+      END { print doc; print "---MT_CODE_DELIMITER---"; print code }
+    ' "$fpath")
+
+    local docstring="${raw_data%%---MT_CODE_DELIMITER---*}"
+    local codeblock="${raw_data#*---MT_CODE_DELIMITER---}"
+
+    # Parse and colorize the documentation string
+    local section="desc"
+    while IFS= read -r line; do
+      [ -z "$line" ] && continue
+
+      # Catch Headers (Usage:, Options:, Arguments:, etc.)
+      if [[ "$line" =~ ^(Usage|Options|Arguments|Returns|Outputs|Globals): ]]; then
+        echo -e "\n${CB_CYAN}▶ ${line}${C_RESET}"
+        section="details"
+      elif [ "$section" = "desc" ]; then
+        # Main description text is standard white
+        echo -e "${C_WHITE}${line}${C_RESET}"
+      else
+        # In details sections, look for flags starting with a dash
+        if [[ "$line" =~ ^[[:space:]]*- ]]; then
+          # Color the flag yellow, and the description dim text
+          echo -e "  ${CB_YELLOW}${line%%  *}${C_RESET}  ${C_DIM}${line#*  }${C_RESET}"
+        else
+          echo -e "  ${C_DIM}${line}${C_RESET}"
+        fi
+      fi
+    done <<< "$docstring"
+
+    # Only show source code if the flag was provided
+    if [ "$show_code" = true ] && [ -n "$codeblock" ]; then
+      echo -e "\n${CB_BLUE}▶ SOURCE CODE${C_RESET}"
+      echo -e "${CB_BLUE}----------------------------------------------------------${C_RESET}"
+      if command -v "$BAT_BIN" > /dev/null 2>&1; then
+        echo "$codeblock" | "$BAT_BIN" --language=bash --style=plain --paging=never 2> /dev/null
+      else
+        echo -e "${C_DIM}${codeblock}${C_RESET}"
+      fi
+    fi
+    echo -e "${CB_BLUE}==========================================================${C_RESET}"
   }
 
   local file_path
   file_path=$(grep -rlE "^(alias ${target}=|${target}\(\)[ \t]*\{)" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
   if [ -n "$file_path" ]; then
-    __render_help "$target" "$file_path"
+    __render_help "$target" "$file_path" "$show_code"
     return 0
   fi
 
@@ -1651,7 +3242,7 @@ mt-help() {
     local single_target="${candidates[0]}"
     file_path=$(grep -rlE "^(alias ${single_target}=|${single_target}\(\)[ \t]*\{)" "$HOME/.bash.d/" 2> /dev/null | head -n 1)
     if [ -n "$file_path" ]; then
-      __render_help "$single_target" "$file_path"
+      __render_help "$single_target" "$file_path" "$show_code"
       return 0
     fi
   elif [ "$count" -gt 1 ]; then
@@ -1668,45 +3259,162 @@ mt-help() {
 }
 ```
 
-#### `mt-lookup`
-> MyTools: Search through available mytools commands with tab-completion
+#### `mt-list`
+
+> MyTools: List all available command categories	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
-mt-lookup() {
+#######################################
+# MyTools: List all available command categories
+#######################################
+#######################################
+# MyTools: List categories, functions, aliases, or a specific category's tools
+# Usage: mt-list [category] [-f|--func] [-a|--alias]
+# Arguments:
+#   [category]   Category name -- list tools within it
+#   -f, --func   List all documented shell functions
+#   -a, --alias  List all documented shell aliases
+#   (none)       List all available categories
+#######################################
+mt-list() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
     return 0
   }
-  [ -z "$1" ] && {
-    echo "Usage: mt-lookup <keyword|command>"
-    return 1
-  }
   mytools > /dev/null
-  awk -F'\t' -v q="${1,,}" 'tolower($0) ~ q { printf "  \033[2;37m•\033[0m \033[1;36m%-24s\033[0m (\033[1;33m%s\033[0m) \033[2;37m→\033[0m \033[0;37m%s\033[0m\n", $3, $2, $4 }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
+
+  case "$1" in
+    "")
+      echo -e "\n${CB_BLUE}▶ AVAILABLE CATEGORIES${C_RESET}"
+      cut -f2 "$HOME/.bash.d/data/cache/.mt_data.tsv" 2> /dev/null | sort -u | while read -r cat; do
+        [ -n "$cat" ] && echo -e "  ${CB_YELLOW}[${cat}]${C_RESET}"
+      done
+      echo ""
+      ;;
+    -f | --func)
+      echo -e "\n${CB_BLUE}▶ FUNCTIONS${C_RESET}\n"
+      awk -F'\t' -v dim="$C_DIM" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" '$1 == "func" { printf "  %s•%s %s%-24s%s (%s%s%s) %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, yellow, $2, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
+      echo ""
+      ;;
+    -a | --alias)
+      echo -e "\n${CB_BLUE}▶ ALIASES${C_RESET}\n"
+      awk -F'\t' -v dim="$C_DIM" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" '$1 == "alias" { printf "  %s•%s %s%-24s%s (%s%s%s) %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, yellow, $2, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
+      echo ""
+      ;;
+    *)
+      local target_cat="${1,,}"
+      echo -e "\n${CB_BLUE}▶ CATEGORY: ${1}${C_RESET}\n"
+      awk -F'\t' -v target="$target_cat" -v dim="$C_DIM" -v cyan="$CB_CYAN" -v white="$C_WHITE" -v rst="$C_RESET" 'tolower($2) == target { printf "  %s•%s %s%-24s%s %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, dim, rst, white, $4, rst }' "$HOME/.bash.d/data/cache/.mt_data.tsv"
+      echo ""
+      ;;
+  esac
+}
+```
+
+#### `mt-lookup`
+
+> MyTools: Search through available mytools commands with tab-completion	/home/mst/.bash.d/03-mytools/05-mytools.sh
+
+```bash
+#######################################
+# MyTools: Search through available mytools commands with tab-completion
+# Usage: mt-lookup [-i|--interactive] [-v|--verbose] [keyword]
+# Arguments:
+#   -i, --interactive  Open an fzf menu to select a tool
+#   -v, --verbose      Open interactive menu and print the full code using mt-help -v
+#   $1                 Search term or command name
+#######################################
+mt-lookup() {
+  local interactive=false
+  local verbose=false
+  local query=""
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -i | --interactive) interactive=true ;;
+      -v | --verbose) verbose=true ;;
+      -h | --help)
+        mt-help "${FUNCNAME[0]}"
+        return 0
+        ;;
+      -*)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        echo "Usage: mt-lookup [-i|--interactive] [-v|--verbose] [keyword]"
+        return 1
+        ;;
+      *) query="$1" ;;
+    esac
+    shift
+  done
+
+  mytools > /dev/null
+  local tsv_file="$HOME/.bash.d/data/cache/.mt_data.tsv"
+
+  # Trigger the menu if -i or -v is passed
+  if [ "$interactive" = true ] || [ "$verbose" = true ]; then
+    local selected
+    if [ -n "$query" ]; then
+      selected=$(awk -F'\t' -v q="${query,,}" 'tolower($0) ~ q { printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$tsv_file" | fzf --ansi --prompt="Select Tool > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
+    else
+      selected=$(awk -F'\t' '{ printf "%-24s │ %-20s │ %s\n", $3, $2, $4 }' "$tsv_file" | fzf --ansi --prompt="Select Tool > " --header="COMMAND                  │ CATEGORY             │ DESCRIPTION")
+    fi
+
+    if [ -n "$selected" ]; then
+      local cmd_name
+      cmd_name=$(echo "$selected" | awk '{print $1}')
+      if [ "$verbose" = true ]; then
+        mt-help -v "$cmd_name"
+      else
+        mt-help "$cmd_name"
+      fi
+    fi
+  else
+    if [ -z "$query" ]; then
+      echo "Usage: mt-lookup [-i|--interactive] [-v|--verbose] <keyword|command>"
+      return 1
+    fi
+    # Standard non-interactive output
+    awk -F'\t' -v q="${query,,}" -v dim="$C_DIM" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" 'tolower($0) ~ q { printf "  %s•%s %s%-24s%s (%s%s%s) %s→%s %s%s%s\n", dim, rst, cyan, $3, rst, yellow, $2, rst, dim, rst, white, $4, rst }' "$tsv_file"
+  fi
 }
 ```
 
 #### `mt-refresh-caches`
-> System: Forcefully clear and rebuild all background caches (.env, mytools, updates)
+
+> System: Forcefully clear and rebuild all background caches (.env, mytools, updates)	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# System: Forcefully clear and rebuild all background caches (.env, mytools, updates)
+#######################################
 mt-refresh-caches() {
+  # Self-heal missing cache directories (e.g., after clean git clone or update)
+  mkdir -p "$HOME/.bash.d/data/cache" "$HOME/.bash.d/data/logs" "$HOME/.bash.d/config"
+
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
 
   echo -e "${CB_YELLOW}🧹 Clearing background caches...${C_RESET}"
-  rm -f "$HOME/.bash.d/config/.env.cache"
+  rm -f "$HOME/.bash.d/data/cache/.env.cache"
+  rm -f "$HOME/.bash.d/config/.env.cache" # stray pre-fix location, harmless no-op once cleaned up
+  # Legacy pre-migration cache locations (harmless no-op post-migration)
+  rm -f "$HOME/.bash.d/.mt_cache" "$HOME/.bash.d/.mt_cache.time" "$HOME/.bash.d/.mt_data.tsv" 2> /dev/null
+  rm -f "$HOME/.bash.d/.zoxide_cache.sh" "$HOME/.bash.d/.update_check_cache" "$HOME/.bash.d/.update_pending" 2> /dev/null
+  rm -f "$HOME/.bash.d/.profile_update_cache" "$HOME/.bash.d/.profile_update_pending" 2> /dev/null
   rm -f "$HOME/.bash.d/data/cache/.mt_cache" "$HOME/.bash.d/data/cache/.mt_cache.time" "$HOME/.bash.d/data/cache/.mt_data.tsv"
   rm -f "$HOME/.bash.d/data/cache/.update_check_cache" "$HOME/.bash.d/data/cache/.update_pending"
   rm -f "$HOME/.bash.d/data/cache/.zoxide_cache.sh"
   rm -f "$HOME/.bash.d/data/cache/.profile_update_cache" "$HOME/.bash.d/data/cache/.profile_update_pending"
+  rm -f "$HOME/.bash.d/data/cache/.kubectl_completion.bash"
+  rm -f "$HOME/.bash.d/data/cache/.deps_check_cache" "$HOME/.bash.d/data/cache/.deps_pending"
 
   echo -e "${CB_BLUE}🔄 Rebuilding configurations and tool indexes...${C_RESET}"
   if [ -f "$HOME/.bash.d/lib/python/config_manager.py" ]; then
-    python3 "$HOME/.bash.d/lib/python/config_manager.py" load-env > "$HOME/.bash.d/config/.env.cache"
-    chmod 600 "$HOME/.bash.d/config/.env.cache" 2> /dev/null
+    mkdir -p "$HOME/.bash.d/data/cache" "$HOME/.bash.d/data/logs" "$HOME/.bash.d/config"
+    python3 "$HOME/.bash.d/lib/python/config_manager.py" load-env > "$HOME/.bash.d/data/cache/.env.cache"
+    chmod 600 "$HOME/.bash.d/data/cache/.env.cache" 2> /dev/null
   fi
 
   __rebuild_mytools_cache
@@ -1717,9 +3425,13 @@ mt-refresh-caches() {
 ```
 
 #### `mt-run`
-> MyTools: Interactive fuzzy-finder to select and execute a command
+
+> MyTools: Interactive fuzzy-finder to select and execute a command	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# MyTools: Interactive fuzzy-finder to select and execute a command
+#######################################
 mt-run() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -1738,9 +3450,13 @@ mt-run() {
 ```
 
 #### `mt-status`
-> System: Display a unified health check and status dashboard
+
+> System: Display a unified health check and status dashboard	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# System: Display a unified health check and status dashboard
+#######################################
 mt-status() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1810,9 +3526,13 @@ mt-status() {
 ```
 
 #### `mytools`
-> MyTools: Primary runner and documentation index
+
+> MyTools: Primary runner and documentation index	/home/mst/.bash.d/03-mytools/05-mytools.sh
 
 ```bash
+#######################################
+# MyTools: Primary runner and documentation index
+#######################################
 mytools() {
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
     mt-help "${FUNCNAME[0]}"
@@ -1832,13 +3552,19 @@ mytools() {
 }
 ```
 
-
 ### 📂 Path & URL Launchers (Config-Driven)
 
+
 #### `cd-ai-workspace`
-> AI: Change directory to unified AI workspace
+
+> AI: Change directory to unified AI workspace	/home/mst/.bash.d/02-utilities/03-launcher.sh
 
 ```bash
+#######################################
+# AI: Change directory to unified AI workspace
+# Globals:
+#   AI_WORKSPACE_DIR
+#######################################
 cd-ai-workspace() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1849,23 +3575,20 @@ cd-ai-workspace() {
 ```
 
 #### `cd-win-docker`
-> Docker: Change to Docker directory (from config.yaml) and open in Windows Explorer
+
+> Docker: Change to Docker directory (from config.yaml) and open in Windows Explorer	/home/mst/.bash.d/02-utilities/03-launcher.sh
 
 ```bash
+#######################################
+# Docker: Change to Docker directory (from config.yaml) and open in Windows Explorer
+#######################################
 cd-win-docker() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
 
-  local docker_path
-  docker_path=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("paths", {}).get("docker_root", ""))')
-  docker_path=$(eval echo "$docker_path")
-
-  if [ -z "$docker_path" ]; then
-    echo -e "${CB_RED}🚨 Error: docker_root is not defined under paths in config.yaml.${C_RESET}"
-    return 1
-  fi
+  local docker_path="$DOCKER_ROOT_DIR"
 
   if [ -d "$docker_path" ]; then
     echo -e "${CB_BLUE}📂 Navigating to ${docker_path}...${C_RESET}"
@@ -1879,9 +3602,15 @@ cd-win-docker() {
 ```
 
 #### `ide`
-> System: Open current directory in the default IDE (VSCode/IntelliJ)
+
+> System: Open current directory in the default IDE (VSCode/IntelliJ)	/home/mst/.bash.d/02-utilities/03-launcher.sh
 
 ```bash
+#######################################
+# System: Open current directory in the default IDE (VSCode/IntelliJ)
+# Globals:
+#   DEFAULT_IDE
+#######################################
 ide() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1900,9 +3629,15 @@ ide() {
 ```
 
 #### `mt-dotfiles`
-> System: Change directory to dotfiles repository root
+
+> System: Change directory to dotfiles repository root	/home/mst/.bash.d/02-utilities/03-launcher.sh
 
 ```bash
+#######################################
+# System: Change directory to dotfiles repository root
+# Globals:
+#   DOTFILES_DIR, SYNC_REPO_DIR
+#######################################
 mt-dotfiles() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1919,9 +3654,15 @@ mt-dotfiles() {
 ```
 
 #### `mt-open-homepage`
-> System: Open dotfiles repository remote URL in default web browser
+
+> System: Open dotfiles repository remote URL in default web browser	/home/mst/.bash.d/02-utilities/03-launcher.sh
 
 ```bash
+#######################################
+# System: Open dotfiles repository remote URL in default web browser
+# Globals:
+#   SYNC_REPO_URL
+#######################################
 mt-open-homepage() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -1947,51 +3688,70 @@ mt-open-homepage() {
 ```
 
 #### `win-ai-workspace`
-> AI: Open unified AI workspace in the platform's native file manager
+
+> AI: Open unified AI workspace in the platform's native file manager (shortcut for `win ai`)	/home/mst/.bash.d/02-utilities/03-launcher.sh
 
 ```bash
+#######################################
+# AI: Open unified AI workspace in the platform's native file manager (shortcut for `win ai`)
+#######################################
 win-ai-workspace() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __open_path_gui "$AI_WORKSPACE_DIR"
+  win ai
 }
 ```
 
 #### `win-docker`
-> Docker: Open Docker root directory in the platform's native file manager
+
+> Docker: Open Docker root directory in the platform's native file manager (shortcut for `win docker`)	/home/mst/.bash.d/02-utilities/03-launcher.sh
 
 ```bash
+#######################################
+# Docker: Open Docker root directory in the platform's native file manager (shortcut for `win docker`)
+#######################################
 win-docker() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __open_path_gui "$DOCKER_ROOT_DIR"
+  win docker
 }
 ```
 
 #### `win-sync`
-> System: Open sync repository in the platform's native file manager
+
+> System: Open sync repository in the platform's native file manager (shortcut for `win sync`)	/home/mst/.bash.d/02-utilities/03-launcher.sh
 
 ```bash
+#######################################
+# System: Open sync repository in the platform's native file manager (shortcut for `win sync`)
+#######################################
 win-sync() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __open_path_gui "${DOTFILES_DIR:-$SYNC_REPO_DIR}"
+  win sync
 }
 ```
 
-
 ### 📂 System & Environment Bootstrap
 
+
 #### `bootstrap`
-> System: Bootstrap missing dependencies (Debian/WSL via APT, macOS via Homebrew)
+
+> System: Bootstrap missing dependencies (Debian/WSL via APT, macOS via Homebrew)	/home/mst/.bash.d/00-system/04-bootstrap.sh
 
 ```bash
+#######################################
+# System: Bootstrap missing dependencies (Debian/WSL via APT, macOS via Homebrew)
+# Usage: bootstrap [OPTIONS]
+# Options:
+#   -h, --help    Show this help menu
+#######################################
 bootstrap() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2036,23 +3796,37 @@ bootstrap() {
 ```
 
 #### `sys-install`
-> System: Updates system packages and clears pending-update marker
+
+> System: Updates system packages and clears pending-update marker	/home/mst/.bash.d/00-system/04-bootstrap.sh
 
 ```bash
+#######################################
+# System: Updates system packages and clears pending-update marker
+# Usage: sys-install [OPTIONS]
+# Options:
+#   -h, --help    Show this help menu
+#######################################
 sys-install() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
   sys-update
-  rm -f "$HOME/.bash.d/.update_pending"
+  rm -f "$HOME/.bash.d/data/cache/.update_pending"
 }
 ```
 
 #### `sys-update`
-> System: Updates system packages (APT on Debian/WSL, Homebrew on macOS)
+
+> System: Updates system packages (APT on Debian/WSL, Homebrew on macOS)	/home/mst/.bash.d/00-system/04-bootstrap.sh
 
 ```bash
+#######################################
+# System: Updates system packages (APT on Debian/WSL, Homebrew on macOS)
+# Usage: sys-update [OPTIONS]
+# Options:
+#   -h, --help    Show this help menu
+#######################################
 sys-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2070,13 +3844,17 @@ sys-update() {
 }
 ```
 
-
 ### 📂 System & Navigation Aliases
 
+
 #### `clip`
-> System: Pipe output to the system clipboard (e.g. cat file | clip)
+
+> System: Pipe output to the system clipboard (e.g. cat file | clip)	/home/mst/.bash.d/02-utilities/20-aliases.sh
 
 ```bash
+#######################################
+# System: Pipe output to the system clipboard (e.g. cat file | clip)
+#######################################
 clip() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2087,51 +3865,88 @@ clip() {
 ```
 
 #### `win`
-> System: Open current directory in the platform's native file manager
+
+> System: Open a directory in the platform's native file manager	/home/mst/.bash.d/02-utilities/20-aliases.sh
 
 ```bash
+#######################################
+# System: Open a directory in the platform's native file manager
+# Usage: win [sync|ai|docker|export|vcs]
+# Globals:
+#   DOTFILES_DIR, SYNC_REPO_DIR, AI_WORKSPACE_DIR, DOCKER_ROOT_DIR, VCS_EXPORTS, VCS_ROOT
+#######################################
 win() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __open_path_gui "$PWD"
+  local target="$PWD"
+  case "$1" in
+    "") ;;
+    sync) target="${DOTFILES_DIR:-$SYNC_REPO_DIR}" ;;
+    ai) target="$AI_WORKSPACE_DIR" ;;
+    docker) target="$DOCKER_ROOT_DIR" ;;
+    export) target="$VCS_EXPORTS" ;;
+    vcs) target="$VCS_ROOT" ;;
+    *)
+      echo "Usage: win [sync|ai|docker|export|vcs]" >&2
+      return 1
+      ;;
+  esac
+  __open_path_gui "$target"
 }
 ```
 
 #### `win-export`
-> System: Open ~/vcs/personal/exports in the platform's native file manager
+
+> System: Open ~/vcs/personal/exports in the platform's native file manager (shortcut for `win export`)	/home/mst/.bash.d/02-utilities/20-aliases.sh
 
 ```bash
+#######################################
+# System: Open ~/vcs/personal/exports in the platform's native file manager (shortcut for `win export`)
+#######################################
 win-export() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __open_path_gui "$VCS_EXPORTS"
+  win export
 }
 ```
 
 #### `win-vcs`
-> System: Open ~/vcs in the platform's native file manager
+
+> System: Open ~/vcs in the platform's native file manager (shortcut for `win vcs`)	/home/mst/.bash.d/02-utilities/20-aliases.sh
 
 ```bash
+#######################################
+# System: Open ~/vcs in the platform's native file manager (shortcut for `win vcs`)
+#######################################
 win-vcs() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __open_path_gui "$VCS_ROOT"
+  win vcs
 }
 ```
 
-
 ### 📂 Terraform & AI Integrations
 
+
 #### `tf-iam`
-> AI: Analyze Terraform codebase for IAM requirements and optionally generate script
+
+> AI: Analyze Terraform codebase for IAM requirements and optionally generate script	/home/mst/.bash.d/10-infra/43-terraform-ai.sh
 
 ```bash
+#######################################
+# AI: Analyze Terraform codebase for IAM requirements and optionally generate script
+# Usage: tf-iam [-g] [-m model]
+# Options:
+#   -g            Generate a provisioning script instead of just outputting a chat analysis
+#   -m <model>    Override the default AI model (e.g., gemini, claude)
+#   -h, --help    Show this help menu
+#######################################
 tf-iam() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2167,7 +3982,7 @@ tf-iam() {
   prompt=$(__get_prompt "tf_iam_base")
 
   if [ "$generate_script" = true ]; then
-    local target_dir="${SCRIPTS_IAM_DIR:-$HOME/vcs/scripts/iam}"
+    local target_dir="${SCRIPTS_IAM_DIR:-/tmp/scripts/iam}"
     mkdir -p "$target_dir"
     local target_script="${target_dir}/${repo_name}.sh"
 
@@ -2187,13 +4002,17 @@ tf-iam() {
 }
 ```
 
-
 ### 📂 Terraform Aliases
 
+
 #### `tf-clean`
-> Terraform: Aggressively clean local caching (.terraform, locks, plans)
+
+> Terraform: Aggressively clean local caching (.terraform, locks, plans)	/home/mst/.bash.d/10-infra/41-terraform-aliases.sh
 
 ```bash
+#######################################
+# Terraform: Aggressively clean local caching (.terraform, locks, plans)
+#######################################
 tf-clean() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2216,9 +4035,15 @@ tf-clean() {
 ```
 
 #### `tf-replace`
-> Terraform: Replace a specific resource (Modern alternative to taint)
+
+> Terraform: Replace a specific resource (Modern alternative to taint)	/home/mst/.bash.d/10-infra/41-terraform-aliases.sh
 
 ```bash
+#######################################
+# Terraform: Replace a specific resource (Modern alternative to taint)
+# Arguments:
+#   $1 - The resource address to replace (e.g., google_compute_instance.web)
+#######################################
 tf-replace() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2234,9 +4059,17 @@ tf-replace() {
 ```
 
 #### `tf-yaml`
-> Terraform: Execute Terraform using a YAML config file for variables
+
+> Terraform: Execute Terraform using a YAML config file for variables	/home/mst/.bash.d/10-infra/41-terraform-aliases.sh
 
 ```bash
+#######################################
+# Terraform: Execute Terraform using a YAML config file for variables
+# Arguments:
+#   $1 - Path to the YAML configuration file
+#   $2 - (Optional) Target environment key if YAML is hierarchically structured
+#   $@ - Terraform command and arguments (e.g., plan, apply)
+#######################################
 tf-yaml() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2304,26 +4137,39 @@ tf-yaml() {
 }
 ```
 
-
 ### 📂 Terraform & Kubernetes Wrappers
 
+
 #### `terraform`
-> Terraform: Core wrapper (preserves args)
+
+> Terraform: Core wrapper (preserves args)	/home/mst/.bash.d/10-infra/40-terraform-k8s.sh
 
 ```bash
+#######################################
+# Terraform: Core wrapper (preserves args)
+# Note: Does NOT intercept --help to preserve native terraform help.
+# Run `mt-help terraform` for framework documentation.
+#######################################
 terraform() {
   echo "+ terraform $*" >&2
   command terraform "$@"
 }
 ```
 
-
 ### 📂 Version Control (Git) - AI Workflows
 
+
 #### `git-ai-push-all`
-> Git: Auto-format, stage, generate AI commits, and push all changes
+
+> Git: Auto-format, stage, generate AI commits, and push all changes	/home/mst/.bash.d/20-vcs/51-git-ai.sh
 
 ```bash
+#######################################
+# Git: Auto-format, stage, generate AI commits, and push all changes
+# Usage: git-ai-push-all [optional_commit_message]
+# Arguments:
+#   $1 - Optional user commit message (bypasses AI)
+#######################################
 git-ai-push-all() {
   __git_auto_format "."
   [[ "$1" == "-h" || "$1" == "--help" ]] && {
@@ -2389,9 +4235,13 @@ git-ai-push-all() {
 ```
 
 #### `mt-ai-gitignore`
-> AI: Generate a comprehensive .gitignore for the active repository
+
+> AI: Generate a comprehensive .gitignore for the active repository	/home/mst/.bash.d/20-vcs/51-git-ai.sh
 
 ```bash
+#######################################
+# AI: Generate a comprehensive .gitignore for the active repository
+#######################################
 mt-ai-gitignore() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2409,9 +4259,13 @@ mt-ai-gitignore() {
 ```
 
 #### `mt-ai-readme`
-> AI: Generate a comprehensive README.md for the active repository
+
+> AI: Generate a comprehensive README.md for the active repository	/home/mst/.bash.d/20-vcs/51-git-ai.sh
 
 ```bash
+#######################################
+# AI: Generate a comprehensive README.md for the active repository
+#######################################
 mt-ai-readme() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2428,13 +4282,21 @@ mt-ai-readme() {
 }
 ```
 
-
 ### 📂 Version Control (Git) - Core Helpers
 
+
 #### `git`
-> Git: Intercept 'clone' to automatically route repositories into ~/vcs/
+
+> Git: Intercept 'clone' to automatically route repositories into ~/vcs/	/home/mst/.bash.d/20-vcs/50-git.sh
 
 ```bash
+#######################################
+# Git: Intercept 'clone' to automatically route repositories into ~/vcs/
+# Globals:
+#   VCS_ROOT
+# Arguments:
+#   $@ - Standard git clone options and URL
+#######################################
 git() {
   if [ "$1" != "clone" ]; then
     command git "$@"
@@ -2453,9 +4315,13 @@ git() {
 ```
 
 #### `git-clean-merged`
-> Git: Delete local and remote branches merged into the default branch
+
+> Git: Delete local and remote branches merged into the default branch	/home/mst/.bash.d/20-vcs/50-git.sh
 
 ```bash
+#######################################
+# Git: Delete local and remote branches merged into the default branch
+#######################################
 git-clean-merged() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2491,7 +4357,7 @@ git-clean-merged() {
     echo -e "${CB_GREEN}✅ No merged remote branches found on origin.${C_RESET}"
   else
     for r_branch in $remote_merged; do
-      read -r -p "Delete remote branch 'origin/$r_branch'? [y/N] " -n 1
+      read -r -p "Delete remote branch 'origin/$r_branch'? [y/N] " -n 1 < /dev/tty
       echo
       if [[ $REPLY =~ ^[Yy]$ ]]; then
         git push origin --delete "$r_branch"
@@ -2503,9 +4369,17 @@ git-clean-merged() {
 ```
 
 #### `git-clone-ide`
-> Git: Clone repository into ~/vcs/, navigate into it, and open in default IDE
+
+> Git: Clone repository into ~/vcs/, navigate into it, and open in default IDE	/home/mst/.bash.d/20-vcs/50-git.sh
 
 ```bash
+#######################################
+# Git: Clone repository into ~/vcs/, navigate into it, and open in default IDE
+# Usage: git-clone-ide [-ide vscode|intellij] <repo-url>
+# Arguments:
+#   -ide <name>  Override default IDE (vscode or intelliJ)
+#   <url>        Target repository URL
+#######################################
 git-clone-ide() {
   local selected_ide="${DEFAULT_IDE:-vscode}"
   local repo_url=""
@@ -2547,16 +4421,22 @@ git-clone-ide() {
   echo "✅ Moved to $(pwd)"
   echo "🚀 Opening in $selected_ide..."
 
-  [ "$selected_ide" = "intellij" ] &&
-    { __launch_intellij . || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS."; } ||
+  if [ "$selected_ide" = "intellij" ]; then
+    __launch_intellij . || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS."
+  else
     code -n .
+  fi
 }
 ```
 
 #### `git-default-rebase`
-> Git: Fetch upstream origin and rebase current branch onto default branch
+
+> Git: Fetch upstream origin and rebase current branch onto default branch	/home/mst/.bash.d/20-vcs/50-git.sh
 
 ```bash
+#######################################
+# Git: Fetch upstream origin and rebase current branch onto default branch
+#######################################
 git-default-rebase() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2583,9 +4463,18 @@ git-default-rebase() {
 ```
 
 #### `git-new-feature`
-> Git: Create and checkout a new feature branch
+
+> Git: Create and checkout a new feature branch	/home/mst/.bash.d/20-vcs/50-git.sh
 
 ```bash
+#######################################
+# Git: Create and checkout a new feature branch
+# Globals:
+#   GIT_FEATURE_PREFIX
+# Arguments:
+#   $1 - Jira ticket ID or branch descriptor suffix
+# Usage: git-new-feature <CCON-123|suffix>
+#######################################
 git-new-feature() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2601,9 +4490,13 @@ git-new-feature() {
 ```
 
 #### `git-nuke`
-> Git: Hard reset local branch to upstream state and wipe untracked files
+
+> Git: Hard reset local branch to upstream state and wipe untracked files	/home/mst/.bash.d/20-vcs/50-git.sh
 
 ```bash
+#######################################
+# Git: Hard reset local branch to upstream state and wipe untracked files
+#######################################
 git-nuke() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2619,14 +4512,14 @@ git-nuke() {
   fi
 
   echo -e "${CB_RED}⚠️  WARNING: This will DESTROY all local uncommitted changes AND untracked files.${C_RESET}"
-  read -r -p "Reset '${current_branch}' to origin/${current_branch}? [y/N] " -n 1
+  read -r -p "Reset '${current_branch}' to origin/${current_branch}? [y/N] " -n 1 < /dev/tty
   echo
 
   if [[ $REPLY =~ ^[Yy]$ ]]; then
     echo "💥 Nuking local environment..."
     git fetch origin > /dev/null 2>&1
     if ! git ls-remote --exit-code --heads origin "$current_branch" > /dev/null 2>&1; then
-      echo -e "\e[01;31m🚨 Error: Upstream branch 'origin/$current_branch' does not exist. Cannot safely reset.\e[0m"
+      echo -e "${CB_RED}🚨 Error: Upstream branch 'origin/$current_branch' does not exist. Cannot safely reset.${C_RESET}"
       return 1
     fi
     git reset --hard "origin/$current_branch"
@@ -2639,9 +4532,13 @@ git-nuke() {
 ```
 
 #### `git-pretty-log`
-> Git: Print a clean, color-coded, single-line log graph
+
+> Git: Print a clean, color-coded, single-line log graph	/home/mst/.bash.d/20-vcs/50-git.sh
 
 ```bash
+#######################################
+# Git: Print a clean, color-coded, single-line log graph
+#######################################
 git-pretty-log() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2652,9 +4549,16 @@ git-pretty-log() {
 ```
 
 #### `git-push-all`
-> Git: Stage all files, commit with provided message, and push
+
+> Git: Stage all files, commit with provided message, and push	/home/mst/.bash.d/20-vcs/50-git.sh
 
 ```bash
+#######################################
+# Git: Stage all files, commit with provided message, and push
+# Usage: git-push-all "commit message"
+# Arguments:
+#   $1 - Commit message string (Required)
+#######################################
 git-push-all() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2685,9 +4589,18 @@ git-push-all() {
 ```
 
 #### `git-raise-pr`
-> Git: Push current branch and raise a Pull Request (GitHub/GitLab/Bitbucket)
+
+> Git: Push current branch and raise a Pull Request (GitHub/GitLab/Bitbucket)	/home/mst/.bash.d/20-vcs/50-git.sh
 
 ```bash
+#######################################
+# Git: Push current branch and raise a Pull Request (GitHub/GitLab/Bitbucket)
+# Usage: git-raise-pr [-b target_branch] [-t pr_title] [-m pr_body]
+# Options:
+#   -b <branch>   Target branch to merge into (defaults to default branch)
+#   -t <title>    Pull Request title
+#   -m <message>  Pull Request body or description
+#######################################
 git-raise-pr() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2728,105 +4641,30 @@ git-raise-pr() {
     return 1
   fi
 
-  echo -e "${CB_BLUE}🔄 Fetching latest from origin...${C_RESET}"
-  git fetch origin "$target_branch" > /dev/null 2>&1
-
-  echo -e "${CB_BLUE}🔄 Ensuring ${current_branch} is up to date with origin/${target_branch}...${C_RESET}"
-  if ! git merge "origin/$target_branch" --no-edit > /dev/null 2>&1; then
-    echo -e "${CB_RED}💥 Merge conflict detected with origin/${target_branch}!${C_RESET}"
-    echo -e "${CB_YELLOW}The process has been gracefully aborted to preserve your code. Please resolve the conflicts manually, commit, and run 'git-raise-pr' again.${C_RESET}"
-    git merge --abort > /dev/null 2>&1
-    return 1
-  fi
-  echo -e "${CB_GREEN}✅ Branch is up to date.${C_RESET}"
+  __git_raise_pr_sync_with_target || return 1
 
   local is_github=false
-  local origin_url
-  origin_url=$(git config --get remote.origin.url)
-  [[ "$origin_url" == *"github.com"* ]] && is_github=true
+  local origin_url=""
+  local __git_raise_pr_dead_pr_action="continue"
+  __git_raise_pr_handle_dead_pr
+  case "$__git_raise_pr_dead_pr_action" in
+    done) return 0 ;;
+    error) return 1 ;;
+  esac
 
-  local pr_state="NONE"
-  if [ "$is_github" = true ] && command -v gh > /dev/null 2>&1; then
-    pr_state=$(gh pr view "$current_branch" --json state -q .state 2> /dev/null || echo "NONE")
-  fi
-
-  if [ "$pr_state" = "OPEN" ]; then
-    echo -e "${CB_GREEN}✅ An open PR already exists for this branch.${C_RESET}"
-    echo -e "${CB_BLUE}🚀 Pushing latest changes to origin...${C_RESET}"
-    git push origin "$current_branch"
-    return 0
-  elif [ "$pr_state" = "MERGED" ] || [ "$pr_state" = "CLOSED" ]; then
-    echo -e "${CB_YELLOW}⚠️  This branch has a ${pr_state} PR (Dead Branch).${C_RESET}"
-    read -r -p "Would you like to delete this branch locally and checkout a new one? [Y/n] " -n 1
-    echo
-    if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
-      read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
-      echo
-      if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
-        echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
-        git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
-      fi
-
-      read -r -p "Enter new branch name: " new_branch
-      if [ -z "$new_branch" ]; then
-        echo -e "${CB_RED}🚨 Aborted.${C_RESET}"
-        return 1
-      fi
-      git checkout -b "$new_branch"
-      git branch -D "$current_branch"
-      current_branch="$new_branch"
-    else
-      echo -e "${CB_RED}🚨 Aborted. Cannot raise a new PR on a branch with a closed/merged PR in GitHub without recreating it.${C_RESET}"
-      return 1
-    fi
-  fi
-
-  echo -e "${CB_BLUE}🚀 Pushing ${current_branch} to origin...${C_RESET}"
-  git push -u origin "$current_branch"
-
-  if [ "$is_github" = true ] && command -v gh > /dev/null 2>&1; then
-    echo -e "${CB_BLUE}🛠️  Creating Pull Request via GitHub CLI...${C_RESET}"
-    if [ -n "$pr_title" ]; then
-      gh pr create --base "$target_branch" --title "$pr_title" --body "$pr_body"
-    else
-      gh pr create --base "$target_branch" --fill
-    fi
-    echo -e "${CB_GREEN}✅ Pull Request created successfully!${C_RESET}"
-
-    read -r -p "🌐 View Pull Request in browser? [Y/n] " -n 1
-    echo
-    if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
-      local pr_url
-      pr_url=$(gh pr view --json url -q .url)
-      __open_url "$pr_url"
-    fi
-  else
-    echo -e "${CB_YELLOW}⚠️  'gh' CLI not found or using non-GitHub repository. Opening browser to create PR manually...${C_RESET}"
-    local web_url="$origin_url"
-    if [[ "$web_url" == git@* ]]; then
-      web_url="${web_url#git@}"
-      web_url="${web_url/:/\/}"
-      web_url="https://${web_url}"
-    fi
-    web_url="${web_url%.git}"
-
-    if [[ "$web_url" == *"bitbucket.org"* ]]; then
-      web_url="${web_url}/pull-requests/new?source=${current_branch}&dest=${target_branch}"
-    elif [[ "$web_url" == *"gitlab.com"* ]]; then
-      web_url="${web_url}/-/merge_requests/new?merge_request[source_branch]=${current_branch}&merge_request[target_branch]=${target_branch}"
-    elif [[ "$web_url" == *"github.com"* ]]; then
-      web_url="${web_url}/compare/${target_branch}...${current_branch}?expand=1"
-    fi
-
-    __open_url "$web_url"
-  fi
+  __git_raise_pr_push_branch || return 1
+  __git_raise_pr_create_or_open
 }
 ```
 
 #### `git-view-remote`
-> Git: Open current repository remote URL in default web browser
+
+> Git: Open current repository remote URL in default web browser	/home/mst/.bash.d/20-vcs/50-git.sh
 
 ```bash
+#######################################
+# Git: Open current repository remote URL in default web browser
+#######################################
 git-view-remote() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -2854,13 +4692,143 @@ git-view-remote() {
 }
 ```
 
+#### `mt-repos`
+
+> Git: Scan VCS root and list all local repositories	/home/mst/.bash.d/20-vcs/50-git.sh
+
+```bash
+#######################################
+# Git: Scan VCS root and list all local repositories
+# Globals:
+#   VCS_ROOT, WSL_DISTRO_NAME
+#######################################
+mt-repos() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local search_dir="${VCS_ROOT:-$HOME/vcs}"
+  if [ ! -d "$search_dir" ]; then
+    echo -e "${CB_RED}🚨 Error: VCS root directory '$search_dir' not found.${C_RESET}"
+    return 1
+  fi
+
+  echo -e "${CB_BLUE}🔍 Scanning '$search_dir' for Git repositories...${C_RESET}"
+
+  local tmp_out
+  tmp_out=$(mktemp)
+
+  while IFS= read -r repo_path; do
+    [ -z "$repo_path" ] && continue
+
+    local repo_name
+    repo_name=$(basename "$repo_path")
+
+    local rel_path="${repo_path#"$search_dir"/}"
+    local repo_type="Root"
+    if [[ "$rel_path" == */* ]]; then
+      repo_type="${rel_path%%/*}"
+    fi
+    # Capitalize the first letter for a clean UI
+    repo_type="$(tr '[:lower:]' '[:upper:]' <<< "${repo_type:0:1}")${repo_type:1}"
+
+    local branch
+    branch=$(git -C "$repo_path" branch --show-current 2> /dev/null || echo "HEAD detached")
+    [ -z "$branch" ] && branch="No commits"
+
+    local remote
+    remote=$(git -C "$repo_path" config --get remote.origin.url 2> /dev/null || echo "No remote")
+
+    echo "${repo_type}|${repo_name}|${branch}|${remote}|${repo_path}" >> "$tmp_out"
+  done < <(find "$search_dir" -type d -exec test -d "{}/.git" \; -prune -print)
+
+  local count
+  count=$(wc -l < "$tmp_out")
+
+  if [ "$count" -eq 0 ]; then
+    echo -e "${CB_YELLOW}⚠️ No Git repositories found in $search_dir.${C_RESET}"
+    rm -f "$tmp_out"
+    return 0
+  fi
+
+  echo -e "\n${CB_CYAN}📦 Found $count repositories in $search_dir:${C_RESET}\n"
+
+  sort -t'|' -k1,1 -k2,2 -k5,5 "$tmp_out" -o "$tmp_out"
+
+  awk -F'|' -v home="$HOME" -v wsl_distro="${WSL_DISTRO_NAME:-Debian}" -v blue="$CB_BLUE" -v green="$CB_GREEN" -v yellow="$CB_YELLOW" -v dim="$C_DIM" -v rst="$C_RESET" -v magenta="$CB_MAGENTA" -v cyan="$CB_CYAN" '
+    function pad(str, len) {
+      if (length(str) > len) return substr(str, 1, len-3) "..."
+      return str sprintf("%*s", len - length(str), "")
+    }
+    BEGIN {
+      printf "%s%-15s %-35s %-20s %-50s %s%s\n", blue, "TYPE", "REPOSITORY", "BRANCH", "REMOTE URL", "PATH", rst
+      printf "%s%s%s\n", blue, "---------------------------------------------------------------------------------------------------------------------------------------------------", rst
+    }
+    {
+      type = pad($1, 15)
+      repo = pad($2, 35)
+      branch_raw = $3
+      branch = pad(branch_raw, 20)
+      branch_color = (branch_raw == "main" || branch_raw == "master") ? green : yellow
+      
+      remote_raw = $4
+      remote_color = (remote_raw == "No remote") ? dim : rst
+      remote_disp = pad(remote_raw, 50)
+      
+      # Robust URL transformation for both SSH (git@) and HTTPS
+      web_url = remote_raw
+      if (web_url ~ /^git@/) {
+          sub(/^git@/, "", web_url)
+          sub(/:/, "/", web_url)
+          web_url = "https://" web_url
+      }
+      sub(/\.git$/, "", web_url)
+      
+      if (web_url ~ /^http/) {
+          remote_linked = "\033]8;;" web_url "\033\\" remote_disp "\033]8;;\033\\"
+      } else {
+          remote_linked = remote_disp
+      }
+      
+      path_full = $5
+      path_disp = path_full
+      if (index(path_disp, home) == 1) {
+          path_disp = "~" substr(path_disp, length(home) + 1)
+      }
+      
+      if (wsl_distro != "") {
+          file_url = "file://wsl.localhost/" wsl_distro path_full
+      } else {
+          file_url = "file://" path_full
+      }
+      
+      path_linked = "\033]8;;" file_url "\033\\" path_disp "\033]8;;\033\\"
+      
+      printf "%s%s%s %s%s%s %s%s%s %s%s%s %s\n", magenta, type, rst, cyan, repo, rst, branch_color, branch, rst, remote_color, remote_linked, rst, path_linked
+    }
+  ' "$tmp_out"
+
+  echo ""
+  rm -f "$tmp_out"
+}
+```
 
 ### 📂 Version Control (Git) - Profile Synchronization
 
+
 #### `mt-download-release`
-> System: Download a release zip from the remote repository
+
+> System: Download a release zip from the remote repository	/home/mst/.bash.d/20-vcs/52-git-sync.sh
 
 ```bash
+#######################################
+# System: Download a release zip from the remote repository
+# Usage: mt-download-release [-v version] [-d directory]
+# Options:
+#   -v <version>    Specify target release version (defaults to latest)
+#   -d <directory>  Specify destination directory (defaults to current directory)
+#######################################
 mt-download-release() {
   local target_version=""
   local dest_dir="$PWD"
@@ -2937,9 +4905,16 @@ mt-download-release() {
 ```
 
 #### `mt-get-update`
-> System: Download and install profile updates from GitHub releases
+
+> System: Download and install profile updates from GitHub releases	/home/mst/.bash.d/20-vcs/52-git-sync.sh
 
 ```bash
+#######################################
+# System: Download and install profile updates from GitHub releases
+# Usage: mt-get-update [-v version]
+# Options:
+#   -v <version>  Specify a target release version (e.g., v1.1.0)
+#######################################
 mt-get-update() {
   local target_version=""
   local OPTIND opt
@@ -2960,89 +4935,39 @@ mt-get-update() {
 
   echo -e "${CB_BLUE}⬇️ Fetching release information...${C_RESET}"
 
-  local repo_path="${UPSTREAM_REPO_PATH:-MatStacey/mt-devops-framework}"
+  local download_url="" tag_name=""
+  __mt_get_update_resolve_release "$target_version"
+  local resolve_status=$?
+  [ "$resolve_status" -eq 2 ] && return 0
+  [ "$resolve_status" -eq 1 ] && return 1
 
-  local api_url="https://api.github.com/repos/${repo_path}/releases/latest"
-  if [ -n "$target_version" ]; then
-    api_url="https://api.github.com/repos/${repo_path}/releases/tags/${target_version}"
-  fi
+  local tmp_dir="" ext_root=""
+  __mt_get_update_download_and_extract "$download_url" "$tag_name" || return 1
 
-  local release_data
-  release_data=$(curl -s "$api_url")
-
-  local download_url
-  download_url=$(echo "$release_data" | jq -r ".assets[0].browser_download_url // empty")
-  local tag_name
-  tag_name=$(echo "$release_data" | jq -r ".tag_name // empty")
-
-  local current_version="Local"
-  local repo_dir="${DOTFILES_DIR:-$SYNC_REPO_DIR}"
-  if [ -f "$HOME/.bash.d/data/.current_version" ]; then
-    current_version=$(command cat "$HOME/.bash.d/data/.current_version" | tr -d '\r\n ')
-  elif [ -n "$repo_dir" ] && [ -d "$repo_dir/.git" ] && command -v git > /dev/null 2>&1; then
-    current_version=$(git -C "$repo_dir" describe --tags --abbrev=0 2> /dev/null || echo "Local")
-    current_version=$(echo "$current_version" | tr -d '\r\n ')
-  fi
-
-  local clean_tag
-  clean_tag=$(echo "$tag_name" | tr -d '\r\n ')
-
-  if [ "$clean_tag" = "$current_version" ] && [ -z "$target_version" ]; then
-    echo -e "${CB_GREEN}✅ You are already running the latest version (${current_version}).${C_RESET}"
+  if ! __mt_get_update_check_divergence "$ext_root"; then
+    rm -rf "$tmp_dir"
     return 0
   fi
 
-  if [ -z "$download_url" ] || [ "$download_url" = "null" ]; then
-    if [ -n "$target_version" ]; then
-      echo -e "${CB_RED}🚨 Error: Could not find release assets for version ${target_version} in ${repo_path}.${C_RESET}"
-    else
-      echo -e "${CB_RED}🚨 Error: Could not find latest release assets for ${repo_path}.${C_RESET}"
-    fi
-    return 1
-  fi
-
-  echo -e "${CB_GREEN}📦 Found release ${tag_name}. Downloading...${C_RESET}"
-
-  local tmp_dir
-  tmp_dir=$(mktemp -d)
-  local zip_path="${tmp_dir}/update.zip"
-
-  if ! curl -L -s --fail "$download_url" -o "$zip_path"; then
-    echo -e "${CB_RED}🚨 Error: Failed to download release asset from ${download_url}.${C_RESET}"
-    rm -rf "$tmp_dir"
-    return 1
-  fi
-
-  echo -e "${CB_YELLOW}🔄 Extracting and applying updates...${C_RESET}"
-  unzip -q "$zip_path" -d "${tmp_dir}/extracted" > /dev/null 2>&1
-
-  local ext_root="${tmp_dir}/extracted"
-  if [ ! -f "$ext_root/install.sh" ]; then
-    local nested
-    nested=$(find "$ext_root" -name "install.sh" -exec dirname {} \; | head -n 1)
-    if [ -n "$nested" ]; then
-      ext_root="$nested"
-    fi
-  fi
-
-  if [ -f "$ext_root/install.sh" ]; then
-    (
-      cd "$ext_root" || exit 1
-      bash ./install.sh
-    )
-    echo "$tag_name" > "$HOME/.bash.d/data/.current_version"
-  else
-    echo -e "${CB_RED}🚨 Error: install.sh missing from downloaded release.${C_RESET}"
-  fi
-
+  __mt_get_update_install "$ext_root" "$tag_name"
   rm -rf "$tmp_dir"
 }
 ```
 
 #### `mt-push-update`
-> System: Sync local bash configs to terminal dotfiles repo and create a Pull Request
+
+> System: Sync local bash configs to terminal dotfiles repo and create a Pull Request	/home/mst/.bash.d/20-vcs/52-git-sync.sh
 
 ```bash
+#######################################
+# System: Sync local bash configs to terminal dotfiles repo and create a Pull Request
+# Usage: mt-push-update [-i|--issue issue_num] [-s|--shellcheck] [-b|--backup] [optional_message]
+# Options:
+#   -i, --issue <num>  Optional issue number to link to the Pull Request
+#   -s, --shellcheck   Run ShellCheck locally before pushing to catch errors early
+#   -b, --backup       Create a zip backup of .bash.d and .bashrc before syncing
+#   $@                 Optional commit message string
+#######################################
 mt-push-update() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
@@ -3051,190 +4976,93 @@ mt-push-update() {
 
   local issue_num=""
   local run_shellcheck=false
-  local OPTIND opt
-  while getopts "i:s" opt; do
-    case ${opt} in
-      i) issue_num="$OPTARG" ;;
-      s) run_shellcheck=true ;;
-      \?)
-        echo "Usage: mt-push-update [-i <issue_number>] [-s] [optional message]" >&2
+  local backup_before_sync=false
+  local delete_merged=false
+  local prompt_remote=false
+  local auto_merge=false
+  local skip_ai=false
+  local user_msg=""
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -i | --issue)
+        issue_num="$2"
+        shift 2
+        ;;
+      -s | --shellcheck)
+        run_shellcheck=true
+        shift
+        ;;
+      -b | --backup)
+        backup_before_sync=true
+        shift
+        ;;
+      -m | --no-ai)
+        skip_ai=true
+        export SKIP_AI=true
+        shift
+        # Check if the next argument is a message string and not another flag
+        if [[ "$#" -gt 0 && "$1" != -* ]]; then
+          user_msg="$1"
+          shift
+        fi
+        ;;
+      -d | --delete-merged)
+        delete_merged=true
+        shift
+        ;;
+      --prompt-remote)
+        prompt_remote=true
+        shift
+        ;;
+      -g | --merge)
+        auto_merge=true
+        shift
+        ;;
+      -*)
+        echo "Usage: mt-push-update [-i|--issue <num>] [-s|--shellcheck] [-b|--backup] [-m|--no-ai] [-d|--delete-merged] [--prompt-remote] [-g|--merge] [message]" >&2
         return 1
+        ;;
+      *)
+        if [ -z "$user_msg" ]; then
+          user_msg="$1"
+        else
+          user_msg="${user_msg} $1"
+        fi
+        shift
         ;;
     esac
   done
-  shift $((OPTIND - 1))
+
+  user_msg=$(echo "$user_msg" | xargs)
 
   if [ "$run_shellcheck" = true ]; then
-    echo -e "${CB_BLUE}🔍 Running local ShellCheck...${C_RESET}"
-    if command -v shellcheck > /dev/null 2>&1; then
-      if ! find "$HOME/.bash.d" -type f -name "*.sh" -print0 | xargs -0 shellcheck -e SC1090,SC1091,SC2119,SC2120,SC2207,SC2015,SC2317,SC2016,SC2129,SC2028,SC1003; then
-        echo -e "${CB_RED}🚨 ShellCheck failed! Please fix the errors above before syncing.${C_RESET}"
-        return 1
-      fi
-      echo -e "${CB_GREEN}✅ ShellCheck passed!${C_RESET}"
-    else
-      echo -e "${CB_YELLOW}⚠️ ShellCheck is not installed locally. Skipping...${C_RESET}"
-    fi
+    __mt_push_update_run_shellcheck || return 1
   fi
 
-  local user_msg="$*"
   local repo_dir="${DOTFILES_DIR:-$SYNC_REPO_DIR}"
   local remote_url="${SYNC_REPO_URL:-}"
 
   if [[ -z "$remote_url" || "$remote_url" == "YOUR_SYNC_REPO_URL" || "$remote_url" == "null" ]]; then
-    echo -e "\033[1;33m⚠️  Profile Sync Not Configured\033[0m"
-    echo -e "The \033[1mpush-profile-update\033[0m feature automatically versions and pushes your terminal configuration to a remote Git repository."
+    echo -e "${CB_YELLOW}⚠️  Profile Sync Not Configured${C_RESET}"
+    echo -e "The ${C_BOLD}push-profile-update${C_RESET} feature automatically versions and pushes your terminal configuration to a remote Git repository."
     echo "If you downloaded this profile as a standalone ZIP and do not wish to sync it, you can safely ignore this command."
     echo -e "\nTo enable syncing, link an empty remote Git repository by running:"
-    echo -e "   \033[1;36mmt-add-sync-url \"git@github.com:username/my-terminal-repo.git\"\033[0m\n"
+    echo -e "   ${CB_CYAN}mt-add-sync-url \"git@github.com:username/my-terminal-repo.git\"${C_RESET}\n"
     return 1
+  fi
+
+  if [ "$backup_before_sync" = true ]; then
+    __mt_push_update_backup || return 1
   fi
 
   echo "🔄 Syncing bash configuration to $repo_dir..."
   __git_sync_init_repo "$repo_dir" "$remote_url"
 
-  (
-    cd "$repo_dir" || exit 1
-
-    local default_branch
-    default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
-    default_branch="${default_branch:-main}"
-
-    local current_branch
-    current_branch=$(git branch --show-current)
-
-    if [ "$current_branch" != "$default_branch" ] && command -v gh > /dev/null 2>&1; then
-      local pr_state
-      pr_state=$(gh pr view "$current_branch" --json state -q .state 2> /dev/null || echo "NONE")
-      if [ "$pr_state" = "MERGED" ] || [ "$pr_state" = "CLOSED" ]; then
-        echo -e "${CB_YELLOW}⚠️  Current branch '$current_branch' has a $pr_state PR and is considered dead.${C_RESET}"
-        read -r -p "Delete '$current_branch' locally and checkout a new branch from $default_branch? [Y/n] " -n 1
-        echo
-        if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
-          read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
-          echo
-          if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
-            echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
-            git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
-          fi
-          local stashed=false
-          if ! git diff --quiet || ! git diff --staged --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
-            git stash push --include-untracked -m "mt-push auto stash" > /dev/null 2>&1
-            stashed=true
-          fi
-          if git checkout "$default_branch" > /dev/null 2>&1; then
-            git pull origin "$default_branch" > /dev/null 2>&1
-            git branch -D "$current_branch" > /dev/null 2>&1
-            current_branch="$default_branch"
-          else
-            echo -e "${CB_RED}🚨 Failed to checkout $default_branch. Please commit or stash changes manually.${C_RESET}"
-            [ "$stashed" = true ] && git stash pop > /dev/null 2>&1
-            exit 1
-          fi
-          [ "$stashed" = true ] && git stash pop > /dev/null 2>&1
-        else
-          echo -e "${CB_RED}🚨 Aborted profile sync.${C_RESET}"
-          exit 1
-        fi
-      fi
-    fi
-
-    if [ "$current_branch" = "$default_branch" ]; then
-      git checkout "$default_branch" > /dev/null 2>&1 || git checkout -b "$default_branch" > /dev/null 2>&1
-      git pull origin "$default_branch" > /dev/null 2>&1 || true
-    else
-      echo -e "${CB_BLUE}🔄 Ensuring ${current_branch} is up to date with origin/${default_branch}...${C_RESET}"
-      git fetch origin "$default_branch" > /dev/null 2>&1
-      if ! git merge "origin/$default_branch" --no-edit > /dev/null 2>&1; then
-        echo -e "${CB_RED}💥 Merge conflict detected with origin/${default_branch}!${C_RESET}"
-        echo -e "${CB_YELLOW}The sync automation has paused to protect your code. Please resolve conflicts manually in $repo_dir, commit, and run mt-push-update again.${C_RESET}"
-        git merge --abort > /dev/null 2>&1
-        exit 1
-      fi
-    fi
-  ) || return 1
+  (__mt_push_update_reconcile_branch) || return 1
 
   __git_sync_copy_files "$repo_dir"
 
-  (
-    cd "$repo_dir" || exit 1
-
-    if command -v shfmt > /dev/null 2>&1; then
-      echo "🧹 Running Google Style code formatting before profile sync..."
-      shfmt -i 2 -ci -sr -w . > /dev/null 2>&1 || true
-    fi
-
-    __git_sync_ai_docs "$repo_dir"
-    if [ $? -eq 100 ]; then
-      echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
-      exit 1
-    fi
-
-    git add --all
-
-    if git diff --staged --quiet; then
-      echo "✅ Configurations are already up to date. No changes to commit."
-      return 0
-    fi
-
-    local current_branch
-    current_branch=$(git branch --show-current)
-
-    local default_branch
-    default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
-    default_branch="${default_branch:-main}"
-
-    local branch_name="$current_branch"
-    local pr_title="$user_msg"
-
-    if [ "$current_branch" = "$default_branch" ]; then
-      if [ -n "$user_msg" ]; then
-        local type
-        type=$(echo "$user_msg" | grep -oE '^[a-zA-Z]+' || echo "chore")
-
-        local slug
-        slug=$(echo "$user_msg" | sed -E 's/^[a-zA-Z]+(\([^)]+\))?:[[:space:]]*//' | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-|-$//g' | cut -c1-40)
-        [ -z "$slug" ] && slug="update-$(date +%s)"
-
-        branch_name="${type}/${slug}"
-      else
-        branch_name="chore/automated-sync-$(date +%Y%m%d-%H%M%S)"
-        pr_title="chore: automated profile synchronization"
-      fi
-
-      echo "🌿 Creating and checking out branch: $branch_name"
-      git checkout -b "$branch_name" > /dev/null 2>&1
-    else
-      if [ -z "$pr_title" ]; then
-        pr_title="chore: automated profile synchronization"
-      fi
-    fi
-
-    local pr_body="Automated sync of terminal profile configurations."
-    if [ -n "$issue_num" ]; then
-      issue_num="${issue_num#\#}"
-      pr_body="${pr_body}\n\nResolves #${issue_num}"
-    fi
-
-    if [ -z "$user_msg" ]; then
-      __git_sync_ai_commit "$repo_dir"
-      if [ $? -eq 100 ]; then
-        echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
-        exit 1
-      fi
-
-      git add --all
-      if ! git diff --staged --quiet; then
-        echo "💡 Committing: chore: sync miscellaneous updates"
-        git commit -m "chore: sync miscellaneous updates" > /dev/null
-      fi
-    else
-      echo "📦 Committing all as a single batch..."
-      git commit -m "$user_msg" > /dev/null
-    fi
-
-    git-raise-pr -b "$default_branch" -t "$pr_title" -m "$(echo -e "$pr_body")"
-  ) || return 1
+  (__mt_push_update_commit_and_raise_pr) || return 1
 }
 ```
-

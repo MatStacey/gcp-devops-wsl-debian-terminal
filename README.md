@@ -6,12 +6,17 @@ This configuration adheres to DRY principles, relies on native Bash and standalo
 
 ## 🚀 Recent Updates & Enhancements
 
-Added the `mtupd-ai` alias to `.bash.d/02-utilities/20-aliases.sh`. This alias executes `mt-push-update` with flags `-s` (shellcheck), `-b` (backup), and `-g` (git auto-sync/merge) for AI-driven framework updates.
+A senior-engineering audit pass across the framework: five oversized functions were split into focused helpers, a shell-injection surface was closed, `config.yaml` was made the true single source of truth for previously hardcoded values, and a new `mt` subcommand dispatcher landed alongside a safe, fully-featured export-cleanup command.
 
-- **`mtupd` Alias Addition (`20-aliases.sh`)**: Shortcut for `mt-push-update -s -b` to run updates with Shellcheck validation and backup creation enabled.
-- **File Logging with Rotation (`mt-log`)**: `mt-log` now appends timestamps and log levels to `$LOG_DIR/framework.log` with an automated 1MB file size rotation strategy (`framework.log.old`).
-- **Log Viewer (`mt-logs`)**: Added CLI options for log filtering (`-l/--level`), text searching (`-s/--search`), live tailing (`-f/--follow`), log clearing (`-c/--clear`), and IDE inspection (`-o/--open`).
-- **Interactive Alias Generator (`mt-alias`)**: Completed the function to interactively prompt for alias details, prevent duplicates, persist them to `20-aliases.sh`, reload the environment, and refresh internal help caches.
+- **Function Decomposition**: `mt-export`, `mt-push-update`, `mt-jobs`, `mt-backup`, `git-raise-pr`, `mt-ai-quota`, `mt-get-update`, `__git_sync_ai_commit`, and `__mt_hub_index` were each split into small, single-purpose helpers — flattening deep nesting and cutting cyclomatic complexity throughout.
+- **Security**: Removed an unnecessary `eval` in `mt-export`'s file listing that made the `-d`/target-directory argument a shell-injection surface.
+- **Config as Source of Truth**: `mt-backup` and `cd-win-docker` no longer bypass `config_manager.py` with ad-hoc `python3 -c` reads; AI retry counts, file-count thresholds, and the log-rotation size moved out of hardcoded values into `config.yaml`.
+- **Cache Bug Fix**: `mt-refresh-caches` was writing to a legacy `.env.cache` path the framework no longer reads at startup, silently breaking any config value that depended on it.
+- **`mt-export-cleanup`**: New command to safely purge stale `mt-export` output — validates filenames before deleting, previews a pre-flight table, and supports `-f/-q/-b/-B/-i` (force, quiet, backup, background via `mt-jobs`, interactive fzf menu).
+- **`mt` Subcommand Dispatcher**: Framework commands can now be run as `mt <name>` instead of `mt-<name>` (e.g. `mt export -i`), with tab-completion for subcommands and flags.
+- **Reliability Fixes**: `git-raise-pr` and `mt-push-update`'s branch-reconciliation prompts no longer hang indefinitely in non-interactive/background shells — they now read from `/dev/tty` and fail safely (declining any destructive action) instead of blocking forever.
+- **Naming & Docs**: Resolved the `mt-set-*`/`mt-setup-*` naming collision (`mt-setup-*` now delegates to canonical `mt-wizard-*` names), added the missing `mt-set-cicd`, and documented the `gcl-`/`gcp-`/`gce-`/`gcs-`/`bq-` GCP prefix convention.
+- **Documentation Pipeline**: `COMMANDS.md` generation was incorrectly gated behind AI summarization (`-m`/`--no-ai`) even though it's a purely local, deterministic step — it now always regenerates on every sync. Fixed a `mt-dump` bug where the generated `TECHNICAL_REFERENCE.md` header showed literal `$(date)` text instead of the actual date.
 
 ---
 
@@ -32,7 +37,7 @@ Before installing this terminal environment, ensure your local workstation meets
 * **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking optimized for minimal latency by prioritizing native file reads over subshells where possible. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
 * **Asynchronous Update Checks:** Silently checks for system package updates, as well as upstream terminal profile updates, in the background on a configurable TTL timer without blocking terminal initialization.
 * **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/python/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment.
-* **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching via an interactive `fzf` menu (`mt-select-theme`).
+* **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching (`mt-set-theme`).
 * **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT/Homebrew packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`, `zoxide`).
 * **Multi-Provider AI Architecture:** Consult universal AI via the `ai` command with support for **Gemini**, **Claude**, and **Local LLMs** (via Ollama or any OpenAI-compatible endpoint). Background workflows like `git-ai-push-all` dynamically respect your active `DEFAULT_AI` setting.
 * **Multi-Threaded Validation:** The `tf-val-all` command leverages `xargs -P` with configurable thread limits to concurrently validate and run Checkov security scans across all Terraform modules.
@@ -53,8 +58,9 @@ mkdir -p ~/vcs/personal/mt-devops-framework
 cd ~/vcs/personal/mt-devops-framework
 
 # Download and extract the latest release
-wget [https://github.com/MatStacey/mt-devops-framework/releases/latest/download/mt-devops-framework-v1.0.0.zip](https://github.com/MatStacey/mt-devops-framework/releases/latest/download/mt-devops-framework-v1.0.0.zip)
-unzip mt-devops-framework-v1.0.0.zip
+DOWNLOAD_URL=$(curl -s https://api.github.com/repos/MatStacey/mt-devops-framework/releases/latest | jq -r '.assets[0].browser_download_url')
+wget "$DOWNLOAD_URL"
+unzip "$(basename "$DOWNLOAD_URL")"
 
 ```
 
