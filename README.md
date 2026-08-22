@@ -36,7 +36,8 @@ Before installing this terminal environment, ensure your local workstation meets
 * **Cross-Platform Compatibility:** Native OS detection dynamically maps clipboard (`pbcopy`, `clip.exe`), file explorer (`open`, `explorer.exe`), and package manager (`brew`, `apt`) utilities based on your host architecture.
 * **Zero-Lag Dynamic Prompt:** Real-time, color-coded Git status, Kubernetes context, and GCP project/account tracking optimized for minimal latency by prioritizing native file reads over subshells where possible. Includes OSC 8 clickable hyperlinking for Git branches and GCP consoles.
 * **Asynchronous Update Checks:** Silently checks for system package updates, as well as upstream terminal profile updates, in the background on a configurable TTL timer without blocking terminal initialization.
-* **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/python/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, API keys, and remote repository URLs directly into the shell environment.
+* **Decoupled Python Configuration:** A dedicated standalone Python manager (`lib/python/config_manager.py`) reads `~/.bash.d/config/config.yaml` to dynamically inject customizable directory paths, model/provider settings, and remote repository URLs directly into the shell environment.
+* **Externalized Secrets:** API keys are never stored in `config.yaml`. They live in `~/vcs/secrets/secrets.sh` — a plain `export VAR="value"` file outside the dotfiles repo entirely, sourced automatically on shell startup. Run `mt-setup` or edit it directly (`vim ~/vcs/secrets/secrets.sh`) to add your `GEMINI_API_KEY` or `CLAUDE_API_KEY`.
 * **Modular Theme Engine:** Color themes are fully externalized into standalone files under `~/.bash.d/config/themes/`, allowing custom aesthetic definitions and instant switching (`mt-set-theme`).
 * **Automated Bootstrapping:** Built-in `bootstrap` function automatically resolves and installs required APT/Homebrew packages, Python linters (`ruff`, `checkov`), formatters (`yapf`, `shfmt`), and modern CLI binaries (`yq`, `eza`, `batcat`, `zoxide`).
 * **Multi-Provider AI Architecture:** Consult universal AI via the `ai` command with support for **Gemini**, **Claude**, and **Local LLMs** (via Ollama or any OpenAI-compatible endpoint). Background workflows like `git-ai-push-all` dynamically respect your active `DEFAULT_AI` setting.
@@ -90,7 +91,7 @@ mt-setup
 
 ```
 
-The interactive wizard will seamlessly guide you through setting your default IDE, AI provider, secure API keys, and Git synchronization repository.
+The interactive wizard will seamlessly guide you through setting your default IDE, AI provider, and Git synchronization repository. It will prompt you to add your AI provider's API key, but only ever points you to `~/vcs/secrets/secrets.sh` to enter it directly — the wizard itself never touches the key value.
 
 ### 5. Keeping Your Profile Updated
 
