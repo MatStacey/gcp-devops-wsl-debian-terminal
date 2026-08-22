@@ -6,6 +6,11 @@ This document is automatically generated on every sync and lists all available f
 
 ## 🔗 Aliases
 Shortcuts for common commands and CLI replacements.
+### Configuration Management
+| Command | Description |
+|---|---|
+| `mt-reload-config` | Config: Forcefully re-parse config.yaml and reload environment variables |
+
 ### Container Orchestration (Kubernetes) Aliases
 | Command | Description |
 |---|---|
@@ -53,11 +58,6 @@ Shortcuts for common commands and CLI replacements.
 | `shfmtlw` | Dev: Shell - Format all shell scripts in current directory (recursive) |
 | `venv-make` | Dev: Python - Create & active Python venv |
 | `venv-up` | Dev: Python - Activate existing Python venv |
-
-### Externalized MT DevOps Secrets
-| Command | Description |
-|---|---|
-| `mt-reload-config` | Config: Forcefully re-parse config.yaml and reload environment variables |
 
 ### GCP: Configuration & Authentication
 | Command | Description |
@@ -186,21 +186,11 @@ Complex bash functions, framework utilities, and automated workflows.
 | `base64-dec` | System: Decode a Base64 string, file, or stream (shortcut for `base64-cli -d`) |
 | `base64-enc` | System: Encode a string, file, or stream to Base64 (shortcut for `base64-cli`) |
 
-### Container Orchestration
+### Configuration Management
 | Command | Description |
 |---|---|
-| `kubectl` | Kubernetes: Core kubectl wrapper (preserves args) |
-
-### Container Orchestration (Kubernetes) Aliases
-| Command | Description |
-|---|---|
-| `kns` | Kubernetes: Get or explicitly set the active namespace in the current context |
-
-### Externalized MT DevOps Secrets
-| Command | Description |
-|---|---|
-| `mt-add-claude-key` | AI: Interactively add or update your Claude API key. Stores it in |
-| `mt-add-gemini-key` | AI: Interactively add or update your Gemini API key. Stores it in |
+| `mt-add-claude-key` | AI: Interactively add or update your Claude API key |
+| `mt-add-gemini-key` | AI: Interactively add or update your Gemini API key |
 | `mt-add-sync-url` | Config: Set the sync repository URL |
 | `mt-get-gemini-status` | AI: Print current Gemini API model version and extended reasoning mode toggle |
 | `mt-load-config` | Config: Forcefully re-parse config.yaml and reload environment variables |
@@ -227,6 +217,16 @@ Complex bash functions, framework utilities, and automated workflows.
 | `mt-wizard-git` | Config: Interactive Git Setup Menu |
 | `mt-wizard-paths` | Config: Interactive Paths Setup Menu -- prompts for and persists the |
 | `mt-wizard-system` | Config: Interactive System Setup Menu |
+
+### Container Orchestration
+| Command | Description |
+|---|---|
+| `kubectl` | Kubernetes: Core kubectl wrapper (preserves args) |
+
+### Container Orchestration (Kubernetes) Aliases
+| Command | Description |
+|---|---|
+| `kns` | Kubernetes: Get or explicitly set the active namespace in the current context |
 
 ### GCP: Configuration & Authentication
 | Command | Description |

@@ -100,9 +100,7 @@ __mt_write_secret() {
   if [ ! -f "$secrets_file" ]; then
     cat << 'HDR' > "$secrets_file"
 #!/usr/bin/env bash
-# ==========================================
 # Externalized MT DevOps Secrets
-# ==========================================
 # Sourced by ~/.bash.d/00-system/00-config.sh on every shell startup and
 # whenever config.yaml changes. Never tracked in git -- this directory
 # lives outside ~/vcs/personal/mt-devops-framework entirely.
@@ -129,10 +127,11 @@ HDR
 }
 
 #######################################
-# AI: Interactively add or update your Gemini API key. Stores it in
-# ~/vcs/secrets/secrets.sh (never touches config.yaml or git) and
-# exports it into the current shell immediately.
+# AI: Interactively add or update your Gemini API key
 # Usage: mt-add-gemini-key
+# Globals:
+#   Writes to ~/vcs/secrets/secrets.sh (never touches config.yaml or git)
+#   and exports GEMINI_API_KEY into the current shell immediately.
 #######################################
 mt-add-gemini-key() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -155,10 +154,11 @@ mt-add-gemini-key() {
 }
 
 #######################################
-# AI: Interactively add or update your Claude API key. Stores it in
-# ~/vcs/secrets/secrets.sh (never touches config.yaml or git) and
-# exports it into the current shell immediately.
+# AI: Interactively add or update your Claude API key
 # Usage: mt-add-claude-key
+# Globals:
+#   Writes to ~/vcs/secrets/secrets.sh (never touches config.yaml or git)
+#   and exports CLAUDE_API_KEY into the current shell immediately.
 #######################################
 mt-add-claude-key() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
