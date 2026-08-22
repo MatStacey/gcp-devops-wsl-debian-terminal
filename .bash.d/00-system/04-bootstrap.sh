@@ -13,7 +13,10 @@ fi
 # Arguments:
 #   $@ - Dependency definitions (command:package)
 # Outputs:
-#   Prints space-separated missing packages to STDOUT
+#   Prints one missing package name per line to STDOUT (nothing if none are
+#   missing -- callers read this via `mapfile -t`, which requires
+#   one-per-line output; a space-joined single line, or printf with no
+#   arguments, both leave a phantom empty element in the resulting array)
 #######################################
 __get_missing_deps() {
   local missing=()
@@ -27,7 +30,8 @@ __get_missing_deps() {
       command -v "$cmd" > /dev/null 2>&1 || missing+=("$pkg")
     fi
   done
-  echo "${missing[@]}"
+  [ ${#missing[@]} -gt 0 ] && printf '%s\n' "${missing[@]}"
+  return 0
 }
 
 #######################################
@@ -253,38 +257,62 @@ bootstrap() {
 }
 
 #######################################
-# System: Prompt user to run bootstrap if missing dependencies are detected
+# System: Notify if missing dependencies are detected
+# Notes:
+#   The actual scan (in particular its `python3 -c "import yaml"` check) costs
+#   ~20ms, so it's run in the background at most once per
+#   UPDATE_CHECK_TTL_SEC and its result cached, the same pattern used by
+#   __check_updates/__check_profile_updates in 02-update-check.sh.
 #######################################
 __check_missing_deps() {
   if [[ $- != *i* ]]; then return; fi
 
-  local to_check=()
-  if [ "$OS_FAMILY" = "macos" ]; then
-    to_check=("${BREW_DEPENDENCIES[@]}")
-  else
-    to_check=("${APT_DEPENDENCIES[@]}")
-    to_check+=("yq:yq")
-  fi
-  to_check+=(
-    "${PYTHON_DEPENDENCIES[@]}"
-    "${COMPLEX_DEPENDENCIES[@]}"
-    "${EXTERNAL_DEPENDENCIES[@]}"
-  )
-  local missing_list
-  mapfile -t missing_list < <(__get_missing_deps "${to_check[@]}")
+  local pending_file="$HOME/.bash.d/data/cache/.deps_pending"
+  local cache_file="$HOME/.bash.d/data/cache/.deps_check_cache"
+  local current_time
+  current_time=$(date +%s)
+  mkdir -p "$HOME/.bash.d/data/cache" 2> /dev/null
 
-  if [ ${#missing_list[@]} -gt 0 ]; then
+  if [ -f "$pending_file" ]; then
     echo -e "\n${C_YELLOW}⚠️  Missing required dependencies detected in your environment:${C_RESET}"
-    for dep in "${missing_list[@]}"; do
-      echo "  - $dep"
-    done
+    while IFS= read -r dep; do
+      [ -n "$dep" ] && echo "  - $dep"
+    done < "$pending_file"
+    echo -e "${C_YELLOW}   Run ${C_BOLD}bootstrap${C_UNBOLD} to install them.${C_RESET}"
+    return
+  fi
 
-    read -p "Would you like to run 'bootstrap' to install them now? [Y/n] " -n 1 -r choice
-    echo
+  local last_check=0
+  if [ -f "$cache_file" ]; then
+    last_check=$(command cat "$cache_file")
+  fi
 
-    if [[ $choice =~ ^[Yy]$ ]] || [[ -z $choice ]]; then
-      bootstrap
-    fi
+  local ttl="${UPDATE_CHECK_TTL_SEC:-43200}"
+
+  if ((current_time - last_check >= ttl)); then
+    (
+      local to_check=()
+      if [ "$OS_FAMILY" = "macos" ]; then
+        to_check=("${BREW_DEPENDENCIES[@]}")
+      else
+        to_check=("${APT_DEPENDENCIES[@]}")
+        to_check+=("yq:yq")
+      fi
+      to_check+=(
+        "${PYTHON_DEPENDENCIES[@]}"
+        "${COMPLEX_DEPENDENCIES[@]}"
+        "${EXTERNAL_DEPENDENCIES[@]}"
+      )
+      local missing_list
+      mapfile -t missing_list < <(__get_missing_deps "${to_check[@]}")
+
+      if [ ${#missing_list[@]} -gt 0 ]; then
+        printf '%s\n' "${missing_list[@]}" > "$pending_file"
+      else
+        date +%s > "$cache_file"
+      fi
+    ) &
+    disown
   fi
 }
 

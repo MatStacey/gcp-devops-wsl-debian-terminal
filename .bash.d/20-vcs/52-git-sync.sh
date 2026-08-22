@@ -170,7 +170,7 @@ mt-push-update() {
   if [ "$run_shellcheck" = true ]; then
     echo -e "${CB_BLUE}🔍 Running local ShellCheck...${C_RESET}"
     if command -v shellcheck > /dev/null 2>&1; then
-      if ! find "$HOME/.bash.d" -type f -name "*.sh" -print0 | xargs -0 shellcheck -e SC1090,SC1091,SC2119,SC2120,SC2207,SC2015,SC2317,SC2016,SC2129,SC2028,SC1003; then
+      if ! find "$HOME/.bash.d" -type f -name "*.sh" -not -path "*/data/cache/*" -print0 | xargs -0 shellcheck -e SC1090,SC1091,SC2119,SC2120,SC2207,SC2015,SC2317,SC2016,SC2129,SC2028,SC1003; then
         echo -e "${CB_RED}🚨 ShellCheck failed! Please fix the errors above before syncing.${C_RESET}"
         return 1
       fi

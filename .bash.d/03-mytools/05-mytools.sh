@@ -493,6 +493,8 @@ mt-refresh-caches() {
   rm -f "$HOME/.bash.d/data/cache/.update_check_cache" "$HOME/.bash.d/data/cache/.update_pending"
   rm -f "$HOME/.bash.d/data/cache/.zoxide_cache.sh"
   rm -f "$HOME/.bash.d/data/cache/.profile_update_cache" "$HOME/.bash.d/data/cache/.profile_update_pending"
+  rm -f "$HOME/.bash.d/data/cache/.kubectl_completion.bash"
+  rm -f "$HOME/.bash.d/data/cache/.deps_check_cache" "$HOME/.bash.d/data/cache/.deps_pending"
 
   echo -e "${CB_BLUE}🔄 Rebuilding configurations and tool indexes...${C_RESET}"
   if [ -f "$HOME/.bash.d/lib/python/config_manager.py" ]; then
