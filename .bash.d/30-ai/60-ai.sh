@@ -596,8 +596,109 @@ mt-ai-debug() {
 }
 
 #######################################
+# AI: Extract one rate-limit header field from a curl-dumped headers file
+# Arguments:
+#   $1 - Path to the headers file
+#   $2 - Header name to extract (e.g. anthropic-ratelimit-requests-limit)
+# Outputs:
+#   Prints the header's value, or empty if not present
+#######################################
+__mt_ai_quota_extract_header() {
+  local headers_file="$1" header_name="$2"
+  grep -i "${header_name}:" "$headers_file" | awk '{print $2}' | tr -d '\r'
+}
+
+#######################################
+# AI: Print Claude's rate-limit header table from a headers file
+# Arguments:
+#   $1 - Path to the curl-dumped headers file
+#######################################
+__mt_ai_quota_print_claude_headers() {
+  local headers_file="$1"
+  local req_limit req_rem in_tok_limit in_tok_rem out_tok_limit out_tok_rem
+  req_limit=$(__mt_ai_quota_extract_header "$headers_file" "anthropic-ratelimit-requests-limit")
+  req_rem=$(__mt_ai_quota_extract_header "$headers_file" "anthropic-ratelimit-requests-remaining")
+  in_tok_limit=$(__mt_ai_quota_extract_header "$headers_file" "anthropic-ratelimit-input-tokens-limit")
+  in_tok_rem=$(__mt_ai_quota_extract_header "$headers_file" "anthropic-ratelimit-input-tokens-remaining")
+  out_tok_limit=$(__mt_ai_quota_extract_header "$headers_file" "anthropic-ratelimit-output-tokens-limit")
+  out_tok_rem=$(__mt_ai_quota_extract_header "$headers_file" "anthropic-ratelimit-output-tokens-remaining")
+
+  echo -e "  ${CB_YELLOW}| Metric               | Limit         | Remaining      |${C_RESET}"
+  echo -e "  ${CB_BLUE}|----------------------|---------------|----------------|${C_RESET}"
+  echo -e "  | Requests (RPM)       | $(printf '%-13s' "${req_limit:-Unknown}") | $(printf '%-14s' "${req_rem:-Unknown}") |"
+  echo -e "  | Input Tokens (TPM)   | $(printf '%-13s' "${in_tok_limit:-Unknown}") | $(printf '%-14s' "${in_tok_rem:-Unknown}") |"
+  echo -e "  | Output Tokens (TPM)  | $(printf '%-13s' "${out_tok_limit:-Unknown}") | $(printf '%-14s' "${out_tok_rem:-Unknown}") |"
+}
+
+#######################################
+# AI: Ping the Claude API and report its rate-limit status
+# Globals:
+#   CLAUDE_API_KEY, CLAUDE_VERSION, URI_CLAUDE_MESSAGES
+# Returns:
+#   0 on success, 1 if the API key is missing
+#######################################
+__mt_ai_quota_check_claude() {
+  if [ -z "${CLAUDE_API_KEY}" ] || [ "${CLAUDE_API_KEY}" = "YOUR_CLAUDE_API_KEY" ]; then
+    mt-log ERROR "CLAUDE_API_KEY is not configured."
+    return 1
+  fi
+  echo -e "⏳ Pinging Anthropic Claude API for rate limit headers...\n"
+
+  local headers_file
+  headers_file=$(mktemp)
+  # Minimal dummy payload to trigger a response and grab headers
+  local dummy_payload='{"model": "'"${CLAUDE_VERSION:-claude-3-7-sonnet-latest}"'", "max_tokens": 1, "messages": [{"role": "user", "content": "ping"}]}'
+
+  local http_code
+  http_code=$(curl -s -o /dev/null -w "%{http_code}" -D "$headers_file" -X POST "${URI_CLAUDE_MESSAGES}" \
+    -H "x-api-key: ${CLAUDE_API_KEY}" \
+    -H "anthropic-version: 2023-06-01" \
+    -H "content-type: application/json" \
+    -d "$dummy_payload")
+
+  if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 429 ]; then
+    __mt_ai_quota_print_claude_headers "$headers_file"
+    [ "$http_code" -eq 429 ] && mt-log ERROR "RATE LIMIT EXCEEDED (HTTP 429) - You are currently blocked."
+  else
+    mt-log ERROR "Failed to connect to Claude API. HTTP Status: $http_code"
+  fi
+  rm -f "$headers_file"
+}
+
+#######################################
+# AI: Ping the Gemini API and report its reachability/quota status
+# Globals:
+#   GEMINI_API_KEY, URI_GEMINI_MODELS
+# Returns:
+#   0 on success, 1 if the API key is missing
+#######################################
+__mt_ai_quota_check_gemini() {
+  if [ -z "${GEMINI_API_KEY}" ] || [ "${GEMINI_API_KEY}" = "YOUR_GEMINI_API_KEY" ]; then
+    mt-log ERROR "GEMINI_API_KEY is not configured."
+    return 1
+  fi
+  echo -e "⏳ Pinging Gemini API Studio...\n"
+
+  local response
+  response=$(curl -s -w "\n%{http_code}" -X GET "${URI_GEMINI_MODELS}?key=${GEMINI_API_KEY}")
+  local http_code
+  http_code=$(echo "$response" | tail -n1)
+
+  if [ "$http_code" -eq 200 ]; then
+    echo -e "${CB_GREEN}✅ Gemini API is active and reachable.${C_RESET}\n"
+    echo -e "${C_DIM}Note: Google's AI Studio (generativelanguage.googleapis.com) does not currently expose remaining token/request quotas via standard API headers.${C_RESET}"
+  elif [ "$http_code" -eq 429 ]; then
+    mt-log ERROR "QUOTA EXCEEDED (HTTP 429) - You have hit your Gemini rate limit."
+  else
+    mt-log ERROR "Failed to connect to Gemini API. HTTP Status: $http_code"
+  fi
+}
+
+#######################################
 # AI: Check API quota and rate limits for the active AI provider
 # Usage: mt-ai-quota
+# Globals:
+#   DEFAULT_AI
 #######################################
 mt-ai-quota() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
@@ -611,77 +712,14 @@ mt-ai-quota() {
   echo -e "${CB_CYAN} 📊 AI Provider Quota Check (${provider^})${C_RESET}"
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
 
-  if [ "$provider" = "claude" ]; then
-    if [ -z "${CLAUDE_API_KEY}" ] || [ "${CLAUDE_API_KEY}" = "YOUR_CLAUDE_API_KEY" ]; then
-      echo -e "${CB_RED}🚨 Error: CLAUDE_API_KEY is not configured.${C_RESET}"
-      return 1
-    fi
-    echo -e "⏳ Pinging Anthropic Claude API for rate limit headers...\n"
+  case "$provider" in
+    claude) __mt_ai_quota_check_claude ;;
+    gemini) __mt_ai_quota_check_gemini ;;
+    local)
+      echo -e "  ${CB_GREEN}✅ Local LLM selected.${C_RESET}"
+      echo -e "  ${C_DIM}No cloud quotas apply to localhost environments! Run indefinitely.${C_RESET}"
+      ;;
+  esac
 
-    local headers_file
-    headers_file=$(mktemp)
-    # Minimal dummy payload to trigger a response and grab headers
-    local dummy_payload='{"model": "'"${CLAUDE_VERSION:-claude-3-7-sonnet-latest}"'", "max_tokens": 1, "messages": [{"role": "user", "content": "ping"}]}'
-
-    local http_code
-    http_code=$(curl -s -o /dev/null -w "%{http_code}" -D "$headers_file" -X POST "${URI_CLAUDE_MESSAGES}" \
-      -H "x-api-key: ${CLAUDE_API_KEY}" \
-      -H "anthropic-version: 2023-06-01" \
-      -H "content-type: application/json" \
-      -d "$dummy_payload")
-
-    if [ "$http_code" -eq 200 ] || [ "$http_code" -eq 429 ]; then
-      local req_limit
-      req_limit=$(grep -i "anthropic-ratelimit-requests-limit:" "$headers_file" | awk '{print $2}' | tr -d '\r')
-      local req_rem
-      req_rem=$(grep -i "anthropic-ratelimit-requests-remaining:" "$headers_file" | awk '{print $2}' | tr -d '\r')
-      local in_tok_limit
-      in_tok_limit=$(grep -i "anthropic-ratelimit-input-tokens-limit:" "$headers_file" | awk '{print $2}' | tr -d '\r')
-      local in_tok_rem
-      in_tok_rem=$(grep -i "anthropic-ratelimit-input-tokens-remaining:" "$headers_file" | awk '{print $2}' | tr -d '\r')
-      local out_tok_limit
-      out_tok_limit=$(grep -i "anthropic-ratelimit-output-tokens-limit:" "$headers_file" | awk '{print $2}' | tr -d '\r')
-      local out_tok_rem
-      out_tok_rem=$(grep -i "anthropic-ratelimit-output-tokens-remaining:" "$headers_file" | awk '{print $2}' | tr -d '\r')
-
-      echo -e "  ${CB_YELLOW}| Metric               | Limit         | Remaining      |${C_RESET}"
-      echo -e "  ${CB_BLUE}|----------------------|---------------|----------------|${C_RESET}"
-      echo -e "  | Requests (RPM)       | $(printf '%-13s' "${req_limit:-Unknown}") | $(printf '%-14s' "${req_rem:-Unknown}") |"
-      echo -e "  | Input Tokens (TPM)   | $(printf '%-13s' "${in_tok_limit:-Unknown}") | $(printf '%-14s' "${in_tok_rem:-Unknown}") |"
-      echo -e "  | Output Tokens (TPM)  | $(printf '%-13s' "${out_tok_limit:-Unknown}") | $(printf '%-14s' "${out_tok_rem:-Unknown}") |"
-
-      if [ "$http_code" -eq 429 ]; then
-        echo -e "\n${CB_RED}🚨 RATE LIMIT EXCEEDED (HTTP 429) - You are currently blocked.${C_RESET}"
-      fi
-    else
-      echo -e "${CB_RED}🚨 Failed to connect. HTTP Status: $http_code${C_RESET}"
-    fi
-    rm -f "$headers_file"
-
-  elif [ "$provider" = "gemini" ]; then
-    if [ -z "${GEMINI_API_KEY}" ] || [ "${GEMINI_API_KEY}" = "YOUR_GEMINI_API_KEY" ]; then
-      echo -e "${CB_RED}🚨 Error: GEMINI_API_KEY is not configured.${C_RESET}"
-      return 1
-    fi
-    echo -e "⏳ Pinging Gemini API Studio...\n"
-
-    local response
-    response=$(curl -s -w "\n%{http_code}" -X GET "${URI_GEMINI_MODELS}?key=${GEMINI_API_KEY}")
-    local http_code
-    http_code=$(echo "$response" | tail -n1)
-
-    if [ "$http_code" -eq 200 ]; then
-      echo -e "${CB_GREEN}✅ Gemini API is active and reachable.${C_RESET}\n"
-      echo -e "${C_DIM}Note: Google's AI Studio (generativelanguage.googleapis.com) does not currently expose remaining token/request quotas via standard API headers.${C_RESET}"
-    elif [ "$http_code" -eq 429 ]; then
-      echo -e "${CB_RED}🚨 QUOTA EXCEEDED (HTTP 429) - You have hit your Gemini rate limit.${C_RESET}"
-    else
-      echo -e "${CB_RED}🚨 Failed to connect. HTTP Status: $http_code${C_RESET}"
-    fi
-
-  elif [ "$provider" = "local" ]; then
-    echo -e "  ${CB_GREEN}✅ Local LLM selected.${C_RESET}"
-    echo -e "  ${C_DIM}No cloud quotas apply to localhost environments! Run indefinitely.${C_RESET}"
-  fi
   echo -e "${CB_BLUE}==========================================================${C_RESET}"
 }

@@ -5,7 +5,89 @@
 # ~/.bash.d/20-vcs/51-git-ai.sh
 
 #######################################
+# Git: Validate that the configured AI provider has a usable API key
+# Arguments:
+#   $1 - Provider name (gemini|claude|local)
+# Globals:
+#   GEMINI_API_KEY, CLAUDE_API_KEY
+# Returns:
+#   0 if the provider is ready to query, 1 if its key is missing/unset
+#######################################
+__git_sync_ai_provider_ready() {
+  local provider="$1"
+  case "$provider" in
+    gemini)
+      [[ -z "${GEMINI_API_KEY:-}" || "$GEMINI_API_KEY" = "YOUR_GEMINI_API_KEY" ]] && {
+        echo "ℹ️ AI commit skipped: GEMINI_API_KEY is not set." >&2
+        return 1
+      }
+      ;;
+    claude)
+      [[ -z "${CLAUDE_API_KEY:-}" || "$CLAUDE_API_KEY" = "YOUR_CLAUDE_API_KEY" ]] && {
+        echo "ℹ️ AI commit skipped: CLAUDE_API_KEY is not set." >&2
+        return 1
+      }
+      ;;
+  esac
+  return 0
+}
+
+#######################################
+# Git: Query the configured AI provider with a prompt, dispatching to the
+# correct backend
+# Arguments:
+#   $1 - Provider name (gemini|claude|local)
+#   $2 - Prompt text
+# Outputs:
+#   Prints the provider's response to STDOUT
+# Returns:
+#   The queried backend's own exit status (0 success, 99 bypass, 100 hard
+#   failure), or 1 if the provider name is unrecognized
+#######################################
+__git_sync_ai_query_provider() {
+  local provider="$1" ai_prompt="$2"
+  case "$provider" in
+    gemini) __ai_query_gemini "$ai_prompt" "" "" "" "" ;;
+    claude) __ai_query_claude "$ai_prompt" "" "" "" ;;
+    local) __ai_query_local "$ai_prompt" "" "" "" ;;
+    *)
+      mt-log ERROR "Invalid AI provider '$provider'."
+      return 1
+      ;;
+  esac
+}
+
+#######################################
+# Git: Stage and commit the files listed in one AI-generated commit-group
+# object, skipping any file that doesn't exist, isn't tracked, or is
+# git-ignored
+# Arguments:
+#   $1 - Target repository directory
+#   $2 - One JSON commit-group object: {"message": "...", "files": [...]}
+#######################################
+__git_sync_ai_commit_group() {
+  local repo_dir="$1" commit_obj="$2"
+  local msg
+  msg=$(echo "$commit_obj" | jq -r '.message')
+
+  local files_staged=0
+  local file_path
+  while read -r file_path; do
+    { [ -e "$repo_dir/$file_path" ] || git -C "$repo_dir" ls-files --error-unmatch "$file_path" > /dev/null 2>&1; } || continue
+    git -C "$repo_dir" check-ignore -q "$file_path" && continue
+    git -C "$repo_dir" add "$file_path" > /dev/null 2>&1
+    files_staged=1
+  done < <(echo "$commit_obj" | jq -r '.files[]')
+
+  if [ "$files_staged" -eq 1 ]; then
+    echo "💡 Committing: $msg"
+    git -C "$repo_dir" commit -m "$msg" > /dev/null
+  fi
+}
+
+#######################################
 # Git: Analyze git diff and generate feature-grouped AI commits
+# Usage: __git_sync_ai_commit <repo_dir>
 # Globals:
 #   GEMINI_API_KEY, CLAUDE_API_KEY, DEFAULT_AI, AI_MAX_DIFF_BYTES
 # Arguments:
@@ -17,22 +99,11 @@ __git_sync_ai_commit() {
   local repo_dir="$1"
   local provider="${DEFAULT_AI:-gemini}"
 
-  if [ "$provider" = "gemini" ]; then
-    [[ -z "${GEMINI_API_KEY:-}" || "$GEMINI_API_KEY" = "YOUR_GEMINI_API_KEY" ]] && {
-      echo "ℹ️ AI commit skipped: GEMINI_API_KEY is not set." >&2
-      return 1
-    }
-  elif [ "$provider" = "claude" ]; then
-    [[ -z "${CLAUDE_API_KEY:-}" || "$CLAUDE_API_KEY" = "YOUR_CLAUDE_API_KEY" ]] && {
-      echo "ℹ️ AI commit skipped: CLAUDE_API_KEY is not set." >&2
-      return 1
-    }
-  fi
+  __git_sync_ai_provider_ready "$provider" || return 1
 
   local bytes_limit="${AI_MAX_DIFF_BYTES:-4000}"
   local diff_content
   diff_content=$(git -C "$repo_dir" diff --staged | head -c "$bytes_limit")
-
   [ -z "$diff_content" ] && return 0
 
   echo "🤖 Analyzing changes to generate systematic feature commits using $provider..." >&2
@@ -41,55 +112,27 @@ __git_sync_ai_commit() {
   base_prompt=$(__get_prompt "git_commit")
   local ai_prompt="${base_prompt}\n\n${diff_content}"
 
-  local response=""
-  local query_status=0
-  if [ "$provider" = "gemini" ]; then
-    response=$(__ai_query_gemini "$ai_prompt" "" "" "" "")
-    query_status=$?
-  elif [ "$provider" = "claude" ]; then
-    response=$(__ai_query_claude "$ai_prompt" "" "" "")
-    query_status=$?
-  elif [ "$provider" = "local" ]; then
-    response=$(__ai_query_local "$ai_prompt" "" "" "")
-    query_status=$?
-  else
-    echo "🚨 Error: Invalid provider '$provider'." >&2
-    return 1
-  fi
-
-  if [ $query_status -eq 99 ]; then return 0; fi
-  if [ $query_status -eq 100 ]; then return 100; fi
+  local response
+  response=$(__git_sync_ai_query_provider "$provider" "$ai_prompt")
+  local query_status=$?
+  [ "$query_status" -eq 99 ] && return 0
+  [ "$query_status" -eq 100 ] && return 100
+  [ "$query_status" -eq 1 ] && return 1
 
   local generated_json
   generated_json=$(__ai_extract_json_array "$response")
 
-  if [ -n "$generated_json" ] && echo "$generated_json" | jq -e . > /dev/null 2>&1; then
-    git -C "$repo_dir" reset HEAD > /dev/null 2>&1
-
-    echo "$generated_json" | jq -c '.[]' | while read -r commit_obj; do
-      local msg
-      msg=$(echo "$commit_obj" | jq -r '.message')
-      local files_staged=0
-
-      while read -r file_path; do
-        if [ -e "$repo_dir/$file_path" ] || git -C "$repo_dir" ls-files --error-unmatch "$file_path" > /dev/null 2>&1; then
-          if ! git -C "$repo_dir" check-ignore -q "$file_path"; then
-            git -C "$repo_dir" add "$file_path" > /dev/null 2>&1
-            files_staged=1
-          fi
-        fi
-      done < <(echo "$commit_obj" | jq -r '.files[]')
-
-      if [ "$files_staged" -eq 1 ]; then
-        echo "💡 Committing: $msg"
-        git -C "$repo_dir" commit -m "$msg" > /dev/null
-      fi
-    done
-    return 0
-  else
-    echo "⚠️ Gemini API Debug Response or Invalid JSON: $response" >&2
+  if [ -z "$generated_json" ] || ! echo "$generated_json" | jq -e . > /dev/null 2>&1; then
+    mt-log WARN "AI commit-grouping response was empty or invalid JSON: $response"
     return 1
   fi
+
+  git -C "$repo_dir" reset HEAD > /dev/null 2>&1
+
+  local commit_obj
+  echo "$generated_json" | jq -c '.[]' | while read -r commit_obj; do
+    __git_sync_ai_commit_group "$repo_dir" "$commit_obj"
+  done
 }
 
 #######################################
