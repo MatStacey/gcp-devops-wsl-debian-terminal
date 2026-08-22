@@ -91,6 +91,261 @@ __git_sync_copy_files() {
 }
 
 #######################################
+# System: Run the local ShellCheck gate used by mt-push-update -s
+# Returns:
+#   0 if ShellCheck passed or is unavailable, 1 if it found errors
+#######################################
+__mt_push_update_run_shellcheck() {
+  echo -e "${CB_BLUE}🔍 Running local ShellCheck...${C_RESET}"
+  if ! command -v shellcheck > /dev/null 2>&1; then
+    echo -e "${CB_YELLOW}⚠️ ShellCheck is not installed locally. Skipping...${C_RESET}"
+    return 0
+  fi
+  if ! find "$HOME/.bash.d" -type f -name "*.sh" -not -path "*/data/cache/*" -print0 | xargs -0 shellcheck -e SC1090,SC1091,SC2119,SC2120,SC2207,SC2015,SC2317,SC2016,SC2129,SC2028,SC1003; then
+    echo -e "${CB_RED}🚨 ShellCheck failed! Please fix the errors above before syncing.${C_RESET}"
+    return 1
+  fi
+  echo -e "${CB_GREEN}✅ ShellCheck passed!${C_RESET}"
+}
+
+#######################################
+# System: Create a pre-sync zip backup of .bash.d and .bashrc
+# Globals (read):
+#   BACKUP_DIR
+# Returns:
+#   0 on success, 1 if the backup file was not created
+#######################################
+__mt_push_update_backup() {
+  echo -e "${CB_BLUE}📦 Creating pre-sync backup of framework...${C_RESET}"
+  local dest="${BACKUP_DIR:-~/backups}/framework-pre-sync"
+  mkdir -p "$dest"
+  local timestamp
+  timestamp=$(date +"%Y%m%d_%H%M%S")
+  local backup_file="${dest}/mt_framework_backup_${timestamp}.zip"
+
+  (
+    cd "$HOME" || exit 1
+    zip -q -r "$backup_file" .bash.d .bashrc -x ".bash.d/.git/*" -x ".bash.d/data/cache/*" -x ".bash.d/node_modules/*" -x ".bash.d/**/__pycache__/*" -x ".bash.d/.terraform/*" -x ".bash.d/venv/*" -x ".bash.d/.venv/*"
+  )
+
+  if [ -f "$backup_file" ]; then
+    local file_size
+    file_size=$(du -h "$backup_file" | cut -f1)
+    echo -e "${CB_GREEN}✅ Pre-sync backup saved to ${backup_file} (${file_size})${C_RESET}"
+  else
+    echo -e "${CB_RED}🚨 Pre-sync backup failed. Aborting sync to prevent data loss.${C_RESET}"
+    return 1
+  fi
+}
+
+#######################################
+# System: Reconcile the sync repo's local branch with origin before copying files
+# Runs inside the caller's `( cd "$repo_dir"; ... )` subshell, so `cd`/`exit`
+# here never affect the interactive shell.
+# Globals (read, set by mt-push-update):
+#   repo_dir
+#######################################
+__mt_push_update_reconcile_branch() {
+  cd "$repo_dir" || exit 1
+
+  local default_branch
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
+  default_branch="${default_branch:-main}"
+
+  local current_branch
+  current_branch=$(git branch --show-current)
+
+  if [ "$current_branch" != "$default_branch" ] && command -v gh > /dev/null 2>&1; then
+    local pr_state
+    pr_state=$(gh pr view "$current_branch" --json state -q .state 2> /dev/null || echo "NONE")
+    if [ "$pr_state" = "MERGED" ] || [ "$pr_state" = "CLOSED" ]; then
+      echo -e "${CB_YELLOW}⚠️  Current branch '$current_branch' has a $pr_state PR and is considered dead.${C_RESET}"
+      read -r -p "Delete '$current_branch' locally and checkout a new branch from $default_branch? [Y/n] " -n 1
+      echo
+      if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
+        read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
+        echo
+        if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
+          echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
+          git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
+        fi
+        local stashed=false
+        if ! git diff --quiet || ! git diff --staged --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
+          git stash push --include-untracked -m "mt-push auto stash" > /dev/null 2>&1
+          stashed=true
+        fi
+        if git checkout "$default_branch" > /dev/null 2>&1; then
+          git pull origin "$default_branch" > /dev/null 2>&1
+          git branch -D "$current_branch" > /dev/null 2>&1
+          current_branch="$default_branch"
+        else
+          echo -e "${CB_RED}🚨 Failed to checkout $default_branch. Please commit or stash changes manually.${C_RESET}"
+          [ "$stashed" = true ] && git stash pop > /dev/null 2>&1
+          exit 1
+        fi
+        [ "$stashed" = true ] && git stash pop > /dev/null 2>&1
+      else
+        echo -e "${CB_RED}🚨 Aborted profile sync.${C_RESET}"
+        exit 1
+      fi
+    fi
+  fi
+
+  if [ "$current_branch" = "$default_branch" ]; then
+    git checkout "$default_branch" > /dev/null 2>&1 || git checkout -b "$default_branch" > /dev/null 2>&1
+    git pull origin "$default_branch" > /dev/null 2>&1 || true
+  else
+    echo -e "${CB_BLUE}🔄 Ensuring ${current_branch} is up to date with origin/${default_branch}...${C_RESET}"
+    git fetch origin "$default_branch" > /dev/null 2>&1
+    if ! git merge "origin/$default_branch" --no-edit > /dev/null 2>&1; then
+      echo -e "${CB_RED}💥 Merge conflict detected with origin/${default_branch}!${C_RESET}"
+      echo -e "${CB_YELLOW}The sync automation has paused to protect your code. Please resolve conflicts manually in $repo_dir, commit, and run mt-push-update again.${C_RESET}"
+      git merge --abort > /dev/null 2>&1
+      exit 1
+    fi
+  fi
+}
+
+#######################################
+# System: Delete local (and optionally remote) branches merged into the default branch
+# Runs inside the same subshell as __mt_push_update_commit_and_raise_pr.
+# Globals (read, set by mt-push-update):
+#   prompt_remote
+#######################################
+__mt_push_update_cleanup_merged_branches() {
+  echo -e "${CB_BLUE}🧹 Pruning remote tracking references and deleting merged local branches...${C_RESET}"
+  git fetch --prune > /dev/null 2>&1
+  local main_b="main"
+  git show-ref --verify --quiet refs/heads/master && main_b="master"
+
+  local merged_b
+  merged_b=$(git branch --merged "$main_b" | grep -v -E "^[*+]|\\b(main|master|dev|developer)\\b" | tr -d ' ' || true)
+
+  if [ -z "$merged_b" ]; then
+    echo -e "${C_DIM}No stale merged local branches found to delete.${C_RESET}"
+    return 0
+  fi
+
+  echo "$merged_b" | xargs -r git branch -d
+  echo -e "${CB_GREEN}✅ Merged local branches cleaned up successfully!${C_RESET}"
+
+  if [ "$prompt_remote" = true ]; then
+    echo -e "\n${CB_YELLOW}🔍 Checking corresponding remote branches on origin...${C_RESET}"
+    for b_item in $merged_b; do
+      if git ls-remote --exit-code --heads origin "$b_item" > /dev/null 2>&1; then
+        read -r -p "Delete remote branch 'origin/$b_item'? [y/N] " -n 1 -r < /dev/tty
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+          git push origin --delete "$b_item"
+        fi
+      fi
+    done
+  fi
+}
+
+#######################################
+# System: Format, commit, and raise a PR for the synced dotfiles repo
+# Runs inside the caller's `( cd "$repo_dir"; ... )` subshell, so `cd`/`exit`
+# here never affect the interactive shell.
+# Globals (read, set by mt-push-update):
+#   repo_dir, skip_ai, user_msg, issue_num, delete_merged, auto_merge
+#######################################
+__mt_push_update_commit_and_raise_pr() {
+  cd "$repo_dir" || exit 1
+
+  if command -v shfmt > /dev/null 2>&1; then
+    echo "🧹 Running Google Style code formatting before profile sync..."
+    shfmt -i 2 -ci -sr -w . > /dev/null 2>&1 || true
+  fi
+
+  if [ "$skip_ai" = true ]; then
+    echo -e "${C_DIM}⏩ Skipping AI README summarization (-m active)...${C_RESET}"
+  else
+    __git_sync_ai_docs "$repo_dir"
+  fi
+  if [ $? -eq 100 ]; then
+    echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
+    exit 1
+  fi
+
+  git add --all
+
+  if git diff --staged --quiet; then
+    echo "✅ Configurations are already up to date. No changes to commit."
+    return 0
+  fi
+
+  local current_branch
+  current_branch=$(git branch --show-current)
+  local default_branch
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
+  default_branch="${default_branch:-main}"
+
+  local branch_name="$current_branch"
+  local pr_title="$user_msg"
+
+  if [ "$current_branch" = "$default_branch" ]; then
+    if [ -n "$user_msg" ]; then
+      local type
+      type=$(echo "$user_msg" | grep -oE '^[a-zA-Z]+' || echo "chore")
+      local slug
+      slug=$(echo "$user_msg" | sed -E 's/^[a-zA-Z]+(\([^)]+\))?:[[:space:]]*//' | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-|-$//g' | cut -c1-40)
+      [ -z "$slug" ] && slug="update-$(date +%s)"
+      branch_name="${type}/${slug}"
+    else
+      branch_name="chore/automated-sync-$(date +%Y%m%d-%H%M%S)"
+      pr_title="chore: automated profile synchronization"
+    fi
+
+    echo "🌿 Creating and checking out branch: $branch_name"
+    git checkout -b "$branch_name" > /dev/null 2>&1
+  else
+    if [ -z "$pr_title" ]; then
+      pr_title="chore: automated profile synchronization"
+    fi
+  fi
+
+  local pr_body="Automated sync of terminal profile configurations."
+  if [ -n "$issue_num" ]; then
+    issue_num="${issue_num#\#}"
+    pr_body="${pr_body}\n\nResolves #${issue_num}"
+  fi
+
+  if [ "$skip_ai" = true ]; then
+    local commit_msg="${user_msg:-chore: automated profile synchronization}"
+    echo "📦 Skipping AI commit generation. Batch committing with: \"$commit_msg\"..."
+    git commit -m "$commit_msg" > /dev/null
+  elif [ -z "$user_msg" ]; then
+    __git_sync_ai_commit "$repo_dir"
+    if [ $? -eq 100 ]; then
+      echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
+      exit 1
+    fi
+
+    git add --all
+    if ! git diff --staged --quiet; then
+      echo "💡 Committing: chore: sync miscellaneous updates"
+      git commit -m "chore: sync miscellaneous updates" > /dev/null
+    fi
+  else
+    echo "📦 Committing all as a single batch..."
+    git commit -m "$user_msg" > /dev/null
+  fi
+
+  if [ "$delete_merged" = true ]; then
+    __mt_push_update_cleanup_merged_branches
+  fi
+
+  git-raise-pr -b "$default_branch" -t "$pr_title" -m "$(echo -e "$pr_body")"
+  if [ "$auto_merge" = true ] && command -v gh > /dev/null 2>&1; then
+    local current_b
+    current_b=$(git branch --show-current)
+    echo -e "${CB_BLUE}⚡ Auto-merging Pull Request via GitHub CLI...${C_RESET}"
+    gh pr merge "$current_b" --admin --squash --delete-branch && echo -e "${CB_GREEN}✅ PR set to auto-merge on GitHub!${C_RESET}"
+  fi
+}
+
+#######################################
 # System: Sync local bash configs to terminal dotfiles repo and create a Pull Request
 # Usage: mt-push-update [-i|--issue issue_num] [-s|--shellcheck] [-b|--backup] [optional_message]
 # Options:
@@ -168,16 +423,7 @@ mt-push-update() {
   user_msg=$(echo "$user_msg" | xargs)
 
   if [ "$run_shellcheck" = true ]; then
-    echo -e "${CB_BLUE}🔍 Running local ShellCheck...${C_RESET}"
-    if command -v shellcheck > /dev/null 2>&1; then
-      if ! find "$HOME/.bash.d" -type f -name "*.sh" -not -path "*/data/cache/*" -print0 | xargs -0 shellcheck -e SC1090,SC1091,SC2119,SC2120,SC2207,SC2015,SC2317,SC2016,SC2129,SC2028,SC1003; then
-        echo -e "${CB_RED}🚨 ShellCheck failed! Please fix the errors above before syncing.${C_RESET}"
-        return 1
-      fi
-      echo -e "${CB_GREEN}✅ ShellCheck passed!${C_RESET}"
-    else
-      echo -e "${CB_YELLOW}⚠️ ShellCheck is not installed locally. Skipping...${C_RESET}"
-    fi
+    __mt_push_update_run_shellcheck || return 1
   fi
 
   local repo_dir="${DOTFILES_DIR:-$SYNC_REPO_DIR}"
@@ -193,214 +439,17 @@ mt-push-update() {
   fi
 
   if [ "$backup_before_sync" = true ]; then
-    echo -e "${CB_BLUE}📦 Creating pre-sync backup of framework...${C_RESET}"
-    local dest="${BACKUP_DIR:-~/backups}/framework-pre-sync"
-    mkdir -p "$dest"
-    local timestamp
-    timestamp=$(date +"%Y%m%d_%H%M%S")
-    local backup_file="${dest}/mt_framework_backup_${timestamp}.zip"
-
-    (
-      cd "$HOME" || exit 1
-      zip -q -r "$backup_file" .bash.d .bashrc -x ".bash.d/.git/*" -x ".bash.d/data/cache/*" -x ".bash.d/node_modules/*" -x ".bash.d/**/__pycache__/*" -x ".bash.d/.terraform/*" -x ".bash.d/venv/*" -x ".bash.d/.venv/*"
-    )
-
-    if [ -f "$backup_file" ]; then
-      local file_size
-      file_size=$(du -h "$backup_file" | cut -f1)
-      echo -e "${CB_GREEN}✅ Pre-sync backup saved to ${backup_file} (${file_size})${C_RESET}"
-    else
-      echo -e "${CB_RED}🚨 Pre-sync backup failed. Aborting sync to prevent data loss.${C_RESET}"
-      return 1
-    fi
+    __mt_push_update_backup || return 1
   fi
 
   echo "🔄 Syncing bash configuration to $repo_dir..."
   __git_sync_init_repo "$repo_dir" "$remote_url"
 
-  (
-    cd "$repo_dir" || exit 1
-
-    local default_branch
-    default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
-    default_branch="${default_branch:-main}"
-
-    local current_branch
-    current_branch=$(git branch --show-current)
-
-    if [ "$current_branch" != "$default_branch" ] && command -v gh > /dev/null 2>&1; then
-      local pr_state
-      pr_state=$(gh pr view "$current_branch" --json state -q .state 2> /dev/null || echo "NONE")
-      if [ "$pr_state" = "MERGED" ] || [ "$pr_state" = "CLOSED" ]; then
-        echo -e "${CB_YELLOW}⚠️  Current branch '$current_branch' has a $pr_state PR and is considered dead.${C_RESET}"
-        read -r -p "Delete '$current_branch' locally and checkout a new branch from $default_branch? [Y/n] " -n 1
-        echo
-        if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
-          read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
-          echo
-          if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
-            echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
-            git push origin --delete "$current_branch" 2> /dev/null || echo -e "${CB_YELLOW}⚠️  Remote branch already deleted or unreachable.${C_RESET}"
-          fi
-          local stashed=false
-          if ! git diff --quiet || ! git diff --staged --quiet || [ -n "$(git ls-files --others --exclude-standard)" ]; then
-            git stash push --include-untracked -m "mt-push auto stash" > /dev/null 2>&1
-            stashed=true
-          fi
-          if git checkout "$default_branch" > /dev/null 2>&1; then
-            git pull origin "$default_branch" > /dev/null 2>&1
-            git branch -D "$current_branch" > /dev/null 2>&1
-            current_branch="$default_branch"
-          else
-            echo -e "${CB_RED}🚨 Failed to checkout $default_branch. Please commit or stash changes manually.${C_RESET}"
-            [ "$stashed" = true ] && git stash pop > /dev/null 2>&1
-            exit 1
-          fi
-          [ "$stashed" = true ] && git stash pop > /dev/null 2>&1
-        else
-          echo -e "${CB_RED}🚨 Aborted profile sync.${C_RESET}"
-          exit 1
-        fi
-      fi
-    fi
-
-    if [ "$current_branch" = "$default_branch" ]; then
-      git checkout "$default_branch" > /dev/null 2>&1 || git checkout -b "$default_branch" > /dev/null 2>&1
-      git pull origin "$default_branch" > /dev/null 2>&1 || true
-    else
-      echo -e "${CB_BLUE}🔄 Ensuring ${current_branch} is up to date with origin/${default_branch}...${C_RESET}"
-      git fetch origin "$default_branch" > /dev/null 2>&1
-      if ! git merge "origin/$default_branch" --no-edit > /dev/null 2>&1; then
-        echo -e "${CB_RED}💥 Merge conflict detected with origin/${default_branch}!${C_RESET}"
-        echo -e "${CB_YELLOW}The sync automation has paused to protect your code. Please resolve conflicts manually in $repo_dir, commit, and run mt-push-update again.${C_RESET}"
-        git merge --abort > /dev/null 2>&1
-        exit 1
-      fi
-    fi
-  ) || return 1
+  (__mt_push_update_reconcile_branch) || return 1
 
   __git_sync_copy_files "$repo_dir"
 
-  (
-    cd "$repo_dir" || exit 1
-
-    if command -v shfmt > /dev/null 2>&1; then
-      echo "🧹 Running Google Style code formatting before profile sync..."
-      shfmt -i 2 -ci -sr -w . > /dev/null 2>&1 || true
-    fi
-
-    if [ "$skip_ai" = true ]; then
-      echo -e "${C_DIM}⏩ Skipping AI README summarization (-m active)...${C_RESET}"
-    else
-      __git_sync_ai_docs "$repo_dir"
-    fi
-    if [ $? -eq 100 ]; then
-      echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
-      exit 1
-    fi
-
-    git add --all
-
-    if git diff --staged --quiet; then
-      echo "✅ Configurations are already up to date. No changes to commit."
-      return 0
-    fi
-
-    local current_branch
-    current_branch=$(git branch --show-current)
-    local default_branch
-    default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print $NF}')
-    default_branch="${default_branch:-main}"
-
-    local branch_name="$current_branch"
-    local pr_title="$user_msg"
-
-    if [ "$current_branch" = "$default_branch" ]; then
-      if [ -n "$user_msg" ]; then
-        local type
-        type=$(echo "$user_msg" | grep -oE '^[a-zA-Z]+' || echo "chore")
-        local slug
-        slug=$(echo "$user_msg" | sed -E 's/^[a-zA-Z]+(\([^)]+\))?:[[:space:]]*//' | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g' | sed -E 's/^-|-$//g' | cut -c1-40)
-        [ -z "$slug" ] && slug="update-$(date +%s)"
-        branch_name="${type}/${slug}"
-      else
-        branch_name="chore/automated-sync-$(date +%Y%m%d-%H%M%S)"
-        pr_title="chore: automated profile synchronization"
-      fi
-
-      echo "🌿 Creating and checking out branch: $branch_name"
-      git checkout -b "$branch_name" > /dev/null 2>&1
-    else
-      if [ -z "$pr_title" ]; then
-        pr_title="chore: automated profile synchronization"
-      fi
-    fi
-
-    local pr_body="Automated sync of terminal profile configurations."
-    if [ -n "$issue_num" ]; then
-      issue_num="${issue_num#\#}"
-      pr_body="${pr_body}\n\nResolves #${issue_num}"
-    fi
-
-    if [ "$skip_ai" = true ]; then
-      local commit_msg="${user_msg:-chore: automated profile synchronization}"
-      echo "📦 Skipping AI commit generation. Batch committing with: \"$commit_msg\"..."
-      git commit -m "$commit_msg" > /dev/null
-    elif [ -z "$user_msg" ]; then
-      __git_sync_ai_commit "$repo_dir"
-      if [ $? -eq 100 ]; then
-        echo -e "${CB_RED}🚨 Aborting profile sync.${C_RESET}"
-        exit 1
-      fi
-
-      git add --all
-      if ! git diff --staged --quiet; then
-        echo "💡 Committing: chore: sync miscellaneous updates"
-        git commit -m "chore: sync miscellaneous updates" > /dev/null
-      fi
-    else
-      echo "📦 Committing all as a single batch..."
-      git commit -m "$user_msg" > /dev/null
-    fi
-
-    if [ "$delete_merged" = true ]; then
-      echo -e "${CB_BLUE}🧹 Pruning remote tracking references and deleting merged local branches...${C_RESET}"
-      git fetch --prune > /dev/null 2>&1
-      local main_b="main"
-      git show-ref --verify --quiet refs/heads/master && main_b="master"
-
-      local merged_b
-      merged_b=$(git branch --merged "$main_b" | grep -v -E "^[*+]|\\b(main|master|dev|developer)\\b" | tr -d ' ' || true)
-
-      if [ -n "$merged_b" ]; then
-        echo "$merged_b" | xargs -r git branch -d
-        echo -e "${CB_GREEN}✅ Merged local branches cleaned up successfully!${C_RESET}"
-
-        if [ "$prompt_remote" = true ]; then
-          echo -e "\n${CB_YELLOW}🔍 Checking corresponding remote branches on origin...${C_RESET}"
-          for b_item in $merged_b; do
-            if git ls-remote --exit-code --heads origin "$b_item" > /dev/null 2>&1; then
-              read -r -p "Delete remote branch 'origin/$b_item'? [y/N] " -n 1 -r < /dev/tty
-              echo
-              if [[ $REPLY =~ ^[Yy]$ ]]; then
-                git push origin --delete "$b_item"
-              fi
-            fi
-          done
-        fi
-      else
-        echo -e "${C_DIM}No stale merged local branches found to delete.${C_RESET}"
-      fi
-    fi
-
-    git-raise-pr -b "$default_branch" -t "$pr_title" -m "$(echo -e "$pr_body")"
-    if [ "$auto_merge" = true ] && command -v gh > /dev/null 2>&1; then
-      local current_b
-      current_b=$(git branch --show-current)
-      echo -e "${CB_BLUE}⚡ Auto-merging Pull Request via GitHub CLI...${C_RESET}"
-      gh pr merge "$current_b" --admin --squash --delete-branch && echo -e "${CB_GREEN}✅ PR set to auto-merge on GitHub!${C_RESET}"
-    fi
-  ) || return 1
+  (__mt_push_update_commit_and_raise_pr) || return 1
 }
 #######################################
 # System: Download and install profile updates from GitHub releases
