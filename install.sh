@@ -17,9 +17,11 @@ fi
 echo "📂 Copying .bashrc and .bash.d/ structure..."
 rsync -a "$REPO_DIR/.bashrc" "$HOME_DIR/"
 mkdir -p "$TARGET_BASHD"
-# --delete would otherwise wipe local-only files (*private*.sh, *.local.sh)
-# that the repo's own .gitignore tells users to keep secrets in, plus the
-# generated env cache — exclude all of them alongside config.yaml.
+# --delete would otherwise wipe any local-only files matching these
+# patterns (*private*.sh, *.local.sh, *.local) plus the generated env
+# cache — exclude all of them alongside config.yaml. Note: API keys and
+# other real secrets live entirely outside .bash.d, in
+# ~/vcs/secrets/secrets.sh, so they are never touched by this sync at all.
 rsync -a --delete \
   --exclude 'config/config.yaml' \
   --exclude 'config/.env.cache' \
