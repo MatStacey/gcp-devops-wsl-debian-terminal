@@ -122,9 +122,11 @@ __mt_menu_docs() {
 #######################################
 __mt_menu_docker() {
   __mt_menu_submenu "🐳 Docker Tools" \
-    "Shell into Container (docker-shell)" docker-shell \
-    "Tail Container Logs (docker-tail)" docker-tail \
     "List Containers (docker-ls)" docker-ls \
+    "Shell into Container (docker-shell)" docker-shell \
+    "Launch Throwaway Sandbox (docker-sandbox)" docker-sandbox \
+    "Tail Container Logs (docker-tail)" docker-tail \
+    "Restart All Running Containers (docker-reboot-all)" docker-reboot-all \
     "Nuke Unused Resources (docker-nuke)" docker-nuke
 }
 
