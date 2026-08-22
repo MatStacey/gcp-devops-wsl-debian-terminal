@@ -116,7 +116,7 @@ __bootstrap_yq() {
 }
 
 #######################################
-# System: Imstall Ookla Speedtest CLI
+# System: Install Ookla Speedtest CLI
 #######################################
 __install_speedtest() {
   echo -e "\n📦 Installing Ookla Speedtest CLI..."

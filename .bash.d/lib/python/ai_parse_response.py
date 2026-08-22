@@ -6,6 +6,7 @@ or markdown code blocks. This script reads from standard input and attempts
 to extract the outermost JSON object bracket payload.
 """
 
+import json
 import re
 import sys
 
@@ -16,7 +17,13 @@ def main():
     match = re.search(r"\{.*\}", text, re.DOTALL)
 
     if match:
-        print(match.group(0))
+        candidate = match.group(0)
+        try:
+            json.loads(candidate)
+        except (ValueError, TypeError):
+            print(text)
+        else:
+            print(candidate)
     else:
         print(text)
 

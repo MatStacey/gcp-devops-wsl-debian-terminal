@@ -332,7 +332,7 @@ Complex bash functions, framework utilities, and automated workflows.
 ### System & Navigation Aliases
 | Command | Description |
 |---|---|
-| `clip` | System: Pipe output to the system clipboard (e.g. cat file | clip) |
+| `clip` | System: Pipe output to the system clipboard (e.g. cat file \| clip) |
 | `win` | System: Open a directory in the platform's native file manager |
 | `win-export` | System: Open ~/vcs/personal/exports in the platform's native file manager (shortcut for `win export`) |
 | `win-vcs` | System: Open ~/vcs in the platform's native file manager (shortcut for `win vcs`) |
