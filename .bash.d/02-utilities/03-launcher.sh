@@ -29,16 +29,14 @@ mt-dotfiles() {
 alias cd-mt-git-local='mt-dotfiles'
 
 #######################################
-# System: Open sync repository in the platform's native file manager
-# Globals:
-#   DOTFILES_DIR, SYNC_REPO_DIR
+# System: Open sync repository in the platform's native file manager (shortcut for `win sync`)
 #######################################
 win-sync() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __open_path_gui "${DOTFILES_DIR:-$SYNC_REPO_DIR}"
+  win sync
 }
 
 #######################################
@@ -83,29 +81,25 @@ cd-ai-workspace() {
 }
 
 #######################################
-# AI: Open unified AI workspace in the platform's native file manager
-# Globals:
-#   AI_WORKSPACE_DIR
+# AI: Open unified AI workspace in the platform's native file manager (shortcut for `win ai`)
 #######################################
 win-ai-workspace() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __open_path_gui "$AI_WORKSPACE_DIR"
+  win ai
 }
 
 #######################################
-# Docker: Open Docker root directory in the platform's native file manager
-# Globals:
-#   DOCKER_ROOT_DIR
+# Docker: Open Docker root directory in the platform's native file manager (shortcut for `win docker`)
 #######################################
 win-docker() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __open_path_gui "$DOCKER_ROOT_DIR"
+  win docker
 }
 
 #######################################

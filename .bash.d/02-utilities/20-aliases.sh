@@ -56,36 +56,52 @@ alias refresh='mt-refresh-caches'
 alias sys-update-install='sys-update;bootstrap;reload'
 
 #######################################
-# System: Open ~/vcs/personal/exports in the platform's native file manager
-#######################################
-win-export() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  __open_path_gui "$VCS_EXPORTS"
-}
-
-#######################################
-# System: Open ~/vcs in the platform's native file manager
-#######################################
-win-vcs() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  __open_path_gui "$VCS_ROOT"
-}
-
-#######################################
-# System: Open current directory in the platform's native file manager
+# System: Open a directory in the platform's native file manager
+# Usage: win [sync|ai|docker|export|vcs]
+# Globals:
+#   DOTFILES_DIR, SYNC_REPO_DIR, AI_WORKSPACE_DIR, DOCKER_ROOT_DIR, VCS_EXPORTS, VCS_ROOT
 #######################################
 win() {
   if [[ "$1" == "-h" || "$1" == "--help" ]]; then
     mt-help "${FUNCNAME[0]}"
     return 0
   fi
-  __open_path_gui "$PWD"
+  local target="$PWD"
+  case "$1" in
+    "") ;;
+    sync) target="${DOTFILES_DIR:-$SYNC_REPO_DIR}" ;;
+    ai) target="$AI_WORKSPACE_DIR" ;;
+    docker) target="$DOCKER_ROOT_DIR" ;;
+    export) target="$VCS_EXPORTS" ;;
+    vcs) target="$VCS_ROOT" ;;
+    *)
+      echo "Usage: win [sync|ai|docker|export|vcs]" >&2
+      return 1
+      ;;
+  esac
+  __open_path_gui "$target"
+}
+
+#######################################
+# System: Open ~/vcs/personal/exports in the platform's native file manager (shortcut for `win export`)
+#######################################
+win-export() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  win export
+}
+
+#######################################
+# System: Open ~/vcs in the platform's native file manager (shortcut for `win vcs`)
+#######################################
+win-vcs() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  win vcs
 }
 
 # ------------------------------------------
