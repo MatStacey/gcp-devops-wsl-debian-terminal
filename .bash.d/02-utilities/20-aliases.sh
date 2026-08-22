@@ -36,11 +36,6 @@ clip() {
 }
 
 #######################################
-# System: Print all aliases and functions (MyTools Engine)
-#######################################
-alias mt='mytools'
-
-#######################################
 # System: Reload Bash profile and caches
 #######################################
 alias reload='mt-refresh-caches'
