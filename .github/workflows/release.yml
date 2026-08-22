@@ -89,7 +89,7 @@ jobs:
           ZIP_NAME="mt-devops-framework-${{ steps.tag_version.outputs.new_tag }}.zip"
           echo "ZIP_NAME=$ZIP_NAME" >> $GITHUB_ENV
 
-          zip -r "$ZIP_NAME" . -x "*.git*" -x ".github/*" -x "venv/*" -x "*/__pycache__/*" -x ".terraform/*" -x "*.tfstate*"
+          zip -r "$ZIP_NAME" . -x ".git/*" -x ".git" -x ".github/*" -x "venv/*" -x "*/__pycache__/*" -x ".terraform/*" -x "*.tfstate*"
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
