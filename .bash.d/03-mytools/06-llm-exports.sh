@@ -59,7 +59,7 @@ print('')
     s_exc=$(yq -r '.exclude_patterns // ""' "$schema_file")
   fi
 
-  eval "find \"$target_dir\" -type f" 2> /dev/null | sort > "$all_files"
+  find "$target_dir" -type f 2> /dev/null | sort > "$all_files"
 
   grep -E -vi "(${EXPORT_BLOCKLIST})" < "$all_files" |
     grep -E -i "\.(${s_inc})$" > "$file_list"
