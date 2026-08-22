@@ -160,10 +160,10 @@ __mt_push_update_reconcile_branch() {
     pr_state=$(gh pr view "$current_branch" --json state -q .state 2> /dev/null || echo "NONE")
     if [ "$pr_state" = "MERGED" ] || [ "$pr_state" = "CLOSED" ]; then
       echo -e "${CB_YELLOW}⚠️  Current branch '$current_branch' has a $pr_state PR and is considered dead.${C_RESET}"
-      read -r -p "Delete '$current_branch' locally and checkout a new branch from $default_branch? [Y/n] " -n 1
+      read -r -p "Delete '$current_branch' locally and checkout a new branch from $default_branch? [Y/n] " -n 1 < /dev/tty || REPLY="n"
       echo
       if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
-        read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1
+        read -r -p "Delete the remote branch 'origin/$current_branch' as well? [Y/n] " -n 1 < /dev/tty || REPLY="n"
         echo
         if [ "$REPLY" = "y" ] || [ "$REPLY" = "Y" ] || [ -z "$REPLY" ]; then
           echo -e "${CB_BLUE}🗑️  Deleting remote branch...${C_RESET}"
