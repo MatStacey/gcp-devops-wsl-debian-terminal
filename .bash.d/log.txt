@@ -1,6 +1,0 @@
-[1;38;2;189;147;249m🔍 Running local ShellCheck...[0m
-[1;38;2;80;250;123m✅ ShellCheck passed![0m
-[1;38;2;189;147;249m📦 Creating pre-sync backup of framework...[0m
-[1;38;2;80;250;123m✅ Pre-sync backup saved to /home/mst/backups/framework-pre-sync/mt_framework_backup_20260821_195101.zip (124K)[0m
-🔄 Syncing bash configuration to /home/mst/vcs/personal/mt-devops-framework...
-[1;38;2;189;147;249m🔄 Ensuring chore/automated-sync-20260821-174427 is up to date with origin/main...[0m

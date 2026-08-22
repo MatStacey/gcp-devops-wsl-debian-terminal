@@ -168,10 +168,10 @@ mt-backup() {
     echo -e "${CB_CYAN}📦 Found $count backup(s) for '${safe_dir_name}':${C_RESET}\n"
 
     # ls -lth sorts by time (latest first), -h gives human-readable sizes
-    command ls -lth --time-style=+"%Y-%m-%d %H:%M:%S" "$dest" | grep -v '^total' | awk '
+    command ls -lth --time-style=+"%Y-%m-%d %H:%M:%S" "$dest" | grep -v '^total' | awk -v blue="$CB_BLUE" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v green="$CB_GREEN" -v rst="$C_RESET" '
       BEGIN {
-        printf "\033[01;34m%-55s %-25s %-15s\033[0m\n", "FILENAME", "DATE CREATED", "SIZE"
-        printf "\033[01;34m-------------------------------------------------------------------------------------------------\033[0m\n"
+        printf "%s%-55s %-25s %-15s%s\n", blue, "FILENAME", "DATE CREATED", "SIZE", rst
+        printf "%s%s%s\n", blue, "-------------------------------------------------------------------------------------------------", rst
       }
       {
         size = $5
@@ -179,7 +179,7 @@ mt-backup() {
         name = ""
         # Support filenames with spaces just in case
         for(i=8; i<=NF; i++) name = name (i==8?"":" ") $i
-        printf "\033[01;36m%-55s\033[0m \033[01;33m%-25s\033[0m \033[01;32m%-15s\033[0m\n", name, date_created, size
+        printf "%s%-55s%s %s%-25s%s %s%-15s%s\n", cyan, name, rst, yellow, date_created, rst, green, size, rst
       }
     '
     echo ""
@@ -445,6 +445,7 @@ with open(p, 'w') as f: f.write('\n'.join(o) + '\n')" "$aliases_file" "$alias_na
 #######################################
 alias ${alias_name}='${alias_cmd}'
 ALIASEOF
+  # shellcheck disable=SC1090
   source "$aliases_file"
   mt-refresh-caches > /dev/null 2>&1
   echo -e "${CB_GREEN}🎉 Success! You can now use '${alias_name}'.${C_RESET}"
@@ -496,6 +497,7 @@ mt-jobs() {
     return 0
   fi
   local jobs_file="$HOME/.bash.d/data/cache/.mt_jobs.tsv"
+  local j_id j_pid j_name j_start j_end j_status j_log j_cmd
 
   local interactive=false do_purge=false do_clean=false
   while [[ "$#" -gt 0 ]]; do
@@ -922,7 +924,7 @@ mt-cmd-history() {
     echo -e "${CB_BLUE}==========================================================${C_RESET}"
     echo -e "${CB_CYAN} 📜 Recent Framework Command History${C_RESET}"
     echo -e "${CB_BLUE}==========================================================${C_RESET}"
-    awk '{printf "  \033[01;33m%3d\033[0m  \033[0;37m%s\033[0m\n", NR, $0}' "$tmp_hist"
+    awk -v yellow="$CB_YELLOW" -v white="$C_WHITE" -v rst="$C_RESET" '{printf "  %s%3d%s  %s%s%s\n", yellow, NR, rst, white, $0, rst}' "$tmp_hist"
     echo -e "${CB_BLUE}==========================================================${C_RESET}"
     echo -e "${C_DIM}Run 'mt-history -i' to select and re-run a command via fzf.${C_RESET}"
     rm -f "$tmp_hist"
@@ -1016,5 +1018,6 @@ mt-apply() {
 
 # Load local un-versioned secrets if they exist
 if [ -f "$HOME/.bash.d/config/github_token.sh" ]; then
+  # shellcheck disable=SC1091
   source "$HOME/.bash.d/config/github_token.sh"
 fi

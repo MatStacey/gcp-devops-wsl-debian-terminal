@@ -290,6 +290,7 @@ print('')
   fi
 
   echo "=== MT DevOps Export: $s_name ===" > "$tmp_file"
+  # shellcheck disable=SC2129  # sequential appends interleaved with an if/else (tree vs find) and a loop; grouping would require restructuring control flow
   echo "Generated: $(date)" >> "$tmp_file"
   echo "Directory: $(realpath "$target_dir")" >> "$tmp_file"
   echo "Schema: $schema_query" >> "$tmp_file"
@@ -327,4 +328,87 @@ print('')
       __open_path_gui "$dest_dir" 2> /dev/null || true
     fi
   fi
+}
+
+#######################################
+# LLM: Copy a file or directory tree to clipboard with headers and extension filters
+# Usage: mt-copy [-e <extensions>] <file-or-directory>
+#######################################
+mt-copy() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local ext_list="" target=""
+  local OPTIND opt
+  while getopts "e:" opt; do
+    case ${opt} in
+      e) ext_list="$OPTARG" ;;
+      *)
+        echo "Usage: mt-copy [-e <extensions>] <file-or-directory>" >&2
+        return 1
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
+  target="${1:-.}"
+  if [ ! -e "$target" ]; then
+    echo -e "${CB_RED}🚨 Error: '$target' missing.${C_RESET}"
+    return 1
+  fi
+
+  local clip_cmd=""
+  if command -v clip.exe > /dev/null 2>&1; then
+    clip_cmd="clip.exe"
+  elif command -v pbcopy > /dev/null 2>&1; then
+    clip_cmd="pbcopy"
+  elif command -v xclip > /dev/null 2>&1; then
+    clip_cmd="xclip -selection clipboard"
+  else
+    echo "🚨 No clipboard utility."
+    return 1
+  fi
+
+  echo -e "${CB_BLUE}🔍 Scanning '$target'...${C_RESET}"
+
+  local temp_file
+  temp_file=$(mktemp)
+
+  local blocklist_regex="${EXPORT_BLOCKLIST:-(secret|token|credential|pass|key|rsa|env|lock\.hcl|__pycache__)}"
+
+  local filter_ext=".*"
+  if [ -n "$ext_list" ]; then
+    local ext_fmt
+    ext_fmt=$(echo "$ext_list" | sed 's/,/|/g; s/ //g')
+    filter_ext="\.(${ext_fmt})$"
+    echo -e "${C_DIM}   (Filtering for: $ext_list)${C_RESET}"
+  fi
+
+  local prune_dirs=(-name .git -o -name node_modules -o -name .terraform -o -name __pycache__ -o -name .venv)
+
+  if [ -d "$target" ]; then
+    find "$target" -type d \( "${prune_dirs[@]}" \) -prune -o -type f -print | grep -E -v "$blocklist_regex" | grep -Ei "$filter_ext" | while IFS= read -r file; do
+      if file -b --mime-encoding "$file" | grep -qv "binary"; then
+        echo -e "\n==> $file <==" >> "$temp_file"
+        cat "$file" >> "$temp_file"
+      fi
+    done
+  elif [ -f "$target" ]; then
+    echo -e "==> $target <==" >> "$temp_file"
+    cat "$target" >> "$temp_file"
+  fi
+
+  local bytes
+  bytes=$(wc -c < "$temp_file")
+  if [ "$bytes" -eq 0 ]; then
+    echo -e "${CB_YELLOW}⚠️ Nothing copied.${C_RESET}"
+  else
+    eval "$clip_cmd" < "$temp_file"
+    local lines
+    lines=$(wc -l < "$temp_file")
+    echo -e "${CB_GREEN}✅ Copied $lines lines to clipboard!${C_RESET}"
+  fi
+  rm -f "$temp_file"
 }

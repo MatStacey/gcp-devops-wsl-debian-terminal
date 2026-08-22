@@ -19,7 +19,7 @@ __check_updates() {
   if [ -f "$pending_file" ]; then
     local updates_count
     updates_count=$(command cat "$pending_file")
-    echo -e "\n\e[33m📦 $updates_count system package(s) can be upgraded. Run \e[1msys-install\e[0m\e[33m to install them.\e[0m"
+    echo -e "\n${C_YELLOW}📦 $updates_count system package(s) can be upgraded. Run ${C_BOLD}sys-install${C_RESET}${C_YELLOW} to install them.${C_RESET}"
     return
   fi
 
@@ -78,8 +78,8 @@ __check_profile_updates() {
       current_version=$(git -C "$repo_dir" describe --tags --abbrev=0 2> /dev/null || echo "Local")
     fi
 
-    echo -e "\n\e[33m🚀 Terminal profile update available! (\e[1m${current_version}\e[22m -> \e[1m${new_version}\e[22m)\e[0m"
-    echo -e "\e[33m   Run \e[1mmt-get-update\e[22m to apply the latest changes.\e[0m\n"
+    echo -e "\n${C_YELLOW}🚀 Terminal profile update available! (${C_BOLD}${current_version}${C_UNBOLD} -> ${C_BOLD}${new_version}${C_UNBOLD})${C_RESET}"
+    echo -e "${C_YELLOW}   Run ${C_BOLD}mt-get-update${C_UNBOLD} to apply the latest changes.${C_RESET}\n"
     return
   fi
 

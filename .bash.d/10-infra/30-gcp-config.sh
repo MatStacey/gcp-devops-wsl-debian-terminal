@@ -1,4 +1,4 @@
-# shellcheck shell=bash
+# shellcheck shell=bash disable=SC2119,SC2120
 # ------------------------------------------
 # GCP: Configuration & Authentication
 # ------------------------------------------
@@ -221,6 +221,6 @@ gcl-export-vars() {
 }
 
 _gcp_set_project_completions() {
-  COMPREPLY=($(compgen -W "$(gcloud projects list --format="value(projectId)" 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}"))
+  mapfile -t COMPREPLY < <(compgen -W "$(gcloud projects list --format="value(projectId)" 2> /dev/null)" -- "${COMP_WORDS[COMP_CWORD]}")
 }
 complete -F _gcp_set_project_completions gcp-set-project gcpp gcl-export-vars

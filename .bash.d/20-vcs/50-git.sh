@@ -125,9 +125,11 @@ git-clone-ide() {
   echo "✅ Moved to $(pwd)"
   echo "🚀 Opening in $selected_ide..."
 
-  [ "$selected_ide" = "intellij" ] &&
-    { __launch_intellij . || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS."; } ||
+  if [ "$selected_ide" = "intellij" ]; then
+    __launch_intellij . || echo "⚠️ Could not launch IntelliJ. Ensure 'idea' is on PATH (JetBrains Toolbox), or install IntelliJ IDEA via Homebrew on macOS."
+  else
     code -n .
+  fi
 }
 
 #######################################
@@ -409,7 +411,7 @@ git-nuke() {
     echo "💥 Nuking local environment..."
     git fetch origin > /dev/null 2>&1
     if ! git ls-remote --exit-code --heads origin "$current_branch" > /dev/null 2>&1; then
-      echo -e "\e[01;31m🚨 Error: Upstream branch 'origin/$current_branch' does not exist. Cannot safely reset.\e[0m"
+      echo -e "${CB_RED}🚨 Error: Upstream branch 'origin/$current_branch' does not exist. Cannot safely reset.${C_RESET}"
       return 1
     fi
     git reset --hard "origin/$current_branch"
@@ -556,24 +558,24 @@ mt-repos() {
 
   sort -t'|' -k1,1 -k2,2 -k5,5 "$tmp_out" -o "$tmp_out"
 
-  awk -F'|' -v home="$HOME" -v wsl_distro="${WSL_DISTRO_NAME:-Debian}" '
+  awk -F'|' -v home="$HOME" -v wsl_distro="${WSL_DISTRO_NAME:-Debian}" -v blue="$CB_BLUE" -v green="$CB_GREEN" -v yellow="$CB_YELLOW" -v dim="$C_DIM" -v rst="$C_RESET" -v magenta="$CB_MAGENTA" -v cyan="$CB_CYAN" '
     function pad(str, len) {
       if (length(str) > len) return substr(str, 1, len-3) "..."
       return str sprintf("%*s", len - length(str), "")
     }
     BEGIN {
-      printf "\033[01;34m%-15s %-35s %-20s %-50s %s\033[0m\n", "TYPE", "REPOSITORY", "BRANCH", "REMOTE URL", "PATH"
-      printf "\033[01;34m---------------------------------------------------------------------------------------------------------------------------------------------------\033[0m\n"
+      printf "%s%-15s %-35s %-20s %-50s %s%s\n", blue, "TYPE", "REPOSITORY", "BRANCH", "REMOTE URL", "PATH", rst
+      printf "%s%s%s\n", blue, "---------------------------------------------------------------------------------------------------------------------------------------------------", rst
     }
     {
       type = pad($1, 15)
       repo = pad($2, 35)
       branch_raw = $3
       branch = pad(branch_raw, 20)
-      branch_color = (branch_raw == "main" || branch_raw == "master") ? "\033[01;32m" : "\033[01;33m"
+      branch_color = (branch_raw == "main" || branch_raw == "master") ? green : yellow
       
       remote_raw = $4
-      remote_color = (remote_raw == "No remote") ? "\033[2;37m" : "\033[0m"
+      remote_color = (remote_raw == "No remote") ? dim : rst
       remote_disp = pad(remote_raw, 50)
       
       # Robust URL transformation for both SSH (git@) and HTTPS
@@ -605,7 +607,7 @@ mt-repos() {
       
       path_linked = "\033]8;;" file_url "\033\\" path_disp "\033]8;;\033\\"
       
-      printf "\033[01;35m%s\033[0m \033[01;36m%s\033[0m %s%s\033[0m %s%s\033[0m %s\n", type, repo, branch_color, branch, remote_color, remote_linked, path_linked
+      printf "%s%s%s %s%s%s %s%s%s %s%s%s %s\n", magenta, type, rst, cyan, repo, rst, branch_color, branch, rst, remote_color, remote_linked, rst, path_linked
     }
   ' "$tmp_out"
 

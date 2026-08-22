@@ -32,3 +32,5 @@ __pycache__/
 
 # AI Assistant Configurations
 CLAUDE.md
+.bash.d/config/github_token.sh
+.bash.d/config/*_token.sh

@@ -55,7 +55,7 @@ __ai_build_context() {
   local file_count
   file_count=$(find . -type f -not -path "*/\.git/*" -not -path "*/node_modules/*" -not -path "*/venv/*" -not -path "*/\.terraform/*" 2> /dev/null | head -n 1000 | wc -l)
   if [ "$file_count" -ge 1000 ]; then
-    echo -e "\n\e[33m⚠️  Warning: This directory contains 1000+ files. AI context may exceed limits.\e[0m" >&2
+    echo -e "\n${C_YELLOW}⚠️  Warning: This directory contains 1000+ files. AI context may exceed limits.${C_RESET}" >&2
     read -p "Proceed anyway? [y/N] " -n 1 -r < /dev/tty
     echo > /dev/tty
     [ "$REPLY" != "y" ] && [ "$REPLY" != "Y" ] && {
@@ -73,12 +73,64 @@ __ai_build_context() {
     [[ "$lower_file" =~ \.(png|jpe?g|gif|ico|pdf|zip|tar|gz|mp4|mp3|wav|exe|dll|so|class|jar|bin|o|pyc|tfstate)$ ]] && continue
     [[ "$lower_file" =~ $blocklist ]] && continue
 
-    echo "==> ./$clean_file <==" >> "$context_file"
-    command cat "$file" >> "$context_file"
-    echo -e "\n" >> "$context_file"
+    {
+      echo "==> ./$clean_file <=="
+      command cat "$file"
+      echo -e "\n"
+    } >> "$context_file"
   done
   echo "✅ Codebase context attached." >&2
   echo "$context_file"
+}
+
+#######################################
+# AI: Detect a rate-limit error in a provider's response, run the shared
+# bypass/skip/retry prompt, and sleep for the appropriate cooldown. Shared
+# by every __ai_query_* provider function so the retry UX stays identical
+# across providers.
+# Arguments:
+#   $1 - API error message text
+#   $2 - Original user prompt (checked for the git-diff commit-message flow)
+#   $3 - Current attempt number
+#   $4 - Max retry attempts
+#   $5 - ERE alternation of substrings that indicate a rate-limit error
+#   $6 - Default cooldown in seconds if the error carries no retry hint
+# Returns:
+#   0  - rate limit handled and cooldown slept; caller should retry
+#   1  - not a rate-limit error; caller should stop retrying
+#   99 - user chose to bypass/skip; caller should return 99 immediately
+#######################################
+__ai_handle_rate_limit() {
+  local err_msg="$1" prompt="$2" attempt="$3" max_retries="$4" quota_pattern="$5" wait_time="$6"
+
+  [[ "$err_msg" =~ $quota_pattern ]] || return 1
+
+  if [[ "$err_msg" =~ retry[[:space:]]in[[:space:]]([0-9]+) ]]; then
+    wait_time=$((BASH_REMATCH[1] + 2))
+  fi
+
+  echo -e "\n${CB_YELLOW}⏳ AI Rate limit hit! Required cooldown: ${wait_time}s (Attempt $attempt/$max_retries)${C_RESET}" >&2
+  local user_input=""
+
+  if [[ "$prompt" == "Analyze this git diff and group the changes"* ]]; then
+    read -r -p "   Enter a commit message to bypass AI and push now (or press Enter to wait & retry): " user_input < /dev/tty
+    if [ -n "$user_input" ]; then
+      echo -e "${CB_GREEN}💡 Bypassing AI and committing manually...${C_RESET}" >&2
+      git add . > /dev/null 2>&1
+      git commit -m "$user_input" > /dev/null 2>&1
+      return 99
+    fi
+  else
+    read -r -p "   Press Enter to wait & retry, or type 'skip' to abort this specific AI task: " user_input < /dev/tty
+    if [[ "${user_input,,}" == "skip" ]]; then
+      echo -e "${CB_GREEN}💡 Skipping AI task...${C_RESET}" >&2
+      return 99
+    fi
+  fi
+
+  echo "⏳ Waiting ${wait_time}s..." >&2
+  sleep "$wait_time"
+  return 0
 }
 
 #######################################
@@ -151,50 +203,23 @@ __ai_query_gemini() {
     response=$(curl -s -X POST "${api_url}" -H "x-goog-api-key: ${GEMINI_API_KEY}" -H 'Content-Type: application/json' -d @"$payload_file")
     content=$(echo "$response" | jq -r '.candidates[0].content.parts[0].text // empty')
 
-    if [ -n "$content" ]; then
-      break
-    fi
+    [ -n "$content" ] && break
 
     local err_msg
     err_msg=$(echo "$response" | jq -r '.error.message // "Unknown error"')
 
-    if [[ "$err_msg" == *"Quota exceeded"* || "$err_msg" == *"429"* ]]; then
-      local wait_time=25
-      if [[ "$err_msg" =~ retry[[:space:]]in[[:space:]]([0-9]+) ]]; then
-        wait_time=$((BASH_REMATCH[1] + 2))
-      fi
-
-      echo -e "\n\033[01;33m⏳ AI Rate limit hit! Required cooldown: ${wait_time}s (Attempt $attempt/$max_retries)\033[0m" >&2
-      local user_input=""
-
-      if [[ "$prompt" == "Analyze this git diff and group the changes"* ]]; then
-        read -r -p "   Enter a commit message to bypass AI and push now (or press Enter to wait & retry): " user_input < /dev/tty
-        if [ -n "$user_input" ]; then
-          echo -e "\033[01;32m💡 Bypassing AI and committing manually...\033[0m" >&2
-          git add . > /dev/null 2>&1
-          git commit -m "$user_input" > /dev/null 2>&1
-          return 99
-        fi
-      else
-        read -r -p "   Press Enter to wait & retry, or type 'skip' to abort this specific AI task: " user_input < /dev/tty
-        if [[ "${user_input,,}" == "skip" ]]; then
-          echo -e "\033[01;32m💡 Skipping AI task...\033[0m" >&2
-          return 99
-        fi
-      fi
-
-      echo "⏳ Waiting ${wait_time}s..." >&2
-      sleep "$wait_time"
-      ((attempt++))
-    else
-      break
-    fi
+    __ai_handle_rate_limit "$err_msg" "$prompt" "$attempt" "$max_retries" "Quota exceeded|429" 25
+    case $? in
+      0) ((attempt++)) ;;
+      99) return 99 ;;
+      *) break ;;
+    esac
   done
 
   rm -f "$payload_file"
 
   [ -z "$content" ] && {
-    echo -e "\n\033[01;31m🚨 Error: AI failed after $max_retries retries. Aborting process.\033[0m" >&2
+    echo -e "\n${CB_RED}🚨 Error: AI failed after $max_retries retries. Aborting process.${C_RESET}" >&2
     return 100
   }
   echo "$content"
@@ -255,46 +280,23 @@ __ai_query_claude() {
     response=$(curl -s -X POST "${api_url}" -H "x-api-key: ${CLAUDE_API_KEY}" -H "anthropic-version: 2023-06-01" -H "content-type: application/json" -d @"$payload_file")
     content=$(echo "$response" | jq -r '.content[0].text // empty')
 
-    if [ -n "$content" ]; then
-      break
-    fi
+    [ -n "$content" ] && break
 
     local err_msg
     err_msg=$(echo "$response" | jq -r '.error.message // "Unknown error"')
 
-    if [[ "$err_msg" == *"rate_limit_error"* || "$err_msg" == *"429"* || "$err_msg" == *"Overloaded"* ]]; then
-      local wait_time=20
-      echo -e "\n\033[01;33m⏳ AI Rate limit hit! Required cooldown: ${wait_time}s (Attempt $attempt/$max_retries)\033[0m" >&2
-      local user_input=""
-
-      if [[ "$prompt" == "Analyze this git diff and group the changes"* ]]; then
-        read -r -p "   Enter a commit message to bypass AI and push now (or press Enter to wait & retry): " user_input < /dev/tty
-        if [ -n "$user_input" ]; then
-          echo -e "\033[01;32m💡 Bypassing AI and committing manually...\033[0m" >&2
-          git add . > /dev/null 2>&1
-          git commit -m "$user_input" > /dev/null 2>&1
-          return 99
-        fi
-      else
-        read -r -p "   Press Enter to wait & retry, or type 'skip' to abort this specific AI task: " user_input < /dev/tty
-        if [[ "${user_input,,}" == "skip" ]]; then
-          echo -e "\033[01;32m💡 Skipping AI task...\033[0m" >&2
-          return 99
-        fi
-      fi
-
-      echo "⏳ Waiting ${wait_time}s..." >&2
-      sleep "$wait_time"
-      ((attempt++))
-    else
-      break
-    fi
+    __ai_handle_rate_limit "$err_msg" "$prompt" "$attempt" "$max_retries" "rate_limit_error|429|Overloaded" 20
+    case $? in
+      0) ((attempt++)) ;;
+      99) return 99 ;;
+      *) break ;;
+    esac
   done
 
   rm -f "$payload_file"
 
   [ -z "$content" ] && {
-    echo -e "\n\033[01;31m🚨 Error: AI failed after $max_retries retries. Aborting process.\033[0m" >&2
+    echo -e "\n${CB_RED}🚨 Error: AI failed after $max_retries retries. Aborting process.${C_RESET}" >&2
     return 100
   }
   echo "$content"
@@ -374,16 +376,16 @@ __ai_parse_response() {
 
   if [[ -z "$category" || "$category" == "chat" || "$category" == "null" ]]; then
     [[ "$msg" == "No IAM implementations required"* ]] &&
-      echo -e "\e[38;5;208m${provider^}:\e[0m No IAM implementations required" ||
-      echo -e "\e[38;5;208m${provider^}:\e[0m ${msg:-$content}"
+      echo -e "${CB_ORANGE}${provider^}:${C_RESET} No IAM implementations required" ||
+      echo -e "${CB_ORANGE}${provider^}:${C_RESET} ${msg:-$content}"
     return 0
   fi
 
   local saved_path
   saved_path=$(__ai_save_output "$explicit_out_file" "$category" "$lang" "$ext" "$final_title" "$code")
 
-  echo -e "\e[38;5;208m${provider^}:\e[0m $msg"
-  echo -e "\e[32mSaved to:\e[0m $saved_path"
+  echo -e "${CB_ORANGE}${provider^}:${C_RESET} $msg"
+  echo -e "${C_GREEN}Saved to:${C_RESET} $saved_path"
 }
 
 #######################################

@@ -13,3 +13,9 @@ export CB_GREEN=$'\e[1;38;2;0;158;115m'
 export CB_YELLOW=$'\e[1;38;2;230;159;0m'
 export CB_BLUE=$'\e[1;38;2;0;114;178m'
 export CB_CYAN=$'\e[1;38;2;86;180;233m'
+
+export C_MAGENTA=$'\e[38;2;204;121;167m' # Reddish Purple
+export C_ORANGE=$'\e[38;2;230;159;0m'    # Orange (shared hue with Yellow; kept distinguishable via weight only)
+
+export CB_MAGENTA=$'\e[1;38;2;204;121;167m'
+export CB_ORANGE=$'\e[1;38;2;230;159;0m'

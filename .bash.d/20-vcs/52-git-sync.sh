@@ -24,8 +24,9 @@ __git_sync_init_repo() {
     git -C "$repo_dir" remote add origin "$remote_url"
   fi
 
-  [ "$(git -C "$repo_dir" remote get-url origin 2> /dev/null)" != "$remote_url" ] &&
+  if [ "$(git -C "$repo_dir" remote get-url origin 2> /dev/null)" != "$remote_url" ]; then
     git -C "$repo_dir" remote set-url origin "$remote_url" 2> /dev/null || git -C "$repo_dir" remote add origin "$remote_url"
+  fi
 }
 
 #######################################
@@ -183,11 +184,11 @@ mt-push-update() {
   local remote_url="${SYNC_REPO_URL:-}"
 
   if [[ -z "$remote_url" || "$remote_url" == "YOUR_SYNC_REPO_URL" || "$remote_url" == "null" ]]; then
-    echo -e "\033[1;33m⚠️  Profile Sync Not Configured\033[0m"
-    echo -e "The \033[1mpush-profile-update\033[0m feature automatically versions and pushes your terminal configuration to a remote Git repository."
+    echo -e "${CB_YELLOW}⚠️  Profile Sync Not Configured${C_RESET}"
+    echo -e "The ${C_BOLD}push-profile-update${C_RESET} feature automatically versions and pushes your terminal configuration to a remote Git repository."
     echo "If you downloaded this profile as a standalone ZIP and do not wish to sync it, you can safely ignore this command."
     echo -e "\nTo enable syncing, link an empty remote Git repository by running:"
-    echo -e "   \033[1;36mmt-add-sync-url \"git@github.com:username/my-terminal-repo.git\"\033[0m\n"
+    echo -e "   ${CB_CYAN}mt-add-sync-url \"git@github.com:username/my-terminal-repo.git\"${C_RESET}\n"
     return 1
   fi
 
