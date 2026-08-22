@@ -49,7 +49,7 @@ BEGIN {
         name = substr($1, 1, RLENGTH)
         # Filters out any function starting with an underscore
         if (name !~ /^_/) {
-            print "func\t" cat "\t" name "\t" doc_desc
+            print "func\t" cat "\t" name "\t" doc_desc "\t" FILENAME
         }
     }
     in_doc = 0
@@ -60,7 +60,7 @@ BEGIN {
     if (in_doc && doc_desc != "") {
         match($0, /^alias [a-zA-Z0-9_-]+/)
         name = substr($0, 7, RLENGTH - 6)
-        print "alias\t" cat "\t" name "\t" doc_desc
+        print "alias\t" cat "\t" name "\t" doc_desc "\t" FILENAME
     }
     in_doc = 0
     doc_desc = ""

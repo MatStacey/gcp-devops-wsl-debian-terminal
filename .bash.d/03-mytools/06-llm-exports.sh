@@ -718,7 +718,7 @@ __mt_export_cleanup_delete_files() {
 #   $6 - background (true/false) -- when true, the pre-flight table and
 #        summary still print even though --background always forces
 #        quiet=true, since that output is what __mt_bg_run captures into
-#        the job's log file for later viewing via `mt-jobs -i`
+#        the job's log file for later viewing via mt-jobs -i
 # Globals:
 #   AUTO_CLEANUP_DAYS
 # Returns:
@@ -859,8 +859,8 @@ __mt_export_cleanup_interactive() {
 #   -b, --backup       Zip each target directory to BACKUP_DIR before
 #                      deleting (reuses mt-backup); a failed backup skips
 #                      deletion for that directory only
-#   -B, --background   Run as a background job (implies --force and
-#                      --quiet); track and view its result via `mt-jobs -i`
+#   -B, --background   Run as a background job (implies force and quiet);
+#                      track and view its result via mt-jobs -i
 #   -i, --interactive  Pick a target directory and toggle flags via fzf
 #   target_dir         Optional: scope to one EXPORT_DIR subdirectory
 #                      (name or path; defaults to all of EXPORT_DIR)

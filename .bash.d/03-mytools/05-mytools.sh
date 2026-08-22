@@ -88,6 +88,171 @@ mytools() {
 }
 
 #######################################
+# MyTools: Central dispatcher -- run any framework command as `mt <name>`
+# instead of typing its full `mt-<name>` form. Bare `mt` (no arguments)
+# keeps today's behavior and prints the full command listing via mytools.
+# Usage: mt <subcommand> [args...]
+#######################################
+mt() {
+  if [ $# -eq 0 ]; then
+    mytools
+    return $?
+  fi
+
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "mt"
+    return 0
+  fi
+
+  local subcmd="$1"
+  shift
+
+  if [[ ! "$subcmd" =~ ^[a-zA-Z][a-zA-Z0-9_-]*$ ]]; then
+    echo -e "${CB_RED}🚨 Error: invalid subcommand '$subcmd'.${C_RESET}"
+    return 1
+  fi
+
+  local target_cmd="mt-${subcmd}"
+  local kind
+  kind=$(type -t "$target_cmd" 2> /dev/null)
+
+  case "$kind" in
+    function)
+      "$target_cmd" "$@"
+      ;;
+    alias)
+      # target_cmd was just built from a regex-validated, alnum/-/_-only
+      # subcmd and confirmed by `type -t` to be a real registered alias,
+      # so it is safe to re-parse here -- this is the only way to invoke
+      # an alias whose name is held in a variable (bash does not expand
+      # aliases through indirection).
+      eval "$target_cmd \"\$@\""
+      ;;
+    *)
+      echo -e "${CB_RED}🚨 Error: Framework command '${target_cmd}' not found.${C_RESET}"
+      echo -e "${C_DIM}Run 'mt lookup ${subcmd}' or 'mt cat' to discover available tools.${C_RESET}"
+      return 1
+      ;;
+  esac
+}
+
+#######################################
+# MyTools: Try delegating `mt <subcmd> <TAB>` completion to a dedicated
+# completion function already registered on the target command (e.g.
+# `mt lookup <TAB>` delegates to _mt_lookup_completions)
+# Arguments:
+#   $1 - Resolved target command name (e.g. mt-lookup)
+# Returns:
+#   0 if delegation ran and COMPREPLY was populated, 1 if nothing to delegate to
+#######################################
+__mt_dispatcher_delegate_completion() {
+  local target_cmd="$1"
+  local comp_spec
+  comp_spec=$(complete -p "$target_cmd" 2> /dev/null) || return 1
+
+  local comp_func="" prev="" word
+  for word in $comp_spec; do
+    [ "$prev" = "-F" ] && comp_func="$word"
+    prev="$word"
+  done
+  [ -z "$comp_func" ] && return 1
+  type "$comp_func" > /dev/null 2>&1 || return 1
+
+  local -a orig_words=("${COMP_WORDS[@]}")
+  local orig_cword="$COMP_CWORD"
+
+  COMP_WORDS=("$target_cmd" "${orig_words[@]:2}")
+  COMP_CWORD=$((orig_cword - 1))
+
+  "$comp_func"
+
+  COMP_WORDS=("${orig_words[@]}")
+  COMP_CWORD="$orig_cword"
+  return 0
+}
+
+#######################################
+# MyTools: Scrape one specific command's "Options:" doc-comment block for
+# its flag tokens -- a completion fallback for commands with no dedicated
+# completion function registered. Scoped to the exact target (mirroring
+# mt-help's own boundary technique) since a file can define several
+# commands, each with its own Options block.
+# Arguments:
+#   $1 - Path to the .sh file containing the command's definition
+#   $2 - Exact command/alias name to scope the scrape to (e.g. mt-export)
+#######################################
+__mt_dispatcher_scrape_flags() {
+  local file_path="$1" target_cmd="$2"
+  awk -v target="$target_cmd" '
+    /^#######################################/ { next }
+    /^#/ {
+      line = substr($0, 2)
+      sub(/^[ \t]/, "", line)
+      doc = doc line "\n"
+      next
+    }
+    $0 ~ "^alias " target "=" { matched = 1; exit }
+    $0 ~ "^" target "\\(\\)[ \t]*\\{" { matched = 1; exit }
+    { doc = "" }
+    END {
+      if (!matched) { exit }
+      in_opts = 0
+      n = split(doc, lines, "\n")
+      for (i = 1; i <= n; i++) {
+        l = lines[i]
+        if (l ~ /^Options:/) { in_opts = 1; continue }
+        if (in_opts && l ~ /^[A-Za-z]+:/) { in_opts = 0 }
+        if (in_opts) {
+          sub(/^[ \t]+/, "", l)
+          m = split(l, parts, /[ \t]+/)
+          for (j = 1; j <= m; j++) {
+            if (parts[j] !~ /^-/) { break }
+            gsub(/,$/, "", parts[j])
+            print parts[j]
+          }
+        }
+      }
+    }
+  ' "$file_path" 2> /dev/null
+}
+
+#######################################
+# MyTools: Tab-completion for the `mt` subcommand dispatcher. Completes the
+# subcommand name itself at word 1, then either delegates to the target
+# command's own completion function or falls back to scraping its
+# "# Options:" doc block for flags
+#######################################
+_mt_dispatcher_completions() {
+  local cur="${COMP_WORDS[COMP_CWORD]}"
+  local tsv="$HOME/.bash.d/data/cache/.mt_data.tsv"
+
+  if [ "$COMP_CWORD" -eq 1 ]; then
+    [ -f "$tsv" ] || return 0
+    local subcmds
+    subcmds=$(awk -F'\t' '$1 == "func" || $1 == "alias" { print $3 }' "$tsv" | grep '^mt-' | sed 's/^mt-//' | sort -u)
+    mapfile -t COMPREPLY < <(compgen -W "$subcmds" -- "$cur")
+    return 0
+  fi
+
+  local subcmd="${COMP_WORDS[1]}"
+  local target_cmd="mt-${subcmd}"
+  type "$target_cmd" > /dev/null 2>&1 || return 0
+
+  __mt_dispatcher_delegate_completion "$target_cmd" && return 0
+
+  if [[ "$cur" == -* ]] && [ -f "$tsv" ]; then
+    local file_path
+    file_path=$(awk -F'\t' -v n="$target_cmd" '$3 == n { print $5; exit }' "$tsv")
+    if [ -n "$file_path" ] && [ -f "$file_path" ]; then
+      local flags
+      flags=$(__mt_dispatcher_scrape_flags "$file_path" "$target_cmd")
+      mapfile -t COMPREPLY < <(compgen -W "$flags" -- "$cur")
+    fi
+  fi
+}
+complete -F _mt_dispatcher_completions mt
+
+#######################################
 # MyTools: List all available command categories
 #######################################
 #######################################
