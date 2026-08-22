@@ -3,6 +3,7 @@
 # GCP: Resources & Services
 # ------------------------------------------
 # ~/.bash.d/10-infra/31-gcp-services.sh
+# See 30-gcp-config.sh for the gcl-/gcp-/gce-/gcs-/bq- naming convention.
 
 #######################################
 # GCP: Compute - List all VM instances

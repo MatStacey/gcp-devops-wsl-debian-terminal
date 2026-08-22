@@ -2,6 +2,25 @@
 # ------------------------------------------
 # GCP: Configuration & Authentication
 # ------------------------------------------
+# Naming convention for the Google Cloud command family (this file and
+# 31-gcp-services.sh):
+#   gcl-*  Reads or manages local gcloud CLI state — the active
+#          configuration under ~/.config/gcloud/, or the CLI binary itself
+#          (gcl-get, gcl-config, gcl-update). No account-level side effects.
+#   gcp-*  Talks to a live Google Cloud account or service: auth, project
+#          switching, IAM, Secret Manager, Cloud Run logs, Artifact
+#          Registry, Pub/Sub (gcp-login, gcp-set-project, gcp-iam-show...).
+#   gce-*  Thin `gcloud compute ...` aliases (gce-ls, gce-ssh) — mirrors
+#          gcloud's own "gce" shorthand for Compute Engine.
+#   gcs-*  Thin `gcloud storage ...` aliases (gcs-ls) — mirrors gcloud's
+#          own "gcs" shorthand for Cloud Storage.
+#   bq-*   BigQuery-specific operations, kept under its own short prefix
+#          since it is a distinct GCP product with its own CLI (bq).
+# This is a naming convention, not a hard technical boundary — a few
+# functions (e.g. gcl-org-policies, gcl-export-vars) call the live API to
+# resolve local config values, but are still `gcl-` because their purpose
+# is reading/deriving local state rather than performing an account
+# operation.
 
 #######################################
 # GCP: Legacy shortcut to set project
