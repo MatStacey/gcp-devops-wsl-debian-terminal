@@ -197,53 +197,11 @@ git-clean-merged() {
 alias git-clean-local='git-clean-merged'
 
 #######################################
-# Git: Push current branch and raise a Pull Request (GitHub/GitLab/Bitbucket)
-# Usage: git-raise-pr [-b target_branch] [-t pr_title] [-m pr_body]
-# Options:
-#   -b <branch>   Target branch to merge into (defaults to default branch)
-#   -t <title>    Pull Request title
-#   -m <message>  Pull Request body or description
+# Git: Fetch the target branch and merge it into the current branch
+# Globals (read, set by git-raise-pr):
+#   current_branch, target_branch
 #######################################
-git-raise-pr() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-
-  local target_branch="" pr_title="" pr_body=""
-
-  local OPTIND opt
-  while getopts "b:t:m:" opt; do
-    case ${opt} in
-      b) target_branch="$OPTARG" ;;
-      t) pr_title="$OPTARG" ;;
-      m) pr_body="$OPTARG" ;;
-      \?)
-        echo "Usage: git-raise-pr [-b <target_branch>] [-t <pr_title>] [-m <pr_body>]" >&2
-        return 1
-        ;;
-    esac
-  done
-  shift $((OPTIND - 1))
-
-  local default_branch
-  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print$NF}')
-  default_branch="${default_branch:-main}"
-  target_branch="${target_branch:-$default_branch}"
-
-  local current_branch
-  current_branch=$(git branch --show-current)
-
-  if [ -z "$current_branch" ]; then
-    echo -e "${CB_RED}🚨 Error: Not currently on any branch.${C_RESET}"
-    return 1
-  fi
-
-  if [ "$current_branch" = "$target_branch" ]; then
-    echo -e "${CB_RED}🚨 Error: You are currently on the target branch ($target_branch). Please checkout a new feature branch first.${C_RESET}"
-    return 1
-  fi
-
+__git_raise_pr_sync_with_target() {
   echo -e "${CB_BLUE}🔄 Fetching latest from origin...${C_RESET}"
   git fetch origin "$target_branch" > /dev/null 2>&1
 
@@ -255,9 +213,21 @@ git-raise-pr() {
     return 1
   fi
   echo -e "${CB_GREEN}✅ Branch is up to date.${C_RESET}"
+}
 
-  local is_github=false
-  local origin_url
+#######################################
+# Git: Detect a dead (merged/closed) PR on the current branch and offer to
+# recreate it under a new branch name; push directly if a PR is already open.
+# Globals (read, set by git-raise-pr):
+#   current_branch, target_branch
+# Globals (written):
+#   is_github, origin_url, current_branch (renamed if the branch is recreated)
+#   __git_raise_pr_dead_pr_action -- "continue" | "done" | "error"
+#######################################
+__git_raise_pr_handle_dead_pr() {
+  __git_raise_pr_dead_pr_action="continue"
+
+  is_github=false
   origin_url=$(git config --get remote.origin.url)
   [[ "$origin_url" == *"github.com"* ]] && is_github=true
 
@@ -270,7 +240,7 @@ git-raise-pr() {
     echo -e "${CB_GREEN}✅ An open PR already exists for this branch.${C_RESET}"
     echo -e "${CB_BLUE}🚀 Pushing latest changes to origin...${C_RESET}"
     git push origin "$current_branch"
-    return 0
+    __git_raise_pr_dead_pr_action="done"
   elif [ "$pr_state" = "MERGED" ] || [ "$pr_state" = "CLOSED" ]; then
     echo -e "${CB_YELLOW}⚠️  This branch has a ${pr_state} PR (Dead Branch).${C_RESET}"
     read -r -p "Would you like to delete this branch locally and checkout a new one? [Y/n] " -n 1
@@ -286,17 +256,25 @@ git-raise-pr() {
       read -r -p "Enter new branch name: " new_branch
       if [ -z "$new_branch" ]; then
         echo -e "${CB_RED}🚨 Aborted.${C_RESET}"
-        return 1
+        __git_raise_pr_dead_pr_action="error"
+        return
       fi
       git checkout -b "$new_branch"
       git branch -D "$current_branch"
       current_branch="$new_branch"
     else
       echo -e "${CB_RED}🚨 Aborted. Cannot raise a new PR on a branch with a closed/merged PR in GitHub without recreating it.${C_RESET}"
-      return 1
+      __git_raise_pr_dead_pr_action="error"
     fi
   fi
+}
 
+#######################################
+# Git: Push the current branch to origin, with fork-specific guidance on failure
+# Globals (read, set by git-raise-pr):
+#   current_branch, origin_url
+#######################################
+__git_raise_pr_push_branch() {
   echo -e "${CB_BLUE}🚀 Pushing ${current_branch} to origin...${C_RESET}"
   if ! git push -u origin "$current_branch"; then
     echo -e "\n${CB_RED}🚨 Error: Failed to push branch to origin.${C_RESET}"
@@ -309,7 +287,15 @@ git-raise-pr() {
     fi
     return 1
   fi
+}
 
+#######################################
+# Git: Create the PR via GitHub CLI, or open the appropriate web compare URL
+# for GitHub/GitLab/Bitbucket when 'gh' isn't available.
+# Globals (read, set by git-raise-pr):
+#   is_github, target_branch, pr_title, pr_body, origin_url, current_branch
+#######################################
+__git_raise_pr_create_or_open() {
   if [ "$is_github" = true ] && command -v gh > /dev/null 2>&1; then
     echo -e "${CB_BLUE}🛠️  Creating Pull Request via GitHub CLI...${C_RESET}"
 
@@ -357,6 +343,69 @@ git-raise-pr() {
 
     __open_url "$web_url"
   fi
+}
+
+#######################################
+# Git: Push current branch and raise a Pull Request (GitHub/GitLab/Bitbucket)
+# Usage: git-raise-pr [-b target_branch] [-t pr_title] [-m pr_body]
+# Options:
+#   -b <branch>   Target branch to merge into (defaults to default branch)
+#   -t <title>    Pull Request title
+#   -m <message>  Pull Request body or description
+#######################################
+git-raise-pr() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local target_branch="" pr_title="" pr_body=""
+
+  local OPTIND opt
+  while getopts "b:t:m:" opt; do
+    case ${opt} in
+      b) target_branch="$OPTARG" ;;
+      t) pr_title="$OPTARG" ;;
+      m) pr_body="$OPTARG" ;;
+      \?)
+        echo "Usage: git-raise-pr [-b <target_branch>] [-t <pr_title>] [-m <pr_body>]" >&2
+        return 1
+        ;;
+    esac
+  done
+  shift $((OPTIND - 1))
+
+  local default_branch
+  default_branch=$(git remote show origin 2> /dev/null | awk '/HEAD branch/ {print$NF}')
+  default_branch="${default_branch:-main}"
+  target_branch="${target_branch:-$default_branch}"
+
+  local current_branch
+  current_branch=$(git branch --show-current)
+
+  if [ -z "$current_branch" ]; then
+    echo -e "${CB_RED}🚨 Error: Not currently on any branch.${C_RESET}"
+    return 1
+  fi
+
+  if [ "$current_branch" = "$target_branch" ]; then
+    echo -e "${CB_RED}🚨 Error: You are currently on the target branch ($target_branch). Please checkout a new feature branch first.${C_RESET}"
+    return 1
+  fi
+
+  __git_raise_pr_sync_with_target || return 1
+
+  local is_github=false
+  local origin_url=""
+  local __git_raise_pr_dead_pr_action="continue"
+  __git_raise_pr_handle_dead_pr
+  case "$__git_raise_pr_dead_pr_action" in
+    done) return 0 ;;
+    error) return 1 ;;
+  esac
+
+  __git_raise_pr_push_branch || return 1
+  __git_raise_pr_create_or_open
 }
 
 #######################################

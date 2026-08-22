@@ -67,125 +67,76 @@ __get_prompt() {
 }
 
 #######################################
-# System: Create an archive backup of the current directory
-# Usage: mt-backup [-f|--force] [-l|--list] [-o|--output format] [-d|--dir path]
-# Options:
-#   -l, --list     List existing backups for the current directory
-#   -f, --force    Skip the size limit warning check
-#   -o, --output   Archive format: zip (default), rar, tz, gzip
-#   -d, --dir      Override the base destination directory
-# Globals:
-#   BACKUP_DIR
+# System: Warn and confirm before backing up an oversized payload
+# Globals (read, set by mt-backup):
+#   force, threshold_mb
+# Returns:
+#   0 to proceed, 1 if the user declined
 #######################################
-mt-backup() {
-  local force=false
-  local list_mode=false
-  local format="zip"
+__mt_backup_check_size_warning() {
+  mt-log INFO "Estimating backup payload size..."
+  local est_size_mb
+  est_size_mb=$(find . -type d \( -name .git -o -name node_modules -o -name __pycache__ -o -name .terraform -o -name venv -o -name .venv \) -prune -o -type f -exec ls -l {} + 2> /dev/null | awk '{s+=$5} END {print int(s/1048576)}')
+  [ -z "$est_size_mb" ] && est_size_mb=0
 
-  # Explicitly query config.yaml first to ensure we get the latest value even if env cache lags
-  local cfg_backup_dir
-  cfg_backup_dir=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("paths", {}).get("backup_dir", ""))' 2> /dev/null)
-
-  local base_dest="${BACKUP_DIR:-${cfg_backup_dir:-/tmp/backups}}"
-
-  while [[ "$#" -gt 0 ]]; do
-    case "$1" in
-      -l | --list) list_mode=true ;;
-      -f | --force) force=true ;;
-      -o | --output)
-        format="${2,,}"
-        shift
-        ;;
-      -d | --dir)
-        base_dest="$2"
-        shift
-        ;;
-      -h | --help)
-        mt-help "${FUNCNAME[0]}"
-        return 0
-        ;;
-      -*)
-        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
-        return 1
-        ;;
-      *) base_dest="$1" ;;
-    esac
-    shift
-  done
-
-  # Dynamically load the warning threshold from config.yaml (default 500MB)
-  local threshold_mb
-  threshold_mb=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("system", yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("core", {})).get("backup_warning_mb", 500))' 2> /dev/null)
-
-  if ! [[ "$threshold_mb" =~ ^[0-9]+$ ]]; then
-    echo -e "${CB_RED}🚨 Error: 'backup_warning_mb' in config.yaml is invalid ('$threshold_mb'). It must be a whole number.${C_RESET}"
-    return 1
-  fi
-
-  if [ "$list_mode" = false ]; then
-    mt-log INFO "Estimating backup payload size..."
-    local est_size_mb
-    est_size_mb=$(find . -type d \( -name .git -o -name node_modules -o -name __pycache__ -o -name .terraform -o -name venv -o -name .venv \) -prune -o -type f -exec ls -l {} + 2> /dev/null | awk '{s+=$5} END {print int(s/1048576)}')
-    [ -z "$est_size_mb" ] && est_size_mb=0
-
-    if [ "$force" = false ] && [ "$est_size_mb" -ge "$threshold_mb" ]; then
-      echo -e "${CB_YELLOW}⚠️ Warning: Estimated payload is ${est_size_mb}MB, which exceeds the ${threshold_mb}MB limit.${C_RESET}"
-      read -p "🚀 Proceed with backup? [y/N] " -n 1 -r < /dev/tty
-      echo
-      if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo -e "${CB_RED}🛑 Aborted.${C_RESET}"
-        return 1
-      fi
+  if [ "$force" = false ] && [ "$est_size_mb" -ge "$threshold_mb" ]; then
+    echo -e "${CB_YELLOW}⚠️ Warning: Estimated payload is ${est_size_mb}MB, which exceeds the ${threshold_mb}MB limit.${C_RESET}"
+    read -p "🚀 Proceed with backup? [y/N] " -n 1 -r < /dev/tty
+    echo
+    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+      echo -e "${CB_RED}🛑 Aborted.${C_RESET}"
+      return 1
     fi
   fi
+}
 
-  # Sanitize target directory name (strip dots, special chars)
-  local raw_dir_name
-  raw_dir_name=$(basename "$(realpath "$PWD")")
-  local safe_dir_name
-  safe_dir_name=$(echo "$raw_dir_name" | tr -d '.' | sed 's/[^a-zA-Z0-9]/_/g')
-
-  # Resolve base destination, expanding ~ if present
-  local expanded_base="${base_dest/#\~/$HOME}"
-  local dest="${expanded_base}/${safe_dir_name}"
-
-  if [ "$list_mode" = true ]; then
-    if [ ! -d "$dest" ]; then
-      echo -e "${CB_YELLOW}⚠️ No backups found for '${safe_dir_name}' in ${expanded_base}.${C_RESET}"
-      return 0
-    fi
-
-    echo -e "${CB_BLUE}🔍 Scanning '${dest}' for backups...${C_RESET}\n"
-
-    local count
-    count=$(find "$dest" -maxdepth 1 -type f | wc -l)
-
-    if [ "$count" -eq 0 ]; then
-      echo -e "${CB_YELLOW}⚠️ No backups found in $dest.${C_RESET}"
-      return 0
-    fi
-
-    echo -e "${CB_CYAN}📦 Found $count backup(s) for '${safe_dir_name}':${C_RESET}\n"
-
-    # ls -lth sorts by time (latest first), -h gives human-readable sizes
-    command ls -lth --time-style=+"%Y-%m-%d %H:%M:%S" "$dest" | grep -v '^total' | awk -v blue="$CB_BLUE" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v green="$CB_GREEN" -v rst="$C_RESET" '
-      BEGIN {
-        printf "%s%-55s %-25s %-15s%s\n", blue, "FILENAME", "DATE CREATED", "SIZE", rst
-        printf "%s%s%s\n", blue, "-------------------------------------------------------------------------------------------------", rst
-      }
-      {
-        size = $5
-        date_created = $6 " " $7
-        name = ""
-        # Support filenames with spaces just in case
-        for(i=8; i<=NF; i++) name = name (i==8?"":" ") $i
-        printf "%s%-55s%s %s%-25s%s %s%-15s%s\n", cyan, name, rst, yellow, date_created, rst, green, size, rst
-      }
-    '
-    echo ""
+#######################################
+# System: List existing backups for the current directory's safe name
+# Globals (read, set by mt-backup):
+#   dest, expanded_base, safe_dir_name
+#######################################
+__mt_backup_list() {
+  if [ ! -d "$dest" ]; then
+    echo -e "${CB_YELLOW}⚠️ No backups found for '${safe_dir_name}' in ${expanded_base}.${C_RESET}"
     return 0
   fi
 
+  echo -e "${CB_BLUE}🔍 Scanning '${dest}' for backups...${C_RESET}\n"
+
+  local count
+  count=$(find "$dest" -maxdepth 1 -type f | wc -l)
+
+  if [ "$count" -eq 0 ]; then
+    echo -e "${CB_YELLOW}⚠️ No backups found in $dest.${C_RESET}"
+    return 0
+  fi
+
+  echo -e "${CB_CYAN}📦 Found $count backup(s) for '${safe_dir_name}':${C_RESET}\n"
+
+  # ls -lth sorts by time (latest first), -h gives human-readable sizes
+  command ls -lth --time-style=+"%Y-%m-%d %H:%M:%S" "$dest" | grep -v '^total' | awk -v blue="$CB_BLUE" -v cyan="$CB_CYAN" -v yellow="$CB_YELLOW" -v green="$CB_GREEN" -v rst="$C_RESET" '
+    BEGIN {
+      printf "%s%-55s %-25s %-15s%s\n", blue, "FILENAME", "DATE CREATED", "SIZE", rst
+      printf "%s%s%s\n", blue, "-------------------------------------------------------------------------------------------------", rst
+    }
+    {
+      size = $5
+      date_created = $6 " " $7
+      name = ""
+      # Support filenames with spaces just in case
+      for(i=8; i<=NF; i++) name = name (i==8?"":" ") $i
+      printf "%s%-55s%s %s%-25s%s %s%-15s%s\n", cyan, name, rst, yellow, date_created, rst, green, size, rst
+    }
+  '
+  echo ""
+}
+
+#######################################
+# System: Create the backup archive (zip/rar/tar) and report the result
+# Globals (read, set by mt-backup):
+#   dest, safe_dir_name, format
+#######################################
+__mt_backup_create() {
   mkdir -p "$dest"
 
   # Format timestamps: [YYYY-MM-DD]_[HH-MM-SS]
@@ -245,6 +196,84 @@ mt-backup() {
   else
     mt-log ERROR "Backup failed."
   fi
+}
+
+#######################################
+# System: Create an archive backup of the current directory
+# Usage: mt-backup [-f|--force] [-l|--list] [-o|--output format] [-d|--dir path]
+# Options:
+#   -l, --list     List existing backups for the current directory
+#   -f, --force    Skip the size limit warning check
+#   -o, --output   Archive format: zip (default), rar, tz, gzip
+#   -d, --dir      Override the base destination directory
+# Globals:
+#   BACKUP_DIR
+#######################################
+mt-backup() {
+  local force=false
+  local list_mode=false
+  local format="zip"
+
+  # Explicitly query config.yaml first to ensure we get the latest value even if env cache lags
+  local cfg_backup_dir
+  cfg_backup_dir=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("paths", {}).get("backup_dir", ""))' 2> /dev/null)
+
+  local base_dest="${BACKUP_DIR:-${cfg_backup_dir:-/tmp/backups}}"
+
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -l | --list) list_mode=true ;;
+      -f | --force) force=true ;;
+      -o | --output)
+        format="${2,,}"
+        shift
+        ;;
+      -d | --dir)
+        base_dest="$2"
+        shift
+        ;;
+      -h | --help)
+        mt-help "${FUNCNAME[0]}"
+        return 0
+        ;;
+      -*)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+      *) base_dest="$1" ;;
+    esac
+    shift
+  done
+
+  # Dynamically load the warning threshold from config.yaml (default 500MB)
+  local threshold_mb
+  threshold_mb=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("system", yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("core", {})).get("backup_warning_mb", 500))' 2> /dev/null)
+
+  if ! [[ "$threshold_mb" =~ ^[0-9]+$ ]]; then
+    echo -e "${CB_RED}🚨 Error: 'backup_warning_mb' in config.yaml is invalid ('$threshold_mb'). It must be a whole number.${C_RESET}"
+    return 1
+  fi
+
+  if [ "$list_mode" = false ]; then
+    __mt_backup_check_size_warning || return 1
+  fi
+
+  # Sanitize target directory name (strip dots, special chars)
+  local raw_dir_name
+  raw_dir_name=$(basename "$(realpath "$PWD")")
+  local safe_dir_name
+  safe_dir_name=$(echo "$raw_dir_name" | tr -d '.' | sed 's/[^a-zA-Z0-9]/_/g')
+
+  # Resolve base destination, expanding ~ if present
+  local expanded_base="${base_dest/#\~/$HOME}"
+  local dest="${expanded_base}/${safe_dir_name}"
+
+  if [ "$list_mode" = true ]; then
+    __mt_backup_list
+    return 0
+  fi
+
+  __mt_backup_create
 }
 
 #######################################
@@ -491,78 +520,64 @@ __mt_bg_run() {
 # System: List and manage MT background jobs
 # Usage: mt-jobs [-i|--interactive] [-p|--purge] [-c|--clean]
 #######################################
-mt-jobs() {
-  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
-    mt-help "${FUNCNAME[0]}"
-    return 0
-  fi
-  local jobs_file="$HOME/.bash.d/data/cache/.mt_jobs.tsv"
+#######################################
+# System: Kill every RUNNING job and mark it CANCELLED in the jobs file
+# Globals (read, set by mt-jobs):
+#   jobs_file, current_time
+#######################################
+__mt_jobs_purge() {
+  echo -e "${CB_RED}🛑 Purging all running background jobs...${C_RESET}"
+  local tmp_m
+  tmp_m=$(mktemp)
+  local count=0
   local j_id j_pid j_name j_start j_end j_status j_log j_cmd
+  while IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd; do
+    [ -z "$j_id" ] && continue
+    if [ "$j_status" = "RUNNING" ]; then
+      kill -9 "$j_pid" 2> /dev/null
+      j_status="CANCELLED"
+      j_end=$current_time
+      ((count++))
+    fi
+    echo "${j_id}|${j_pid}|${j_name}|${j_start}|${j_end}|${j_status}|${j_log}|${j_cmd}" >> "$tmp_m"
+  done < "$jobs_file"
+  mv "$tmp_m" "$jobs_file"
+  echo -e "${CB_GREEN}✅ Purged ${count} running job(s).${C_RESET}"
+}
 
-  local interactive=false do_purge=false do_clean=false
-  while [[ "$#" -gt 0 ]]; do
-    case "$1" in
-      -i | --interactive) interactive=true ;;
-      -p | --purge) do_purge=true ;;
-      -c | --clean) do_clean=true ;;
-      *)
-        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
-        return 1
-        ;;
-    esac
-    shift
-  done
+#######################################
+# System: Drop every finished (non-RUNNING) job and its log from history
+# Globals (read, set by mt-jobs):
+#   jobs_file
+#######################################
+__mt_jobs_clean() {
+  echo -e "${CB_YELLOW}🧹 Cleaning completed job history...${C_RESET}"
+  local tmp_c
+  tmp_c=$(mktemp)
+  local count=0
+  local j_id j_pid j_name j_start j_end j_status j_log j_cmd
+  while IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd; do
+    [ -z "$j_id" ] && continue
+    if [ "$j_status" != "RUNNING" ]; then
+      [ -f "$j_log" ] && rm -f "$j_log"
+      ((count++))
+    else
+      echo "${j_id}|${j_pid}|${j_name}|${j_start}|${j_end}|${j_status}|${j_log}|${j_cmd}" >> "$tmp_c"
+    fi
+  done < "$jobs_file"
+  mv "$tmp_c" "$jobs_file"
+  echo -e "${CB_GREEN}✅ Removed ${count} finished job(s) from history.${C_RESET}"
+}
 
-  if [ ! -f "$jobs_file" ] || [ ! -s "$jobs_file" ]; then
-    echo -e "${CB_YELLOW}⚠️ No background jobs found.${C_RESET}"
-    return 0
-  fi
-
-  local current_time
-  current_time=$(date +%s)
-
-  if [ "$do_purge" = true ]; then
-    echo -e "${CB_RED}🛑 Purging all running background jobs...${C_RESET}"
-    local tmp_m
-    tmp_m=$(mktemp)
-    local count=0
-    while IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd; do
-      [ -z "$j_id" ] && continue
-      if [ "$j_status" = "RUNNING" ]; then
-        kill -9 "$j_pid" 2> /dev/null
-        j_status="CANCELLED"
-        j_end=$current_time
-        ((count++))
-      fi
-      echo "${j_id}|${j_pid}|${j_name}|${j_start}|${j_end}|${j_status}|${j_log}|${j_cmd}" >> "$tmp_m"
-    done < "$jobs_file"
-    mv "$tmp_m" "$jobs_file"
-    echo -e "${CB_GREEN}✅ Purged ${count} running job(s).${C_RESET}"
-    return 0
-  fi
-
-  if [ "$do_clean" = true ]; then
-    echo -e "${CB_YELLOW}🧹 Cleaning completed job history...${C_RESET}"
-    local tmp_c
-    tmp_c=$(mktemp)
-    local count=0
-    while IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd; do
-      [ -z "$j_id" ] && continue
-      if [ "$j_status" != "RUNNING" ]; then
-        [ -f "$j_log" ] && rm -f "$j_log"
-        ((count++))
-      else
-        echo "${j_id}|${j_pid}|${j_name}|${j_start}|${j_end}|${j_status}|${j_log}|${j_cmd}" >> "$tmp_c"
-      fi
-    done < "$jobs_file"
-    mv "$tmp_c" "$jobs_file"
-    echo -e "${CB_GREEN}✅ Removed ${count} finished job(s) from history.${C_RESET}"
-    return 0
-  fi
-
-  # Clean Orphans
+#######################################
+# System: Mark RUNNING jobs whose PID no longer exists as ORPHANED
+# Globals (read, set by mt-jobs):
+#   jobs_file, current_time
+#######################################
+__mt_jobs_reap_orphans() {
   local tmp_jobs
   tmp_jobs=$(mktemp)
+  local j_id j_pid j_name j_start j_end j_status j_log j_cmd
   while IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd; do
     [ -z "$j_id" ] && continue
     if [ "$j_status" = "RUNNING" ]; then
@@ -574,11 +589,19 @@ mt-jobs() {
     echo "${j_id}|${j_pid}|${j_name}|${j_start}|${j_end}|${j_status}|${j_log}|${j_cmd}" >> "$tmp_jobs"
   done < "$jobs_file"
   mv "$tmp_jobs" "$jobs_file"
+}
 
-  # Build Table
-  local tmp_out
+#######################################
+# System: Render the jobs table into a tab-delimited temp file for display/fzf
+# Globals (read, set by mt-jobs):
+#   jobs_file, current_time
+# Globals (written):
+#   tmp_out -- path to the rendered table
+#######################################
+__mt_jobs_render_table() {
   tmp_out=$(mktemp)
 
+  local j_id j_pid j_name j_start j_end j_status j_log j_cmd
   while IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd; do
     [ -z "$j_id" ] && continue
 
@@ -609,19 +632,30 @@ mt-jobs() {
     # Store RAW j_id first separated by tabs so fzf can extract it perfectly
     echo -e "${j_id}	${p_name} ${C_DIM}${p_start}${C_RESET} ${C_DIM}${p_end}${C_RESET} ${C_DIM}${p_dur}${C_RESET} ${color}${j_status}${C_RESET}" >> "$tmp_out"
   done < "$jobs_file"
+}
 
-  if [ "$interactive" = false ]; then
-    printf "
+#######################################
+# System: Print the rendered jobs table (non-interactive mode) and clean up
+# Globals (read, set by mt-jobs):
+#   tmp_out
+#######################################
+__mt_jobs_print_table() {
+  printf "
 ${CB_BLUE}%-22s %-10s %-10s %-10s %-12s${C_RESET}
 " "NAME" "START" "END" "DURATION" "STATUS"
-    echo -e "${CB_BLUE}-------------------------------------------------------------------${C_RESET}"
-    cut -f2- "$tmp_out"
-    echo -e "
+  echo -e "${CB_BLUE}-------------------------------------------------------------------${C_RESET}"
+  cut -f2- "$tmp_out"
+  echo -e "
 ${C_DIM}Run 'mt-jobs -i' to interact, 'mt-jobs -c' to clean history.${C_RESET}"
-    rm -f "$tmp_out"
-    return 0
-  fi
+  rm -f "$tmp_out"
+}
 
+#######################################
+# System: fzf-select a job from the rendered table, then run the chosen action
+# Globals (read, set by mt-jobs):
+#   tmp_out, jobs_file, current_time
+#######################################
+__mt_jobs_interactive_select() {
   local selected
   selected=$(fzf < "$tmp_out" --ansi --delimiter="	" --with-nth=2 --prompt="Select Job > ")
   rm -f "$tmp_out"
@@ -639,6 +673,7 @@ ${C_DIM}Run 'mt-jobs -i' to interact, 'mt-jobs -c' to clean history.${C_RESET}"
     return 1
   }
 
+  local j_id j_pid j_name j_start j_end j_status j_log j_cmd
   IFS='|' read -r j_id j_pid j_name j_start j_end j_status j_log j_cmd <<< "$sel_data"
 
   echo -e "
@@ -693,6 +728,62 @@ ${CB_BLUE}▶ Selected Job: ${j_name} (${j_id})${C_RESET}"
       echo -e "${CB_GREEN}✅ All job history cleared.${C_RESET}"
       ;;
   esac
+}
+
+#######################################
+# System: List and manage MT background jobs
+# Usage: mt-jobs [-i|--interactive] [-p|--purge] [-c|--clean]
+#######################################
+mt-jobs() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+  local jobs_file="$HOME/.bash.d/data/cache/.mt_jobs.tsv"
+
+  local interactive=false do_purge=false do_clean=false
+  while [[ "$#" -gt 0 ]]; do
+    case "$1" in
+      -i | --interactive) interactive=true ;;
+      -p | --purge) do_purge=true ;;
+      -c | --clean) do_clean=true ;;
+      *)
+        echo -e "${CB_RED}🚨 Unknown option: $1${C_RESET}"
+        return 1
+        ;;
+    esac
+    shift
+  done
+
+  if [ ! -f "$jobs_file" ] || [ ! -s "$jobs_file" ]; then
+    echo -e "${CB_YELLOW}⚠️ No background jobs found.${C_RESET}"
+    return 0
+  fi
+
+  local current_time
+  current_time=$(date +%s)
+
+  if [ "$do_purge" = true ]; then
+    __mt_jobs_purge
+    return 0
+  fi
+
+  if [ "$do_clean" = true ]; then
+    __mt_jobs_clean
+    return 0
+  fi
+
+  __mt_jobs_reap_orphans
+
+  local tmp_out
+  __mt_jobs_render_table
+
+  if [ "$interactive" = false ]; then
+    __mt_jobs_print_table
+    return 0
+  fi
+
+  __mt_jobs_interactive_select
 }
 
 #######################################
