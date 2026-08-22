@@ -298,11 +298,15 @@ __mt_hub_preview() {
 
 #######################################
 # System: Interactive AI-powered Repository Dashboard
-# Usage: mt-hub [--index] [-t|--type type] [-r|--repo name]
+# Usage: mt-hub [--index [-b] [-f] [-t <type>] [-r <name>]] [--preview <repo>]
 # Options:
-#   --index       Scan and build the AI metadata cache
-#   -t, --type    Filter indexing to a specific folder (e.g. personal, work)
-#   -r, --repo    Filter indexing to a specific repository name
+#   --index                    Scan and build the AI metadata cache
+#   -b, --bg, --background     Run the index scan as a background job (with --index)
+#   -f, --force                Force reindex even if a repo is already cached (with --index)
+#   -t, --type <name>          Filter indexing to a specific folder (e.g. personal, work)
+#   -r, --repo <name>          Filter indexing to a specific repository name
+#   --preview <repo>           Show cached metadata for one repo and exit
+#   -h, --help                 Show this help menu
 #######################################
 mt-hub() {
   local cache_file="$HOME/.bash.d/data/cache/.vcs_hub.json"
