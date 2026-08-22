@@ -1100,9 +1100,3 @@ mt-apply() {
   rm -f "$tmp_raw" "$tmp_clean"
   return $exit_code
 }
-
-# Load local un-versioned secrets if they exist
-if [ -f "$HOME/.bash.d/config/github_token.sh" ]; then
-  # shellcheck disable=SC1091
-  source "$HOME/.bash.d/config/github_token.sh"
-fi

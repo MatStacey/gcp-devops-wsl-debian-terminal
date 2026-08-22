@@ -25,6 +25,7 @@ mkdir -p "$TARGET_BASHD"
 rsync -a --delete \
   --exclude 'config/config.yaml' \
   --exclude 'config/.env.cache' \
+  --exclude 'config/*_token.sh' \
   --exclude '*private*.sh' \
   --exclude '*.local.sh' \
   --exclude '*.local' \

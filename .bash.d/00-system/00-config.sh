@@ -67,18 +67,118 @@ fi
 if [[ -z "$GEMINI_API_KEY" || "$GEMINI_API_KEY" == "YOUR_GEMINI_API_KEY" || "$GEMINI_API_KEY" == "null" ]]; then
   unset GEMINI_API_KEY
   if [[ "${DEFAULT_AI:-gemini}" == "gemini" ]]; then
-    echo -e "${C_YELLOW}No Gemini API Key provided in config.yaml. Add one via:${C_RESET}"
-    echo -e "    ${C_RESET}vim ~/vcs/secrets/secrets.sh"
+    echo -e "${C_YELLOW}No Gemini API Key provided. Add one via:${C_RESET}"
+    echo -e "    ${C_RESET}mt-add-gemini-key"
   fi
 fi
 
 if [[ -z "$CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "YOUR_CLAUDE_API_KEY" || "$CLAUDE_API_KEY" == "null" ]]; then
   unset CLAUDE_API_KEY
   if [[ "${DEFAULT_AI:-gemini}" == "claude" ]]; then
-    echo -e "${C_YELLOW}No Claude API Key provided in config.yaml. Add one via:${C_RESET}"
-    echo -e "    ${C_RESET}vim ~/vcs/secrets/secrets.sh"
+    echo -e "${C_YELLOW}No Claude API Key provided. Add one via:${C_RESET}"
+    echo -e "    ${C_RESET}mt-add-claude-key"
   fi
 fi
+
+#######################################
+# System: Safely write or update one exported variable inside
+# ~/vcs/secrets/secrets.sh, preserving every other line already in the
+# file. Creates the file/directory (with restrictive permissions) if
+# they don't exist yet.
+# Arguments:
+#   $1 - Variable name (e.g. GEMINI_API_KEY)
+#   $2 - Value to store
+#######################################
+__mt_write_secret() {
+  local var_name="$1" value="$2"
+  local secrets_dir="$HOME/vcs/secrets"
+  local secrets_file="$secrets_dir/secrets.sh"
+
+  mkdir -p "$secrets_dir"
+  chmod 700 "$secrets_dir" 2> /dev/null
+
+  if [ ! -f "$secrets_file" ]; then
+    cat << 'HDR' > "$secrets_file"
+#!/usr/bin/env bash
+# ==========================================
+# Externalized MT DevOps Secrets
+# ==========================================
+# Sourced by ~/.bash.d/00-system/00-config.sh on every shell startup and
+# whenever config.yaml changes. Never tracked in git -- this directory
+# lives outside ~/vcs/personal/mt-devops-framework entirely.
+HDR
+  fi
+  chmod 600 "$secrets_file"
+
+  local quoted_value
+  printf -v quoted_value '%q' "$value"
+  local new_line="export ${var_name}=${quoted_value}"
+
+  if grep -q "^export ${var_name}=" "$secrets_file" 2> /dev/null; then
+    local tmp_file
+    tmp_file=$(mktemp)
+    awk -v pat="^export ${var_name}=" -v line="$new_line" '
+      $0 ~ pat { print line; next }
+      { print }
+    ' "$secrets_file" > "$tmp_file" && mv "$tmp_file" "$secrets_file"
+  else
+    echo "$new_line" >> "$secrets_file"
+  fi
+
+  chmod 600 "$secrets_file"
+}
+
+#######################################
+# AI: Interactively add or update your Gemini API key. Stores it in
+# ~/vcs/secrets/secrets.sh (never touches config.yaml or git) and
+# exports it into the current shell immediately.
+# Usage: mt-add-gemini-key
+#######################################
+mt-add-gemini-key() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local key
+  read -r -s -p "🔑 Enter your Gemini API key (input hidden): " key < /dev/tty
+  echo
+
+  if [ -z "$key" ]; then
+    echo -e "${CB_YELLOW}⚠️  No key entered. Aborted.${C_RESET}"
+    return 1
+  fi
+
+  __mt_write_secret "GEMINI_API_KEY" "$key"
+  export GEMINI_API_KEY="$key"
+  echo -e "${CB_GREEN}✅ Gemini API key saved to ~/vcs/secrets/secrets.sh and loaded into this shell.${C_RESET}"
+}
+
+#######################################
+# AI: Interactively add or update your Claude API key. Stores it in
+# ~/vcs/secrets/secrets.sh (never touches config.yaml or git) and
+# exports it into the current shell immediately.
+# Usage: mt-add-claude-key
+#######################################
+mt-add-claude-key() {
+  if [[ "$1" == "-h" || "$1" == "--help" ]]; then
+    mt-help "${FUNCNAME[0]}"
+    return 0
+  fi
+
+  local key
+  read -r -s -p "🔑 Enter your Claude API key (input hidden): " key < /dev/tty
+  echo
+
+  if [ -z "$key" ]; then
+    echo -e "${CB_YELLOW}⚠️  No key entered. Aborted.${C_RESET}"
+    return 1
+  fi
+
+  __mt_write_secret "CLAUDE_API_KEY" "$key"
+  export CLAUDE_API_KEY="$key"
+  echo -e "${CB_GREEN}✅ Claude API key saved to ~/vcs/secrets/secrets.sh and loaded into this shell.${C_RESET}"
+}
 
 #######################################
 # AI: Print current Gemini API model version and extended reasoning mode toggle
@@ -334,13 +434,21 @@ __mt_setup_quick() {
 
   local active_provider="${provider:-${DEFAULT_AI:-gemini}}"
   if [ "$active_provider" = "gemini" ]; then
-    read -r -s -p "🔑 Enter Gemini API Key (Enter to skip): " key
+    read -r -s -p "🔑 Enter Gemini API Key (Enter to skip): " key < /dev/tty
     echo
-    [ -n "$key" ] && vim ~/vcs/secrets/secrets.sh
+    if [ -n "$key" ]; then
+      __mt_write_secret "GEMINI_API_KEY" "$key"
+      export GEMINI_API_KEY="$key"
+      echo -e "${CB_GREEN}✅ Gemini API key saved.${C_RESET}"
+    fi
   elif [ "$active_provider" = "claude" ]; then
-    read -r -s -p "🔑 Enter Claude API Key (Enter to skip): " key
+    read -r -s -p "🔑 Enter Claude API Key (Enter to skip): " key < /dev/tty
     echo
-    [ -n "$key" ] && vim ~/vcs/secrets/secrets.sh
+    if [ -n "$key" ]; then
+      __mt_write_secret "CLAUDE_API_KEY" "$key"
+      export CLAUDE_API_KEY="$key"
+      echo -e "${CB_GREEN}✅ Claude API key saved.${C_RESET}"
+    fi
   fi
 
   read -r -p "3️⃣ CI/CD Provider (github/bitbucket/gitlab/azure/jenkins) [${CICD_PROVIDER:-github}]: " cicd
@@ -402,12 +510,12 @@ mt-wizard-ai() {
   echo -e "\n${CB_CYAN}Gemini Settings:${C_RESET}"
   read -r -p "Gemini Model Version [${GEMINI_VERSION:-gemini-3.6-flash}]: " g_ver
   [ -n "$g_ver" ] && python3 "$CONFIG_MANAGER" update "ai.gemini" "version" "$g_ver"
-  echo -e "  ${C_DIM}🔑 Manage your Gemini API Key directly in ~/vcs/secrets/secrets.sh${C_RESET}"
+  echo -e "  ${C_DIM}🔑 Run 'mt-add-gemini-key' to add/update your key${C_RESET}"
 
   echo -e "\n${CB_CYAN}Claude Settings:${C_RESET}"
   read -r -p "Claude Model Version [${CLAUDE_VERSION:-claude-3-7-sonnet-latest}]: " c_ver
   [ -n "$c_ver" ] && python3 "$CONFIG_MANAGER" update "ai.claude" "version" "$c_ver"
-  echo -e "  ${C_DIM}🔑 Manage your Claude API Key directly in ~/vcs/secrets/secrets.sh${C_RESET}"
+  echo -e "  ${C_DIM}🔑 Run 'mt-add-claude-key' to add/update your key${C_RESET}"
 
   echo -e "\n${CB_CYAN}Local AI Settings:${C_RESET}"
   read -r -p "Local AI Base URL [${LOCAL_AI_BASE_URL:-http://localhost:11434/v1}]: " l_url
