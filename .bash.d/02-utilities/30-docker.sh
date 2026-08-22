@@ -156,8 +156,7 @@ __docker_tail_cleanup() {
 }
 
 #######################################
-# Docker: Concurrently tail logs from multiple selected containers, each
-# prefixed with a distinct color
+# Docker: Concurrently tail logs from multiple selected containers
 # Usage: docker-tail
 # Globals:
 #   OS_FAMILY

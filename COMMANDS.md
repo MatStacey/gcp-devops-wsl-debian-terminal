@@ -236,7 +236,7 @@ Complex bash functions, framework utilities, and automated workflows.
 | `docker-reboot-all` | Docker: Restart all currently running Docker containers |
 | `docker-sandbox` | Docker: Spin up a temporary, throwaway container sandbox |
 | `docker-shell` | Docker: Interactive fuzzy-finder to exec into a running container |
-| `docker-tail` | Docker: Concurrently tail logs from multiple selected containers, each |
+| `docker-tail` | Docker: Concurrently tail logs from multiple selected containers |
 
 ### Framework: Repository Scaffolding from Blueprints
 | Command | Description |
