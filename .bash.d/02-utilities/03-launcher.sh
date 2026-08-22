@@ -132,14 +132,7 @@ cd-win-docker() {
     return 0
   fi
 
-  local docker_path
-  docker_path=$(python3 -c 'import yaml, os; print(yaml.safe_load(open(os.path.expanduser("~/.bash.d/config/config.yaml"))).get("paths", {}).get("docker_root", ""))')
-  docker_path=$(eval echo "$docker_path")
-
-  if [ -z "$docker_path" ]; then
-    echo -e "${CB_RED}🚨 Error: docker_root is not defined under paths in config.yaml.${C_RESET}"
-    return 1
-  fi
+  local docker_path="$DOCKER_ROOT_DIR"
 
   if [ -d "$docker_path" ]; then
     echo -e "${CB_BLUE}📂 Navigating to ${docker_path}...${C_RESET}"

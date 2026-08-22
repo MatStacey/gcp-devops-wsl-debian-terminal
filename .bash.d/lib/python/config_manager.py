@@ -75,6 +75,7 @@ def load_env():
     export("BASH_THEME", core_cfg.get("theme", "default"), to_lower=True)
     export("UPDATE_CHECK_TTL_SEC", core_cfg.get("update_check_ttl_sec", 43200))
     export("MAX_PARALLEL_THREADS", core_cfg.get("max_parallel_threads", 8))
+    export("BACKUP_WARNING_MB", core_cfg.get("backup_warning_mb", 500))
 
     # AI
     export(
